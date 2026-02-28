@@ -1,22 +1,30 @@
 import { ReactNode, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Crosshair, Home, Plus, User, Shield, Menu, X } from "lucide-react";
-
-const navItems = [
-  { to: "/", label: "Dashboard", icon: Home },
-  { to: "/sessions", label: "Sessions", icon: Crosshair },
-  { to: "/create", label: "Create", icon: Plus },
-  { to: "/profile", label: "Profile", icon: User },
-  { to: "/admin", label: "Admin", icon: Shield },
-];
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Crosshair, Home, Plus, User, Shield, Menu, X, LogOut, LogIn } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 
 export default function Layout({ children }: { children: ReactNode }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, isAdmin, signOut, loading } = useAuth();
+
+  const navItems = [
+    { to: "/", label: "Dashboard", icon: Home, show: true },
+    { to: "/sessions", label: "Sessions", icon: Crosshair, show: true },
+    { to: "/create", label: "Create", icon: Plus, show: !!user },
+    { to: "/profile", label: "Profile", icon: User, show: !!user },
+    { to: "/admin", label: "Admin", icon: Shield, show: isAdmin },
+  ].filter((i) => i.show);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Top Nav */}
       <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="container flex h-14 items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
@@ -26,7 +34,6 @@ export default function Layout({ children }: { children: ReactNode }) {
             </span>
           </Link>
 
-          {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1">
             {navItems.map((item) => {
               const active = location.pathname === item.to;
@@ -45,9 +52,25 @@ export default function Layout({ children }: { children: ReactNode }) {
                 </Link>
               );
             })}
+            {user ? (
+              <button
+                onClick={handleSignOut}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </button>
+            ) : (
+              <Link
+                to="/auth"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-primary hover:bg-primary/10 transition-colors"
+              >
+                <LogIn className="h-4 w-4" />
+                Sign In
+              </Link>
+            )}
           </nav>
 
-          {/* Mobile hamburger */}
           <button
             className="md:hidden p-2 text-foreground"
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -56,7 +79,6 @@ export default function Layout({ children }: { children: ReactNode }) {
           </button>
         </div>
 
-        {/* Mobile menu */}
         {mobileOpen && (
           <nav className="md:hidden border-t border-border bg-background pb-3">
             {navItems.map((item) => {
@@ -67,9 +89,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                   to={item.to}
                   onClick={() => setMobileOpen(false)}
                   className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
-                    active
-                      ? "text-primary bg-primary/10"
-                      : "text-muted-foreground hover:text-foreground"
+                    active ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   <item.icon className="h-4 w-4" />
@@ -77,14 +97,24 @@ export default function Layout({ children }: { children: ReactNode }) {
                 </Link>
               );
             })}
+            {user ? (
+              <button
+                onClick={() => { handleSignOut(); setMobileOpen(false); }}
+                className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-muted-foreground w-full"
+              >
+                <LogOut className="h-4 w-4" /> Sign Out
+              </button>
+            ) : (
+              <Link to="/auth" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-primary">
+                <LogIn className="h-4 w-4" /> Sign In
+              </Link>
+            )}
           </nav>
         )}
       </header>
 
-      {/* Main */}
       <main className="flex-1">{children}</main>
 
-      {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-lg">
         <div className="flex justify-around py-2">
           {navItems.slice(0, 4).map((item) => {
