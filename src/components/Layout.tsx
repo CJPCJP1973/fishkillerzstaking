@@ -1,0 +1,109 @@
+import { ReactNode, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Crosshair, Home, Plus, User, Shield, Menu, X } from "lucide-react";
+
+const navItems = [
+  { to: "/", label: "Dashboard", icon: Home },
+  { to: "/sessions", label: "Sessions", icon: Crosshair },
+  { to: "/create", label: "Create", icon: Plus },
+  { to: "/profile", label: "Profile", icon: User },
+  { to: "/admin", label: "Admin", icon: Shield },
+];
+
+export default function Layout({ children }: { children: ReactNode }) {
+  const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Top Nav */}
+      <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
+        <div className="container flex h-14 items-center justify-between">
+          <Link to="/" className="flex items-center gap-2">
+            <Crosshair className="h-7 w-7 text-primary" />
+            <span className="font-display text-xl font-bold tracking-wide text-foreground">
+              FISH<span className="text-primary">KILLERZ</span>
+            </span>
+          </Link>
+
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navItems.map((item) => {
+              const active = location.pathname === item.to;
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    active
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  }`}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Mobile hamburger */}
+          <button
+            className="md:hidden p-2 text-foreground"
+            onClick={() => setMobileOpen(!mobileOpen)}
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
+
+        {/* Mobile menu */}
+        {mobileOpen && (
+          <nav className="md:hidden border-t border-border bg-background pb-3">
+            {navItems.map((item) => {
+              const active = location.pathname === item.to;
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+                    active
+                      ? "text-primary bg-primary/10"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+        )}
+      </header>
+
+      {/* Main */}
+      <main className="flex-1">{children}</main>
+
+      {/* Mobile bottom nav */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-lg">
+        <div className="flex justify-around py-2">
+          {navItems.slice(0, 4).map((item) => {
+            const active = location.pathname === item.to;
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={`flex flex-col items-center gap-0.5 px-3 py-1 text-xs transition-colors ${
+                  active ? "text-primary" : "text-muted-foreground"
+                }`}
+              >
+                <item.icon className="h-5 w-5" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    </div>
+  );
+}
