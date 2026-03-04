@@ -1,7 +1,9 @@
-import { Clock, Users, Crosshair, ExternalLink } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Clock, Crosshair } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import StakePieChart from "./StakePieChart";
+import BuyStakeDrawer from "./BuyStakeDrawer";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface SessionData {
   id: string;
@@ -24,73 +26,110 @@ const statusStyles: Record<string, string> = {
 };
 
 export default function SessionCard({ session }: { session: SessionData }) {
-  const stakePercent = (session.stakeSold / session.stakeAvailable) * 100;
-  const maxStake = session.totalBuyIn * 0.75;
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [pendingAmount, setPendingAmount] = useState(0);
+  const [confirmedAmount, setConfirmedAmount] = useState(0);
+
+  const fetchStakes = async () => {
+    const { data } = await supabase
+      .from("stakes")
+      .select("amount, deposit_confirmed")
+      .eq("session_id", session.id);
+
+    if (data) {
+      const pending = data.filter((s) => !s.deposit_confirmed).reduce((sum, s) => sum + Number(s.amount), 0);
+      const confirmed = data.filter((s) => s.deposit_confirmed).reduce((sum, s) => sum + Number(s.amount), 0);
+      setPendingAmount(pending);
+      setConfirmedAmount(confirmed);
+    }
+  };
+
+  useEffect(() => {
+    fetchStakes();
+  }, [session.id]);
+
+  const available = Math.max(0, session.stakeAvailable - pendingAmount - confirmedAmount);
 
   return (
-    <div className="gradient-card rounded-lg p-4 hover:border-primary/30 transition-all group">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-            <Crosshair className="h-4 w-4 text-primary" />
+    <>
+      <div className="gradient-card rounded-lg p-4 hover:border-primary/30 transition-all group">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+              <Crosshair className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-display font-bold text-foreground text-base leading-tight">
+                {session.shooterName}
+              </h3>
+              <p className="text-xs text-muted-foreground">{session.platform}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {session.streamUrl && (
+              <span className="flex items-center gap-1 text-xs text-live animate-pulse-glow rounded px-1.5 py-0.5 bg-live/10">
+                <span className="h-1.5 w-1.5 rounded-full bg-live"></span>
+                LIVE
+              </span>
+            )}
+            <Badge variant="outline" className={statusStyles[session.status]}>
+              {session.status.toUpperCase()}
+            </Badge>
+          </div>
+        </div>
+
+        {/* Details */}
+        <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
+          <div>
+            <span className="text-muted-foreground text-xs">Agent/Room</span>
+            <p className="text-foreground font-medium">{session.agentRoom}</p>
           </div>
           <div>
-            <h3 className="font-display font-bold text-foreground text-base leading-tight">
-              {session.shooterName}
-            </h3>
-            <p className="text-xs text-muted-foreground">{session.platform}</p>
+            <span className="text-muted-foreground text-xs">Buy-In</span>
+            <p className="text-accent font-display font-bold text-lg">${session.totalBuyIn.toLocaleString()}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {session.streamUrl && (
-            <span className="flex items-center gap-1 text-xs text-live animate-pulse-glow rounded px-1.5 py-0.5 bg-live/10">
-              <span className="h-1.5 w-1.5 rounded-full bg-live"></span>
-              LIVE
-            </span>
+
+        {/* Pie Chart */}
+        <StakePieChart
+          available={available}
+          pending={pendingAmount}
+          sold={confirmedAmount}
+          onClickAvailable={() => available > 0 && setDrawerOpen(true)}
+        />
+
+        {/* Footer */}
+        <div className="flex items-center justify-between mt-3">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Clock className="h-3.5 w-3.5" />
+            <span>Ends: {session.endTime}</span>
+          </div>
+          {available > 0 && (
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="text-xs font-display font-bold text-primary hover:text-primary/80 transition-colors"
+            >
+              TAP GREEN TO BUY →
+            </button>
           )}
-          <Badge variant="outline" className={statusStyles[session.status]}>
-            {session.status.toUpperCase()}
-          </Badge>
         </div>
       </div>
 
-      {/* Details */}
-      <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
-        <div>
-          <span className="text-muted-foreground text-xs">Agent/Room</span>
-          <p className="text-foreground font-medium">{session.agentRoom}</p>
-        </div>
-        <div>
-          <span className="text-muted-foreground text-xs">Buy-In</span>
-          <p className="text-accent font-display font-bold text-lg">${session.totalBuyIn.toLocaleString()}</p>
-        </div>
-      </div>
-
-      {/* Stake progress */}
-      <div className="mb-3">
-        <div className="flex justify-between text-xs mb-1">
-          <span className="text-muted-foreground">
-            Stake: ${session.stakeSold.toLocaleString()} / ${session.stakeAvailable.toLocaleString()}
-          </span>
-          <span className="text-primary font-semibold">{Math.round(stakePercent)}%</span>
-        </div>
-        <Progress value={stakePercent} className="h-2 bg-secondary" />
-        <p className="text-xs text-muted-foreground mt-1">
-          Max stake: ${maxStake.toLocaleString()} (75% of buy-in)
-        </p>
-      </div>
-
-      {/* Footer */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <Clock className="h-3.5 w-3.5" />
-          <span>Ends: {session.endTime}</span>
-        </div>
-        <Button size="sm" className="gradient-primary text-primary-foreground font-display font-bold text-xs">
-          BUY STAKE
-        </Button>
-      </div>
-    </div>
+      <BuyStakeDrawer
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        session={{
+          id: session.id,
+          shooterName: session.shooterName,
+          platform: session.platform,
+          stakeAvailable: session.stakeAvailable,
+          stakeSold: confirmedAmount,
+          pendingAmount,
+          totalBuyIn: session.totalBuyIn,
+        }}
+        onPurchased={fetchStakes}
+      />
+    </>
   );
 }
