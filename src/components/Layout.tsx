@@ -2,18 +2,17 @@ import { ReactNode, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Crosshair, Home, Plus, User, Shield, Menu, X, LogOut, LogIn } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
 
 export default function Layout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, isAdmin, signOut, loading } = useAuth();
+  const { user, isAdmin, isSeller, signOut } = useAuth();
 
   const navItems = [
     { to: "/", label: "Dashboard", icon: Home, show: true },
     { to: "/sessions", label: "Sessions", icon: Crosshair, show: true },
-    { to: "/create", label: "Create", icon: Plus, show: !!user },
+    { to: "/create", label: "Create", icon: Plus, show: isSeller },
     { to: "/profile", label: "Profile", icon: User, show: !!user },
     { to: "/admin", label: "Admin", icon: Shield, show: isAdmin },
   ].filter((i) => i.show);

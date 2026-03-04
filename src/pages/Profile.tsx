@@ -1,13 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/hooks/useAuth";
-import { User, Trophy, DollarSign, TrendingUp, Shield, Crosshair } from "lucide-react";
+import { User, Trophy, DollarSign, TrendingUp, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
+import BecomeSeller from "@/components/BecomeSeller";
+import PaymentSettings from "@/components/PaymentSettings";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Link } from "react-router-dom";
 
 export default function Profile() {
-  const { user, isAdmin, isShooter, isBacker, loading } = useAuth();
+  const { user, isAdmin, isSeller, sellerStatus, username, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,23 +22,24 @@ export default function Profile() {
 
   return (
     <Layout>
-      <div className="container py-8 pb-24 md:pb-8 max-w-lg mx-auto">
+      <div className="container py-8 pb-24 md:pb-8 max-w-2xl mx-auto space-y-6">
+        {/* Profile Header */}
         <div className="gradient-card rounded-lg p-6 text-center">
           <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
             <User className="h-8 w-8 text-primary" />
           </div>
-          <h1 className="font-display text-2xl font-bold text-foreground mb-1">
+          <h1 className="font-display text-2xl font-bold text-foreground mb-0.5">
             {user.user_metadata?.display_name || user.email?.split("@")[0]}
           </h1>
-          <p className="text-muted-foreground text-sm mb-3">{user.email}</p>
+          {username && <p className="text-primary text-sm font-medium mb-1">@{username}</p>}
+          <p className="text-muted-foreground text-xs mb-3">{user.email}</p>
 
-          <div className="flex justify-center gap-2 mb-6">
+          <div className="flex justify-center gap-2 mb-4">
             {isAdmin && <Badge className="bg-accent/20 text-accent border-accent/30">Admin</Badge>}
-            {isShooter && <Badge className="bg-primary/20 text-primary border-primary/30">Shooter</Badge>}
-            {isBacker && <Badge className="bg-success/20 text-success border-success/30">Backer</Badge>}
+            <BecomeSeller />
           </div>
 
-          <div className="grid grid-cols-3 gap-3 mb-6">
+          <div className="grid grid-cols-3 gap-3">
             <div className="bg-secondary rounded-md p-3">
               <Trophy className="h-4 w-4 text-accent mx-auto mb-1" />
               <p className="text-lg font-display font-bold text-foreground">0</p>
@@ -46,12 +51,48 @@ export default function Profile() {
               <p className="text-xs text-muted-foreground">Staked</p>
             </div>
             <div className="bg-secondary rounded-md p-3">
-              <TrendingUp className="h-4 w-4 text-success mx-auto mb-1" />
+              <TrendingUp className="h-4 w-4 text-accent mx-auto mb-1" />
               <p className="text-lg font-display font-bold text-foreground">0%</p>
               <p className="text-xs text-muted-foreground">ROI</p>
             </div>
           </div>
         </div>
+
+        {/* Tabs */}
+        <Tabs defaultValue={isSeller ? "sessions" : "stakes"} className="w-full">
+          <TabsList className="w-full bg-secondary">
+            {isSeller && <TabsTrigger value="sessions" className="flex-1 font-display">My Sessions</TabsTrigger>}
+            <TabsTrigger value="stakes" className="flex-1 font-display">My Stakes</TabsTrigger>
+            <TabsTrigger value="payments" className="flex-1 font-display">Payments</TabsTrigger>
+          </TabsList>
+
+          {isSeller && (
+            <TabsContent value="sessions" className="space-y-4 mt-4">
+              <div className="flex justify-between items-center">
+                <h2 className="font-display text-lg font-bold text-foreground">Your Sessions</h2>
+                <Link to="/create">
+                  <Button size="sm" className="gradient-primary text-primary-foreground font-display font-bold text-xs">
+                    <Plus className="h-4 w-4 mr-1" /> Create Session
+                  </Button>
+                </Link>
+              </div>
+              <div className="gradient-card rounded-lg p-6 text-center">
+                <p className="text-muted-foreground text-sm">No sessions yet. Create your first one!</p>
+              </div>
+            </TabsContent>
+          )}
+
+          <TabsContent value="stakes" className="space-y-4 mt-4">
+            <h2 className="font-display text-lg font-bold text-foreground">Staked Sessions</h2>
+            <div className="gradient-card rounded-lg p-6 text-center">
+              <p className="text-muted-foreground text-sm">No stakes yet. Browse sessions to get started!</p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="payments" className="mt-4">
+            <PaymentSettings />
+          </TabsContent>
+        </Tabs>
       </div>
     </Layout>
   );
