@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      payment_profiles: {
+        Row: {
+          btc_address: string | null
+          btc_lightning: string | null
+          cashapp_tag: string | null
+          chime_handle: string | null
+          created_at: string | null
+          id: string
+          updated_at: string | null
+          user_id: string
+          venmo_username: string | null
+        }
+        Insert: {
+          btc_address?: string | null
+          btc_lightning?: string | null
+          cashapp_tag?: string | null
+          chime_handle?: string | null
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id: string
+          venmo_username?: string | null
+        }
+        Update: {
+          btc_address?: string | null
+          btc_lightning?: string | null
+          cashapp_tag?: string | null
+          chime_handle?: string | null
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+          venmo_username?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -22,10 +58,12 @@ export type Database = {
           display_name: string
           email: string | null
           id: string
+          seller_status: string
           total_staked: number | null
           total_wins: number | null
           updated_at: string | null
           user_id: string
+          username: string
           verified: boolean | null
           win_rate: number | null
         }
@@ -36,10 +74,12 @@ export type Database = {
           display_name: string
           email?: string | null
           id?: string
+          seller_status?: string
           total_staked?: number | null
           total_wins?: number | null
           updated_at?: string | null
           user_id: string
+          username: string
           verified?: boolean | null
           win_rate?: number | null
         }
@@ -50,12 +90,41 @@ export type Database = {
           display_name?: string
           email?: string | null
           id?: string
+          seller_status?: string
           total_staked?: number | null
           total_wins?: number | null
           updated_at?: string | null
           user_id?: string
+          username?: string
           verified?: boolean | null
           win_rate?: number | null
+        }
+        Relationships: []
+      }
+      seller_requests: {
+        Row: {
+          admin_notes: string | null
+          created_at: string | null
+          id: string
+          reviewed_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string | null
+          id?: string
+          reviewed_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string | null
+          id?: string
+          reviewed_at?: string | null
+          status?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -233,7 +302,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "shooter" | "backer"
+      app_role: "admin" | "shooter" | "backer" | "seller"
       session_status:
         | "pending"
         | "funding"
@@ -368,7 +437,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "shooter", "backer"],
+      app_role: ["admin", "shooter", "backer", "seller"],
       session_status: [
         "pending",
         "funding",

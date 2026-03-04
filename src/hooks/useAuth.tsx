@@ -8,8 +8,9 @@ interface AuthContextType {
   loading: boolean;
   userRoles: string[];
   isAdmin: boolean;
-  isShooter: boolean;
-  isBacker: boolean;
+  isSeller: boolean;
+  sellerStatus: string;
+  username: string | null;
   signOut: () => Promise<void>;
 }
 
@@ -19,8 +20,9 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   userRoles: [],
   isAdmin: false,
-  isShooter: false,
-  isBacker: false,
+  isSeller: false,
+  sellerStatus: "none",
+  username: null,
   signOut: async () => {},
 });
 
@@ -31,6 +33,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [userRoles, setUserRoles] = useState<string[]>([]);
+  const [sellerStatus, setSellerStatus] = useState("none");
+  const [username, setUsername] = useState<string | null>(null);
 
   const fetchRoles = async (userId: string) => {
     const { data } = await supabase
@@ -40,15 +44,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUserRoles(data?.map((r) => r.role) || []);
   };
 
+  const fetchProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("seller_status, username")
+      .eq("user_id", userId)
+      .single();
+    if (data) {
+      setSellerStatus(data.seller_status || "none");
+      setUsername(data.username || null);
+    }
+  };
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          setTimeout(() => fetchRoles(session.user.id), 0);
+          setTimeout(() => {
+            fetchRoles(session.user.id);
+            fetchProfile(session.user.id);
+          }, 0);
         } else {
           setUserRoles([]);
+          setSellerStatus("none");
+          setUsername(null);
         }
         setLoading(false);
       }
@@ -59,6 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchRoles(session.user.id);
+        fetchProfile(session.user.id);
       }
       setLoading(false);
     });
@@ -78,8 +100,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         userRoles,
         isAdmin: userRoles.includes("admin"),
-        isShooter: userRoles.includes("shooter"),
-        isBacker: userRoles.includes("backer"),
+        isSeller: userRoles.includes("seller") || sellerStatus === "active",
+        sellerStatus,
+        username,
         signOut,
       }}
     >
