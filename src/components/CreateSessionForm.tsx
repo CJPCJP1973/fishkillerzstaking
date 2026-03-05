@@ -5,6 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Crosshair } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const platforms = [
   "Golden Dragon",
@@ -16,12 +18,15 @@ const platforms = [
 ];
 
 export default function CreateSessionForm() {
-  const [shooterName, setShooterName] = useState("");
+  const { user, username } = useAuth();
+  const [shooterName, setShooterName] = useState(username || "");
   const [platform, setPlatform] = useState("");
   const [agentRoom, setAgentRoom] = useState("");
   const [totalBuyIn, setTotalBuyIn] = useState("");
   const [stakePercent, setStakePercent] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [streamUrl, setStreamUrl] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const buyInNum = parseFloat(totalBuyIn) || 0;
   const percentNum = parseFloat(stakePercent) || 0;
@@ -29,7 +34,7 @@ export default function CreateSessionForm() {
   const stakeAmount = buyInNum * (Math.min(percentNum, maxPercent) / 100);
   const isOverLimit = percentNum > maxPercent;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isOverLimit) {
       toast.error("Maximum stake is 75%. You must keep 25% skin-in-the-game!");
@@ -39,14 +44,39 @@ export default function CreateSessionForm() {
       toast.error("Please fill in all fields");
       return;
     }
-    toast.success("Session created! Waiting for backers...");
-    // Reset
-    setShooterName("");
-    setPlatform("");
-    setAgentRoom("");
-    setTotalBuyIn("");
-    setStakePercent("");
-    setEndTime("");
+    if (!user) {
+      toast.error("You must be signed in");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.from("sessions").insert({
+        shooter_id: user.id,
+        shooter_name: shooterName,
+        platform,
+        agent_room: agentRoom,
+        total_buy_in: buyInNum,
+        stake_available: stakeAmount,
+        end_time: new Date(endTime).toISOString(),
+        stream_url: streamUrl || null,
+        status: "funding",
+      });
+
+      if (error) throw error;
+
+      toast.success("Session created! Waiting for backers...");
+      setShooterName(username || "");
+      setPlatform("");
+      setAgentRoom("");
+      setTotalBuyIn("");
+      setStakePercent("");
+      setEndTime("");
+      setStreamUrl("");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to create session");
+    }
+    setSubmitting(false);
   };
 
   return (
@@ -120,7 +150,6 @@ export default function CreateSessionForm() {
           </div>
         </div>
 
-        {/* 75% Rule indicator */}
         <div className={`rounded-md p-3 text-xs ${isOverLimit ? "bg-destructive/10 border border-destructive/30" : "bg-primary/5 border border-primary/20"}`}>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Max Stake (75% Rule)</span>
@@ -147,14 +176,24 @@ export default function CreateSessionForm() {
             className="bg-secondary border-border text-foreground"
           />
         </div>
+
+        <div>
+          <Label className="text-sm text-muted-foreground">Stream URL (optional)</Label>
+          <Input
+            value={streamUrl}
+            onChange={(e) => setStreamUrl(e.target.value)}
+            placeholder="https://kick.com/yourstream"
+            className="bg-secondary border-border text-foreground"
+          />
+        </div>
       </div>
 
       <Button
         type="submit"
-        disabled={isOverLimit}
+        disabled={isOverLimit || submitting}
         className="w-full gradient-primary text-primary-foreground font-display font-bold text-base py-5"
       >
-        🎯 LAUNCH SESSION
+        {submitting ? "Creating..." : "🎯 LAUNCH SESSION"}
       </Button>
     </form>
   );

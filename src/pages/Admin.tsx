@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { Shield, CheckCircle, DollarSign, UserCheck, XCircle } from "lucide-react";
+import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 
 interface SellerRequest {
   id: string;
@@ -25,9 +26,22 @@ interface PendingStake {
   session_info?: { shooter_name: string; platform: string } | null;
 }
 
+interface SessionRow {
+  id: string;
+  shooter_name: string;
+  platform: string;
+  total_buy_in: number;
+  stake_available: number;
+  stake_sold: number;
+  status: string;
+  end_time: string;
+  created_at: string;
+}
+
 export default function Admin() {
   const [requests, setRequests] = useState<SellerRequest[]>([]);
   const [stakes, setStakes] = useState<PendingStake[]>([]);
+  const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
   const fetchRequests = async () => {
@@ -61,7 +75,7 @@ export default function Admin() {
     const backerIds = [...new Set(data.map((s: any) => s.backer_id))];
     const sessionIds = [...new Set(data.map((s: any) => s.session_id))];
 
-    const [{ data: profiles }, { data: sessions }] = await Promise.all([
+    const [{ data: profiles }, { data: sessionsData }] = await Promise.all([
       supabase.from("profiles").select("user_id, display_name, username").in("user_id", backerIds),
       supabase.from("sessions").select("id, shooter_name, platform").in("id", sessionIds),
     ]);
@@ -69,16 +83,26 @@ export default function Admin() {
     setStakes(data.map((s: any) => ({
       ...s,
       backer_profile: profiles?.find((p) => p.user_id === s.backer_id) || null,
-      session_info: sessions?.find((sess) => sess.id === s.session_id) || null,
+      session_info: sessionsData?.find((sess) => sess.id === s.session_id) || null,
     })));
+  };
+
+  const fetchSessions = async () => {
+    const { data } = await supabase
+      .from("sessions")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (data) setSessions(data as any);
   };
 
   useEffect(() => {
     fetchRequests();
     fetchPendingStakes();
+    fetchSessions();
   }, []);
 
   const handleSellerAction = async (request: SellerRequest, action: "approved" | "rejected") => {
+    if (loadingId) return;
     setLoadingId(request.id);
     try {
       await supabase.from("seller_requests").update({ status: action, reviewed_at: new Date().toISOString() } as any).eq("id", request.id);
@@ -92,17 +116,17 @@ export default function Admin() {
       toast.success(`Seller request ${action}`);
       fetchRequests();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message || "Action failed");
     }
     setLoadingId(null);
   };
 
   const handleStakeAction = async (stake: PendingStake, action: "confirm" | "reject") => {
+    if (loadingId) return;
     setLoadingId(stake.id);
     try {
       if (action === "confirm") {
         await supabase.from("stakes").update({ deposit_confirmed: true } as any).eq("id", stake.id);
-        // Update session stake_sold
         const { data: sessionData } = await supabase.from("sessions").select("stake_sold").eq("id", stake.session_id).single();
         const newSold = (Number(sessionData?.stake_sold) || 0) + Number(stake.amount);
         await supabase.from("sessions").update({ stake_sold: newSold } as any).eq("id", stake.session_id);
@@ -113,9 +137,34 @@ export default function Admin() {
       }
       fetchPendingStakes();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message || "Action failed");
     }
     setLoadingId(null);
+  };
+
+  const handleDeleteSession = async (session: SessionRow) => {
+    if (loadingId) return;
+    const confirmed = window.confirm(`Delete session "${session.shooter_name} — ${session.platform}"? This will also remove all associated stakes.`);
+    if (!confirmed) return;
+    setLoadingId(session.id);
+    try {
+      // Delete associated stakes first
+      await supabase.from("stakes").delete().eq("session_id", session.id);
+      const { error } = await supabase.from("sessions").delete().eq("id", session.id);
+      if (error) throw error;
+      toast.success("Session deleted");
+      fetchSessions();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete session");
+    }
+    setLoadingId(null);
+  };
+
+  const statusColor: Record<string, string> = {
+    live: "bg-live/20 text-live border-live/30",
+    funding: "bg-primary/20 text-primary border-primary/30",
+    completed: "bg-success/20 text-success border-success/30",
+    pending: "bg-accent/20 text-accent border-accent/30",
   };
 
   return (
@@ -136,6 +185,9 @@ export default function Admin() {
             </TabsTrigger>
             <TabsTrigger value="sellers" className="font-display">
               Pending Sellers ({requests.length})
+            </TabsTrigger>
+            <TabsTrigger value="sessions" className="font-display">
+              Sessions ({sessions.length})
             </TabsTrigger>
           </TabsList>
 
@@ -220,6 +272,50 @@ export default function Admin() {
                     </Button>
                     <Button size="sm" disabled={loadingId === req.id} onClick={() => handleSellerAction(req, "approved")} className="gradient-primary text-primary-foreground font-display font-bold text-xs">
                       <CheckCircle className="h-3 w-3 mr-1" /> Approve
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </TabsContent>
+
+          <TabsContent value="sessions" className="space-y-3 mt-4">
+            <h2 className="font-display text-lg font-bold text-foreground">All Sessions</h2>
+            {sessions.length === 0 ? (
+              <div className="gradient-card rounded-lg p-6 text-center">
+                <p className="text-muted-foreground text-sm">No sessions yet.</p>
+              </div>
+            ) : (
+              sessions.map((s) => (
+                <div key={s.id} className="gradient-card rounded-lg p-4 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="p-2 rounded-md bg-primary/20 shrink-0">
+                      <Crosshair className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {s.shooter_name} — {s.platform}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        ${Number(s.total_buy_in).toLocaleString()} buy-in • ${Number(s.stake_sold || 0).toLocaleString()} sold
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Ends: {new Date(s.end_time).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Badge variant="outline" className={statusColor[s.status] || "bg-secondary text-muted-foreground"}>
+                      {(s.status || "pending").toUpperCase()}
+                    </Badge>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={loadingId === s.id}
+                      onClick={() => handleDeleteSession(s)}
+                      className="text-destructive border-destructive/30 text-xs"
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" /> Delete
                     </Button>
                   </div>
                 </div>
