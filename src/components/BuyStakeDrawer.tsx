@@ -137,23 +137,15 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
             <ul className="text-sm text-foreground space-y-1.5">
               <li className="flex justify-between">
                 <span className="text-muted-foreground">CashApp</span>
-                <span className="text-primary font-medium">$FishKillerzAdmin</span>
-              </li>
-              <li className="flex justify-between">
-                <span className="text-muted-foreground">Venmo</span>
-                <span className="text-primary font-medium">@FishKillerzAdmin</span>
+                <span className="text-primary font-medium">$unclehomie75</span>
               </li>
               <li className="flex justify-between">
                 <span className="text-muted-foreground">Chime</span>
-                <span className="text-primary font-medium">FishKillerzAdmin</span>
+                <span className="text-primary font-medium">$Christopher-Preston-57</span>
               </li>
-              <li className="flex justify-between">
-                <span className="text-muted-foreground">BTC Wallet</span>
-                <span className="text-primary font-medium text-xs break-all">bc1qFishKillerzBTC</span>
-              </li>
-              <li className="flex justify-between">
+              <li className="flex flex-col gap-1">
                 <span className="text-muted-foreground">BTC Lightning</span>
-                <span className="text-primary font-medium text-xs break-all">lnbc1FishKillerz</span>
+                <span className="text-primary font-medium text-[10px] break-all leading-tight">lnbc1p56n7qwdqdgdshx6pqg9c8qpp56a7vzmdycc623vrv9epn4neyhukmd40g3lanh6g3nrcxeygwandssp5rcvscch4c3prl9tnqtpvwhh0wdkdnrra2tw84wkuqvtalz2lkk7s9qrsgqcqpcxqy8ayqrzjqfrjnu747au57n0sn07m0j3r5na7dsufjlxayy7xjj3vegwz0ja3wzygxyqqxrcqqyqqqqqqqqqqqqqq9grzjqfzhphca8jlc5zznw52mnqxsnymltjgg3lxe4ul82g42vw0jpkgkwzl4v5qqgucqquqqqqqqqqqqqqqq9grcp0zy9rwe6vfmgqjt8089c4nya3226wq0782nk7nvd5mt96v63nfumays3jy3krz6lxp4vzzumyvfpxfydf49h9hgx0caz8uw82emqq64snp</span>
               </li>
             </ul>
           </div>

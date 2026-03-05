@@ -74,9 +74,8 @@ export default function BecomeSeller() {
             </div>
             <p className="text-xs text-muted-foreground">Send payment to one of these:</p>
             <ul className="text-sm text-foreground space-y-1">
-              <li>CashApp: <span className="text-primary font-medium">$FishKillerzAdmin</span></li>
-              <li>Venmo: <span className="text-primary font-medium">@FishKillerzAdmin</span></li>
-              <li>Chime: <span className="text-primary font-medium">FishKillerzAdmin</span></li>
+              <li>CashApp: <span className="text-primary font-medium">$unclehomie75</span></li>
+              <li>Chime: <span className="text-primary font-medium">$Christopher-Preston-57</span></li>
             </ul>
           </div>
           <p className="text-xs text-muted-foreground">
