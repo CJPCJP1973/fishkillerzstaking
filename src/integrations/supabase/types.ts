@@ -50,6 +50,60 @@ export type Database = {
         }
         Relationships: []
       }
+      payouts: {
+        Row: {
+          amount_owed: number
+          backer_cashtag: string | null
+          backer_id: string
+          backer_name: string | null
+          created_at: string | null
+          id: string
+          session_id: string
+          stake_id: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount_owed?: number
+          backer_cashtag?: string | null
+          backer_id: string
+          backer_name?: string | null
+          created_at?: string | null
+          id?: string
+          session_id: string
+          stake_id: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount_owed?: number
+          backer_cashtag?: string | null
+          backer_id?: string
+          backer_name?: string | null
+          created_at?: string | null
+          id?: string
+          session_id?: string
+          stake_id?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payouts_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payouts_stake_id_fkey"
+            columns: ["stake_id"]
+            isOneToOne: false
+            referencedRelation: "stakes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
