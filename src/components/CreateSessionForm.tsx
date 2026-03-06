@@ -43,7 +43,7 @@ export default function CreateSessionForm() {
       toast.error("Maximum stake is 75%. You must keep 25% skin-in-the-game!");
       return;
     }
-    if (!shooterName || !platform || !agentRoom || !totalBuyIn || !stakePercent || !endTime) {
+    if (!shooterName || !platform || !agentRoom || !totalBuyIn || !stakePercent || !sharePrice || !endTime) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -61,10 +61,11 @@ export default function CreateSessionForm() {
         agent_room: agentRoom,
         total_buy_in: buyInNum,
         stake_available: stakeAmount,
+        share_price: sharePriceNum,
         end_time: new Date(endTime).toISOString(),
         stream_url: streamUrl || null,
         status: "funding",
-      });
+      } as any);
 
       if (error) throw error;
 
@@ -74,6 +75,7 @@ export default function CreateSessionForm() {
       setAgentRoom("");
       setTotalBuyIn("");
       setStakePercent("");
+      setSharePrice("");
       setEndTime("");
       setStreamUrl("");
     } catch (err: any) {
