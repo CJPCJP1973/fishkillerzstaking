@@ -25,14 +25,17 @@ export default function CreateSessionForm() {
   const [totalBuyIn, setTotalBuyIn] = useState("");
   const [stakePercent, setStakePercent] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [sharePrice, setSharePrice] = useState("");
   const [streamUrl, setStreamUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const buyInNum = parseFloat(totalBuyIn) || 0;
   const percentNum = parseFloat(stakePercent) || 0;
+  const sharePriceNum = parseFloat(sharePrice) || 0;
   const maxPercent = 75;
   const stakeAmount = buyInNum * (Math.min(percentNum, maxPercent) / 100);
   const isOverLimit = percentNum > maxPercent;
+  const sharesAvailable = sharePriceNum > 0 ? Math.floor(stakeAmount / sharePriceNum) : 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +43,7 @@ export default function CreateSessionForm() {
       toast.error("Maximum stake is 75%. You must keep 25% skin-in-the-game!");
       return;
     }
-    if (!shooterName || !platform || !agentRoom || !totalBuyIn || !stakePercent || !endTime) {
+    if (!shooterName || !platform || !agentRoom || !totalBuyIn || !stakePercent || !sharePrice || !endTime) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -58,10 +61,11 @@ export default function CreateSessionForm() {
         agent_room: agentRoom,
         total_buy_in: buyInNum,
         stake_available: stakeAmount,
+        share_price: sharePriceNum,
         end_time: new Date(endTime).toISOString(),
         stream_url: streamUrl || null,
         status: "funding",
-      });
+      } as any);
 
       if (error) throw error;
 
@@ -71,6 +75,7 @@ export default function CreateSessionForm() {
       setAgentRoom("");
       setTotalBuyIn("");
       setStakePercent("");
+      setSharePrice("");
       setEndTime("");
       setStreamUrl("");
     } catch (err: any) {
@@ -150,6 +155,19 @@ export default function CreateSessionForm() {
           </div>
         </div>
 
+        {/* Share Price */}
+        <div>
+          <Label className="text-sm text-muted-foreground">Share Price ($)</Label>
+          <Input
+            type="number"
+            value={sharePrice}
+            onChange={(e) => setSharePrice(e.target.value)}
+            placeholder="e.g. 25"
+            className="bg-secondary border-border text-foreground"
+            min={1}
+          />
+        </div>
+
         <div className={`rounded-md p-3 text-xs ${isOverLimit ? "bg-destructive/10 border border-destructive/30" : "bg-primary/5 border border-primary/20"}`}>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Max Stake (75% Rule)</span>
@@ -165,6 +183,16 @@ export default function CreateSessionForm() {
               Your Skin: {buyInNum > 0 ? (100 - Math.min(percentNum, 100)).toFixed(0) : "—"}%
             </span>
           </div>
+          {sharesAvailable > 0 && (
+            <div className="flex justify-between mt-1">
+              <span className="text-foreground font-medium">
+                Shares: <span className="text-primary font-display font-bold">{sharesAvailable}</span>
+              </span>
+              <span className="text-muted-foreground">
+                @ ${sharePriceNum} each
+              </span>
+            </div>
+          )}
         </div>
 
         <div>

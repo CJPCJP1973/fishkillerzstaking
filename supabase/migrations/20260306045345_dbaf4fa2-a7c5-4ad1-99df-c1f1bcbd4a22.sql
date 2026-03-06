@@ -1,0 +1,1 @@
+ALTER TABLE public.sessions ADD COLUMN share_price numeric NOT NULL DEFAULT 50;

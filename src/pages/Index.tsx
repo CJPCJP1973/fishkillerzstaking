@@ -1,4 +1,5 @@
-import { Crosshair, ArrowRight, Waves } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Crosshair, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
@@ -7,58 +8,45 @@ import StatsBar from "@/components/StatsBar";
 import SessionCard, { SessionData } from "@/components/SessionCard";
 import PlatformBadge from "@/components/PlatformBadge";
 import heroBg from "@/assets/hero-bg.png";
-
-const mockSessions: SessionData[] = [
-  {
-    id: "1",
-    shooterName: "AceHunter99",
-    platform: "Golden Dragon",
-    agentRoom: "VIP Room #7",
-    totalBuyIn: 1000,
-    stakeAvailable: 750,
-    stakeSold: 450,
-    endTime: "Tonight 11PM",
-    status: "live",
-    streamUrl: "https://kick.com/acehunter",
-  },
-  {
-    id: "2",
-    shooterName: "DeepSeaKing",
-    platform: "Fire Phoenix",
-    agentRoom: "Agent Mike",
-    totalBuyIn: 2000,
-    stakeAvailable: 1500,
-    stakeSold: 600,
-    endTime: "Tomorrow 2AM",
-    status: "funding",
-  },
-  {
-    id: "3",
-    shooterName: "SharkBite",
-    platform: "Vblink",
-    agentRoom: "Lobby A",
-    totalBuyIn: 500,
-    stakeAvailable: 375,
-    stakeSold: 375,
-    endTime: "Tonight 9PM",
-    status: "completed",
-  },
-  {
-    id: "4",
-    shooterName: "ReefRunner",
-    platform: "Diamond Dragon",
-    agentRoom: "Room 12",
-    totalBuyIn: 1500,
-    stakeAvailable: 1125,
-    stakeSold: 200,
-    endTime: "Tonight 10PM",
-    status: "pending",
-  },
-];
+import { supabase } from "@/integrations/supabase/client";
 
 const featuredPlatforms = ["Golden Dragon", "Diamond Dragon", "Fire Phoenix", "Vblink", "Riversweeps", "Magic City"];
 
 export default function Index() {
+  const [sessions, setSessions] = useState<SessionData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSessions = async () => {
+      const { data } = await supabase
+        .from("sessions")
+        .select("*")
+        .in("status", ["funding", "live", "pending"])
+        .order("created_at", { ascending: false })
+        .limit(6);
+
+      if (data) {
+        setSessions(
+          data.map((s) => ({
+            id: s.id,
+            shooterName: s.shooter_name,
+            platform: s.platform,
+            agentRoom: s.agent_room,
+            totalBuyIn: Number(s.total_buy_in),
+            stakeAvailable: Number(s.stake_available),
+            stakeSold: Number(s.stake_sold ?? 0),
+            sharePrice: Number((s as any).share_price ?? 50),
+            endTime: new Date(s.end_time).toLocaleString(),
+            status: (s.status ?? "pending") as SessionData["status"],
+            streamUrl: s.stream_url ?? undefined,
+          }))
+        );
+      }
+      setLoading(false);
+    };
+    fetchSessions();
+  }, []);
+
   return (
     <Layout>
       {/* Hero Section */}
@@ -122,11 +110,19 @@ export default function Index() {
               View All <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {mockSessions.map((session) => (
-              <SessionCard key={session.id} session={session} />
-            ))}
-          </div>
+          {loading ? (
+            <p className="text-muted-foreground">Loading sessions…</p>
+          ) : sessions.length === 0 ? (
+            <div className="gradient-card rounded-lg p-8 text-center">
+              <p className="text-muted-foreground">No active sessions yet. Be the first to create one!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {sessions.map((session) => (
+                <SessionCard key={session.id} session={session} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </Layout>

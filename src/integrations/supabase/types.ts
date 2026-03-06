@@ -138,6 +138,7 @@ export type Database = {
           id: string
           platform: string
           proof_url: string | null
+          share_price: number
           shooter_id: string
           shooter_name: string
           stake_available: number
@@ -157,6 +158,7 @@ export type Database = {
           id?: string
           platform: string
           proof_url?: string | null
+          share_price?: number
           shooter_id: string
           shooter_name: string
           stake_available: number
@@ -176,6 +178,7 @@ export type Database = {
           id?: string
           platform?: string
           proof_url?: string | null
+          share_price?: number
           shooter_id?: string
           shooter_name?: string
           stake_available?: number
