@@ -155,6 +155,19 @@ export default function CreateSessionForm() {
           </div>
         </div>
 
+        {/* Share Price */}
+        <div>
+          <Label className="text-sm text-muted-foreground">Share Price ($)</Label>
+          <Input
+            type="number"
+            value={sharePrice}
+            onChange={(e) => setSharePrice(e.target.value)}
+            placeholder="e.g. 25"
+            className="bg-secondary border-border text-foreground"
+            min={1}
+          />
+        </div>
+
         <div className={`rounded-md p-3 text-xs ${isOverLimit ? "bg-destructive/10 border border-destructive/30" : "bg-primary/5 border border-primary/20"}`}>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Max Stake (75% Rule)</span>
@@ -170,6 +183,16 @@ export default function CreateSessionForm() {
               Your Skin: {buyInNum > 0 ? (100 - Math.min(percentNum, 100)).toFixed(0) : "—"}%
             </span>
           </div>
+          {sharesAvailable > 0 && (
+            <div className="flex justify-between mt-1">
+              <span className="text-foreground font-medium">
+                Shares: <span className="text-primary font-display font-bold">{sharesAvailable}</span>
+              </span>
+              <span className="text-muted-foreground">
+                @ ${sharePriceNum} each
+              </span>
+            </div>
+          )}
         </div>
 
         <div>
