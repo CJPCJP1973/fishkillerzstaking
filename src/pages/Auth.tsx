@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Crosshair, Mail, Lock, User, ArrowRight, AtSign } from "lucide-react";
 
@@ -13,6 +14,7 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -29,7 +31,12 @@ export default function Auth() {
         navigate("/");
       }
     } else {
-      // Validate username
+      if (!agreedToTerms) {
+        toast.error("You must agree to the Terms of Service and Site Rules");
+        setLoading(false);
+        return;
+      }
+
       const trimmedUsername = username.trim().toLowerCase();
       if (!/^[a-z0-9_]{3,20}$/.test(trimmedUsername)) {
         toast.error("Username must be 3-20 characters (letters, numbers, underscores only)");
@@ -37,7 +44,6 @@ export default function Auth() {
         return;
       }
 
-      // Check uniqueness
       const { data: existing } = await supabase
         .from("profiles")
         .select("id")
@@ -148,9 +154,28 @@ export default function Auth() {
             </div>
           </div>
 
+          {/* Terms of Service checkbox — signup only */}
+          {!isLogin && (
+            <div className="flex items-start gap-2">
+              <Checkbox
+                id="terms"
+                checked={agreedToTerms}
+                onCheckedChange={(checked) => setAgreedToTerms(checked === true)}
+                className="mt-0.5 border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+              />
+              <label htmlFor="terms" className="text-xs text-muted-foreground leading-tight cursor-pointer">
+                I agree to the{" "}
+                <Link to="/terms" className="text-primary hover:underline">Terms of Service</Link>{" "}
+                and{" "}
+                <Link to="/rules" className="text-primary hover:underline">Site Rules</Link>.
+                I understand this is a staking platform and I am responsible for my own funds.
+              </label>
+            </div>
+          )}
+
           <Button
             type="submit"
-            disabled={loading}
+            disabled={loading || (!isLogin && !agreedToTerms)}
             className="w-full gradient-primary text-primary-foreground font-display font-bold text-base py-5"
           >
             {loading ? "Loading..." : isLogin ? "SIGN IN" : "CREATE ACCOUNT"}
@@ -160,7 +185,7 @@ export default function Auth() {
           <div className="text-center">
             <button
               type="button"
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => { setIsLogin(!isLogin); setAgreedToTerms(false); }}
               className="text-sm text-primary hover:underline"
             >
               {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
