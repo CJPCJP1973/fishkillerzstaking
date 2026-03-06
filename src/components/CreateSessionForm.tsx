@@ -25,14 +25,17 @@ export default function CreateSessionForm() {
   const [totalBuyIn, setTotalBuyIn] = useState("");
   const [stakePercent, setStakePercent] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [sharePrice, setSharePrice] = useState("");
   const [streamUrl, setStreamUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const buyInNum = parseFloat(totalBuyIn) || 0;
   const percentNum = parseFloat(stakePercent) || 0;
+  const sharePriceNum = parseFloat(sharePrice) || 0;
   const maxPercent = 75;
   const stakeAmount = buyInNum * (Math.min(percentNum, maxPercent) / 100);
   const isOverLimit = percentNum > maxPercent;
+  const sharesAvailable = sharePriceNum > 0 ? Math.floor(stakeAmount / sharePriceNum) : 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

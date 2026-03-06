@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Clock, Crosshair } from "lucide-react";
+import { Clock, Crosshair, DollarSign } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import StakePieChart from "./StakePieChart";
 import BuyStakeDrawer from "./BuyStakeDrawer";
@@ -13,6 +13,7 @@ export interface SessionData {
   totalBuyIn: number;
   stakeAvailable: number;
   stakeSold: number;
+  sharePrice: number;
   endTime: string;
   status: "live" | "funding" | "completed" | "pending";
   streamUrl?: string;
@@ -49,6 +50,7 @@ export default function SessionCard({ session }: { session: SessionData }) {
   }, [session.id]);
 
   const available = Math.max(0, session.stakeAvailable - pendingAmount - confirmedAmount);
+  const totalShares = session.sharePrice > 0 ? Math.floor(session.stakeAvailable / session.sharePrice) : 0;
 
   return (
     <>
@@ -80,7 +82,7 @@ export default function SessionCard({ session }: { session: SessionData }) {
         </div>
 
         {/* Details */}
-        <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
+        <div className="grid grid-cols-3 gap-2 mb-3 text-sm">
           <div>
             <span className="text-muted-foreground text-xs">Agent/Room</span>
             <p className="text-foreground font-medium">{session.agentRoom}</p>
@@ -89,6 +91,12 @@ export default function SessionCard({ session }: { session: SessionData }) {
             <span className="text-muted-foreground text-xs">Buy-In</span>
             <p className="text-accent font-display font-bold text-lg">${session.totalBuyIn.toLocaleString()}</p>
           </div>
+          <div>
+            <span className="text-muted-foreground text-xs">Share Price</span>
+            <p className="text-primary font-display font-bold text-lg flex items-center">
+              <DollarSign className="h-4 w-4" />{session.sharePrice}
+            </p>
+          </div>
         </div>
 
         {/* Pie Chart */}
@@ -96,6 +104,7 @@ export default function SessionCard({ session }: { session: SessionData }) {
           available={available}
           pending={pendingAmount}
           sold={confirmedAmount}
+          sharePrice={session.sharePrice}
           onClickAvailable={() => available > 0 && setDrawerOpen(true)}
         />
 

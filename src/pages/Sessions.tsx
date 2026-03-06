@@ -25,6 +25,7 @@ export default function Sessions() {
             totalBuyIn: Number(s.total_buy_in),
             stakeAvailable: Number(s.stake_available),
             stakeSold: Number(s.stake_sold ?? 0),
+            sharePrice: Number((s as any).share_price ?? 50),
             endTime: new Date(s.end_time).toLocaleString(),
             status: (s.status ?? "pending") as SessionData["status"],
             streamUrl: s.stream_url ?? undefined,
