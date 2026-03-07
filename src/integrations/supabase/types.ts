@@ -85,6 +85,7 @@ export type Database = {
           session_id: string
           stake_id: string
           status: string
+          transaction_reference: string | null
           updated_at: string | null
         }
         Insert: {
@@ -97,6 +98,7 @@ export type Database = {
           session_id: string
           stake_id: string
           status?: string
+          transaction_reference?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -109,6 +111,7 @@ export type Database = {
           session_id?: string
           stake_id?: string
           status?: string
+          transaction_reference?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -131,6 +134,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          balance: number
           bio: string | null
           created_at: string | null
           display_name: string
@@ -147,6 +151,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          balance?: number
           bio?: string | null
           created_at?: string | null
           display_name: string
@@ -163,6 +168,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          balance?: number
           bio?: string | null
           created_at?: string | null
           display_name?: string
@@ -333,6 +339,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          notes: string | null
+          payment_method: string | null
+          status: string
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          status?: string
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          status?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
