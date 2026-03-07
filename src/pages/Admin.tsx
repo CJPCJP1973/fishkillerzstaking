@@ -403,9 +403,10 @@ export default function Admin() {
 
   const handleMarkPaid = async (payout: PayoutRow) => {
     if (loadingId) return;
+    const ref = payoutRefs[payout.id]?.trim() || null;
     setLoadingId(payout.id);
     try {
-      await supabase.from("payouts").update({ status: "paid" } as any).eq("id", payout.id);
+      await supabase.from("payouts").update({ status: "paid", transaction_reference: ref } as any).eq("id", payout.id);
       await supabase.from("stakes").update({
         winnings_amount: payout.amount_owed,
         winnings_released: true,
@@ -414,6 +415,62 @@ export default function Admin() {
       fetchPayouts();
     } catch (err: any) {
       toast.error(err.message || "Failed to mark payout");
+    }
+    setLoadingId(null);
+  };
+
+  // Wallet: Approve deposit
+  const handleApproveDeposit = async (tx: WalletTransaction) => {
+    if (loadingId) return;
+    setLoadingId(tx.id);
+    try {
+      // Update transaction status
+      await supabase.from("transactions").update({ status: "confirmed" } as any).eq("id", tx.id);
+      // Add to user balance
+      const { data: profile } = await supabase.from("profiles").select("balance").eq("user_id", tx.user_id).single();
+      const newBalance = (Number((profile as any)?.balance) || 0) + Number(tx.amount);
+      await supabase.from("profiles").update({ balance: newBalance } as any).eq("user_id", tx.user_id);
+      toast.success(`Deposit of $${tx.amount} approved for ${tx.user_profile?.display_name}`);
+      fetchWalletTxns();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to approve deposit");
+    }
+    setLoadingId(null);
+  };
+
+  // Wallet: Approve withdrawal
+  const handleApproveWithdrawal = async (tx: WalletTransaction) => {
+    if (loadingId) return;
+    setLoadingId(tx.id);
+    try {
+      const { data: profile } = await supabase.from("profiles").select("balance").eq("user_id", tx.user_id).single();
+      const currentBalance = Number((profile as any)?.balance) || 0;
+      if (currentBalance < tx.amount) {
+        toast.error("User has insufficient balance");
+        setLoadingId(null);
+        return;
+      }
+      const newBalance = currentBalance - tx.amount;
+      await supabase.from("profiles").update({ balance: newBalance } as any).eq("user_id", tx.user_id);
+      await supabase.from("transactions").update({ status: "settled" } as any).eq("id", tx.id);
+      toast.success(`Withdrawal of $${tx.amount} settled for ${tx.user_profile?.display_name}`);
+      fetchWalletTxns();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to approve withdrawal");
+    }
+    setLoadingId(null);
+  };
+
+  // Wallet: Reject transaction
+  const handleRejectTransaction = async (tx: WalletTransaction) => {
+    if (loadingId) return;
+    setLoadingId(tx.id);
+    try {
+      await supabase.from("transactions").update({ status: "rejected" } as any).eq("id", tx.id);
+      toast.success(`Transaction rejected`);
+      fetchWalletTxns();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to reject");
     }
     setLoadingId(null);
   };
