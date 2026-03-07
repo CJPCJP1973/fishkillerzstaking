@@ -1,0 +1,219 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Camera, Loader2, Eye } from "lucide-react";
+
+interface Props {
+  sessionId: string;
+  startScreenshotUrl?: string | null;
+  endScreenshotUrl?: string | null;
+  ocrStartAmount?: number | null;
+  ocrEndAmount?: number | null;
+  ocrConfidence?: number | null;
+  onUpdate: () => void;
+}
+
+export default function ScreenshotComparison({
+  sessionId,
+  startScreenshotUrl,
+  endScreenshotUrl,
+  ocrStartAmount,
+  ocrEndAmount,
+  ocrConfidence,
+  onUpdate,
+}: Props) {
+  const [uploading, setUploading] = useState<"start" | "end" | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+
+  const handleUpload = async (type: "start" | "end", file: File) => {
+    setUploading(type);
+    try {
+      const path = `${sessionId}/${type}-${Date.now()}.${file.name.split(".").pop()}`;
+      const { error: uploadErr } = await supabase.storage
+        .from("session-screenshots")
+        .upload(path, file, { upsert: true });
+      if (uploadErr) throw uploadErr;
+
+      const { data: urlData } = supabase.storage
+        .from("session-screenshots")
+        .getPublicUrl(path);
+
+      const col = type === "start" ? "start_screenshot_url" : "end_screenshot_url";
+      await supabase.from("sessions").update({ [col]: urlData.publicUrl } as any).eq("id", sessionId);
+
+      toast.success(`${type === "start" ? "Start" : "End"} screenshot uploaded`);
+      onUpdate();
+    } catch (err: any) {
+      toast.error(err.message || "Upload failed");
+    }
+    setUploading(null);
+  };
+
+  const runOcr = async () => {
+    if (!startScreenshotUrl && !endScreenshotUrl) {
+      toast.error("Upload at least one screenshot first");
+      return;
+    }
+    setAnalyzing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-screenshot", {
+        body: {
+          start_screenshot_url: startScreenshotUrl,
+          end_screenshot_url: endScreenshotUrl,
+        },
+      });
+      if (error) throw error;
+
+      await supabase.from("sessions").update({
+        ocr_start_amount: data.start_amount,
+        ocr_end_amount: data.end_amount,
+        ocr_confidence: data.confidence,
+      } as any).eq("id", sessionId);
+
+      toast.success(`OCR complete — Confidence: ${data.confidence}%`);
+      onUpdate();
+    } catch (err: any) {
+      toast.error(err.message || "OCR analysis failed");
+    }
+    setAnalyzing(false);
+  };
+
+  const confidenceColor =
+    ocrConfidence == null
+      ? "text-muted-foreground"
+      : ocrConfidence >= 80
+      ? "text-success"
+      : ocrConfidence >= 50
+      ? "text-accent"
+      : "text-destructive";
+
+  return (
+    <div className="bg-secondary rounded-md p-3 space-y-3">
+      <div className="flex items-center justify-between">
+        <Label className="text-sm font-display font-bold text-foreground flex items-center gap-1.5">
+          <Eye className="h-4 w-4 text-primary" /> Screenshot Verification
+        </Label>
+        {ocrConfidence != null && (
+          <span className={`text-xs font-display font-bold ${confidenceColor}`}>
+            AI Confidence: {ocrConfidence}%
+          </span>
+        )}
+      </div>
+
+      {/* Side-by-side screenshots */}
+      <div className="grid grid-cols-2 gap-2">
+        {/* Start */}
+        <div className="space-y-1.5">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Start</p>
+          {startScreenshotUrl ? (
+            <img
+              src={startScreenshotUrl}
+              alt="Start screenshot"
+              className="rounded border border-border w-full aspect-video object-cover cursor-pointer"
+              onClick={() => window.open(startScreenshotUrl, "_blank")}
+            />
+          ) : (
+            <div className="rounded border border-dashed border-border aspect-video flex items-center justify-center bg-background/50">
+              <p className="text-[10px] text-muted-foreground">No image</p>
+            </div>
+          )}
+          {ocrStartAmount != null && (
+            <p className="text-xs text-foreground">
+              OCR Read: <span className="text-accent font-display font-bold">${ocrStartAmount.toLocaleString()}</span>
+            </p>
+          )}
+          <label className="cursor-pointer">
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => e.target.files?.[0] && handleUpload("start", e.target.files[0])}
+            />
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="w-full text-xs"
+              disabled={uploading === "start"}
+              asChild
+            >
+              <span>
+                {uploading === "start" ? (
+                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                ) : (
+                  <Camera className="h-3 w-3 mr-1" />
+                )}
+                Upload Start
+              </span>
+            </Button>
+          </label>
+        </div>
+
+        {/* End */}
+        <div className="space-y-1.5">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">End</p>
+          {endScreenshotUrl ? (
+            <img
+              src={endScreenshotUrl}
+              alt="End screenshot"
+              className="rounded border border-border w-full aspect-video object-cover cursor-pointer"
+              onClick={() => window.open(endScreenshotUrl, "_blank")}
+            />
+          ) : (
+            <div className="rounded border border-dashed border-border aspect-video flex items-center justify-center bg-background/50">
+              <p className="text-[10px] text-muted-foreground">No image</p>
+            </div>
+          )}
+          {ocrEndAmount != null && (
+            <p className="text-xs text-foreground">
+              OCR Read: <span className="text-accent font-display font-bold">${ocrEndAmount.toLocaleString()}</span>
+            </p>
+          )}
+          <label className="cursor-pointer">
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => e.target.files?.[0] && handleUpload("end", e.target.files[0])}
+            />
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="w-full text-xs"
+              disabled={uploading === "end"}
+              asChild
+            >
+              <span>
+                {uploading === "end" ? (
+                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                ) : (
+                  <Camera className="h-3 w-3 mr-1" />
+                )}
+                Upload End
+              </span>
+            </Button>
+          </label>
+        </div>
+      </div>
+
+      {/* Run OCR button */}
+      <Button
+        size="sm"
+        onClick={runOcr}
+        disabled={analyzing || (!startScreenshotUrl && !endScreenshotUrl)}
+        className="w-full gradient-primary text-primary-foreground font-display font-bold text-xs"
+      >
+        {analyzing ? (
+          <>
+            <Loader2 className="h-3 w-3 mr-1 animate-spin" /> Analyzing...
+          </>
+        ) : (
+          "🤖 Run AI Screenshot Analysis"
+        )}
+      </Button>
+    </div>
+  );
+}

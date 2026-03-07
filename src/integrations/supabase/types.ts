@@ -188,15 +188,21 @@ export type Database = {
           admin_released_winnings: boolean | null
           agent_room: string
           created_at: string | null
+          end_screenshot_url: string | null
           end_time: string
           id: string
+          ocr_confidence: number | null
+          ocr_end_amount: number | null
+          ocr_start_amount: number | null
           platform: string
+          platform_fee: number | null
           proof_url: string | null
           share_price: number
           shooter_id: string
           shooter_name: string
           stake_available: number
           stake_sold: number | null
+          start_screenshot_url: string | null
           status: Database["public"]["Enums"]["session_status"] | null
           stream_url: string | null
           total_buy_in: number
@@ -208,15 +214,21 @@ export type Database = {
           admin_released_winnings?: boolean | null
           agent_room: string
           created_at?: string | null
+          end_screenshot_url?: string | null
           end_time: string
           id?: string
+          ocr_confidence?: number | null
+          ocr_end_amount?: number | null
+          ocr_start_amount?: number | null
           platform: string
+          platform_fee?: number | null
           proof_url?: string | null
           share_price?: number
           shooter_id: string
           shooter_name: string
           stake_available: number
           stake_sold?: number | null
+          start_screenshot_url?: string | null
           status?: Database["public"]["Enums"]["session_status"] | null
           stream_url?: string | null
           total_buy_in: number
@@ -228,15 +240,21 @@ export type Database = {
           admin_released_winnings?: boolean | null
           agent_room?: string
           created_at?: string | null
+          end_screenshot_url?: string | null
           end_time?: string
           id?: string
+          ocr_confidence?: number | null
+          ocr_end_amount?: number | null
+          ocr_start_amount?: number | null
           platform?: string
+          platform_fee?: number | null
           proof_url?: string | null
           share_price?: number
           shooter_id?: string
           shooter_name?: string
           stake_available?: number
           stake_sold?: number | null
+          start_screenshot_url?: string | null
           status?: Database["public"]["Enums"]["session_status"] | null
           stream_url?: string | null
           total_buy_in?: number

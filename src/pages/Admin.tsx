@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send } from "lucide-react";
+import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye } from "lucide-react";
+import ScreenshotComparison from "@/components/admin/ScreenshotComparison";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,6 +40,12 @@ interface SessionRow {
   end_time: string;
   created_at: string;
   winnings: number | null;
+  platform_fee: number | null;
+  start_screenshot_url: string | null;
+  end_screenshot_url: string | null;
+  ocr_start_amount: number | null;
+  ocr_end_amount: number | null;
+  ocr_confidence: number | null;
 }
 
 interface PayoutRow {
@@ -60,6 +67,7 @@ export default function Admin() {
   const [payouts, setPayouts] = useState<PayoutRow[]>([]);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [settleSessionId, setSettleSessionId] = useState<string | null>(null);
+  const [screenshotSessionId, setScreenshotSessionId] = useState<string | null>(null);
   const [cashOutAmount, setCashOutAmount] = useState("");
 
   const fetchRequests = async () => {
@@ -223,6 +231,11 @@ export default function Admin() {
 
       const totalStaked = confirmedStakes.reduce((sum, s) => sum + Number(s.amount), 0);
 
+      // Auto-Rake: 10% platform fee
+      const PLATFORM_FEE_RATE = 0.10;
+      const feeAmount = Math.round(cashOut * PLATFORM_FEE_RATE * 100) / 100;
+      const distributableAmount = cashOut - feeAmount;
+
       // Fetch backer profiles and payment info
       const backerIds = confirmedStakes.map((s) => s.backer_id);
       const [{ data: profiles }, { data: paymentProfiles }] = await Promise.all([
@@ -230,10 +243,10 @@ export default function Admin() {
         supabase.from("payment_profiles").select("user_id, cashapp_tag").in("user_id", backerIds),
       ]);
 
-      // Calculate each backer's share of the cash-out and create payouts
+      // Calculate each backer's share of distributable amount (after rake)
       const payoutInserts = confirmedStakes.map((stake) => {
         const share = Number(stake.amount) / totalStaked;
-        const amountOwed = Math.round(cashOut * share * 100) / 100;
+        const amountOwed = Math.round(distributableAmount * share * 100) / 100;
         const profile = profiles?.find((p) => p.user_id === stake.backer_id);
         const payment = paymentProfiles?.find((p) => p.user_id === stake.backer_id);
         return {
@@ -250,13 +263,14 @@ export default function Admin() {
       const { error: payoutError } = await supabase.from("payouts").insert(payoutInserts as any);
       if (payoutError) throw payoutError;
 
-      // Update session status
+      // Update session status with fee info
       await supabase.from("sessions").update({
         status: "completed",
         winnings: cashOut,
+        platform_fee: feeAmount,
       } as any).eq("id", session.id);
 
-      toast.success(`Session settled! ${payoutInserts.length} payouts created.`);
+      toast.success(`Settled! $${feeAmount} rake • ${payoutInserts.length} payouts created`);
       setSettleSessionId(null);
       setCashOutAmount("");
       fetchSessions();
@@ -475,6 +489,9 @@ export default function Admin() {
                         <p className="text-xs text-muted-foreground">
                           ${Number(s.total_buy_in).toLocaleString()} buy-in • ${Number(s.stake_sold || 0).toLocaleString()} sold
                           {s.winnings != null && ` • $${Number(s.winnings).toLocaleString()} cash-out`}
+                          {s.platform_fee != null && Number(s.platform_fee) > 0 && (
+                            <span className="text-accent"> • ${Number(s.platform_fee).toLocaleString()} rake</span>
+                          )}
                         </p>
                       </div>
                     </div>
@@ -482,6 +499,15 @@ export default function Admin() {
                       <Badge variant="outline" className={statusColor[s.status] || "bg-secondary text-muted-foreground"}>
                         {(s.status || "pending").toUpperCase()}
                       </Badge>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={loadingId === s.id}
+                        onClick={() => setScreenshotSessionId(screenshotSessionId === s.id ? null : s.id)}
+                        className="text-primary border-primary/30 text-xs"
+                      >
+                        <Eye className="h-3 w-3 mr-1" /> Verify
+                      </Button>
                       {s.status !== "completed" && (
                         <Button
                           size="sm"
@@ -508,6 +534,19 @@ export default function Admin() {
                     </div>
                   </div>
 
+                  {/* Screenshot Comparison */}
+                  {screenshotSessionId === s.id && (
+                    <ScreenshotComparison
+                      sessionId={s.id}
+                      startScreenshotUrl={s.start_screenshot_url}
+                      endScreenshotUrl={s.end_screenshot_url}
+                      ocrStartAmount={s.ocr_start_amount}
+                      ocrEndAmount={s.ocr_end_amount}
+                      ocrConfidence={s.ocr_confidence}
+                      onUpdate={fetchSessions}
+                    />
+                  )}
+
                   {/* Settle Form */}
                   {settleSessionId === s.id && (
                     <div className="bg-secondary rounded-md p-3 space-y-2">
@@ -530,8 +569,14 @@ export default function Admin() {
                           {loadingId === s.id ? "Settling..." : "Confirm Settle"}
                         </Button>
                       </div>
+                      {cashOutAmount && (
+                        <div className="text-[10px] text-muted-foreground space-y-0.5">
+                          <p>Platform rake (10%): <span className="text-accent font-bold">${(parseFloat(cashOutAmount) * 0.1).toFixed(2)}</span></p>
+                          <p>Distributed to backers: <span className="text-success font-bold">${(parseFloat(cashOutAmount) * 0.9).toFixed(2)}</span></p>
+                        </div>
+                      )}
                       <p className="text-[10px] text-muted-foreground">
-                        This will mark the session as completed, calculate each backer's share, and create pending payouts.
+                        10% auto-rake deducted. Remainder split proportionally among backers.
                       </p>
                     </div>
                   )}
