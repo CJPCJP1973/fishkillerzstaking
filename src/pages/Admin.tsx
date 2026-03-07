@@ -68,6 +68,7 @@ interface PayoutRow {
   status: string;
   transaction_reference: string | null;
   session_info?: { shooter_name: string; platform: string } | null;
+  payment_info?: { cashapp_tag: string | null; venmo_username: string | null; chime_handle: string | null; btc_address: string | null; btc_lightning: string | null } | null;
 }
 
 interface WalletTransaction {
@@ -192,14 +193,16 @@ export default function Admin() {
     if (!data) return;
 
     const sessionIds = [...new Set(data.map((p: any) => p.session_id))];
-    const { data: sessionsData } = await supabase
-      .from("sessions")
-      .select("id, shooter_name, platform")
-      .in("id", sessionIds);
+    const backerIds = [...new Set(data.map((p: any) => p.backer_id))];
+    const [{ data: sessionsData }, { data: paymentProfiles }] = await Promise.all([
+      supabase.from("sessions").select("id, shooter_name, platform").in("id", sessionIds),
+      supabase.from("payment_profiles").select("user_id, cashapp_tag, venmo_username, chime_handle, btc_address, btc_lightning").in("user_id", backerIds),
+    ]);
 
     setPayouts(data.map((p: any) => ({
       ...p,
       session_info: sessionsData?.find((s) => s.id === p.session_id) || null,
+      payment_info: paymentProfiles?.find((pp) => pp.user_id === p.backer_id) || null,
     })));
   };
 
@@ -755,9 +758,26 @@ export default function Admin() {
                         <p className="text-sm font-medium text-foreground truncate">
                           {payout.backer_name || "Unknown"}
                         </p>
-                        <p className="text-xs text-primary font-medium truncate">
-                          {payout.backer_cashtag || "No CashApp on file"}
-                        </p>
+                        <div className="flex flex-wrap gap-1.5 mt-0.5">
+                          {payout.payment_info?.cashapp_tag && (
+                            <Badge variant="outline" className="text-[10px] bg-success/10 text-success border-success/30">${payout.payment_info.cashapp_tag}</Badge>
+                          )}
+                          {payout.payment_info?.venmo_username && (
+                            <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/30">Venmo: @{payout.payment_info.venmo_username}</Badge>
+                          )}
+                          {payout.payment_info?.chime_handle && (
+                            <Badge variant="outline" className="text-[10px] bg-accent/10 text-accent border-accent/30">Chime: {payout.payment_info.chime_handle}</Badge>
+                          )}
+                          {payout.payment_info?.btc_address && (
+                            <Badge variant="outline" className="text-[10px] bg-foreground/10 text-foreground border-foreground/20">BTC: {payout.payment_info.btc_address.slice(0, 10)}…</Badge>
+                          )}
+                          {payout.payment_info?.btc_lightning && (
+                            <Badge variant="outline" className="text-[10px] bg-accent/10 text-accent border-accent/30">⚡ {payout.payment_info.btc_lightning.slice(0, 12)}…</Badge>
+                          )}
+                          {!payout.payment_info?.cashapp_tag && !payout.payment_info?.venmo_username && !payout.payment_info?.chime_handle && !payout.payment_info?.btc_address && !payout.payment_info?.btc_lightning && (
+                            <span className="text-[10px] text-destructive">No payment info on file</span>
+                          )}
+                        </div>
                         <p className="text-xs text-muted-foreground truncate">
                           Owes: <span className="text-accent font-display font-bold">${Number(payout.amount_owed).toLocaleString()}</span>
                           {" "}• {payout.session_info?.shooter_name} ({payout.session_info?.platform})
