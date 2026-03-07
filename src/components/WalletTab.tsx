@@ -255,6 +255,11 @@ export default function WalletTab() {
         </Dialog>
       </div>
 
+      {/* Disclaimer */}
+      <p className="text-[9px] text-muted-foreground/60 text-center italic">
+        FishDollarz are virtual items with no real-world value outside the FishKillerz platform.
+      </p>
+
       {/* Transaction History */}
       <div>
         <h3 className="font-display font-bold text-foreground text-sm mb-3">Transaction History</h3>
