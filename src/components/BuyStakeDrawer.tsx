@@ -179,6 +179,9 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
           <p className="text-[10px] text-muted-foreground text-center">
             Your stake will show as Pending (yellow) until the admin verifies your payment.
           </p>
+          <p className="text-[9px] text-muted-foreground/60 text-center italic">
+            FishDollarz are virtual items with no real-world value outside the FishKillerz platform.
+          </p>
         </div>
       </SheetContent>
     </Sheet>
