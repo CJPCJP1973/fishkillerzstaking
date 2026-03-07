@@ -745,32 +745,42 @@ export default function Admin() {
               </div>
             ) : (
               payouts.map((payout) => (
-                <div key={payout.id} className="gradient-card rounded-lg p-4 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="p-2 rounded-md bg-success/20 shrink-0">
-                      <Banknote className="h-4 w-4 text-success" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">
-                        {payout.backer_name || "Unknown"}
-                      </p>
-                      <p className="text-xs text-primary font-medium truncate">
-                        {payout.backer_cashtag || "No CashApp on file"}
-                      </p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        Owes: <span className="text-accent font-display font-bold">${Number(payout.amount_owed).toLocaleString()}</span>
-                        {" "}• {payout.session_info?.shooter_name} ({payout.session_info?.platform})
-                      </p>
+                <div key={payout.id} className="gradient-card rounded-lg p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="p-2 rounded-md bg-success/20 shrink-0">
+                        <Banknote className="h-4 w-4 text-success" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {payout.backer_name || "Unknown"}
+                        </p>
+                        <p className="text-xs text-primary font-medium truncate">
+                          {payout.backer_cashtag || "No CashApp on file"}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          Owes: <span className="text-accent font-display font-bold">${Number(payout.amount_owed).toLocaleString()}</span>
+                          {" "}• {payout.session_info?.shooter_name} ({payout.session_info?.platform})
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  <Button
-                    size="sm"
-                    disabled={loadingId === payout.id}
-                    onClick={() => handleMarkPaid(payout)}
-                    className="gradient-primary text-primary-foreground font-display font-bold text-xs shrink-0"
-                  >
-                    <Send className="h-3 w-3 mr-1" /> Mark Paid
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={payoutRefs[payout.id] || ""}
+                      onChange={(e) => setPayoutRefs((prev) => ({ ...prev, [payout.id]: e.target.value }))}
+                      placeholder="Transaction ref (CashApp/Venmo #)"
+                      className="bg-secondary border-border text-foreground text-xs flex-1"
+                    />
+                    <Button
+                      size="sm"
+                      disabled={loadingId === payout.id}
+                      onClick={() => handleMarkPaid(payout)}
+                      className="gradient-primary text-primary-foreground font-display font-bold text-xs shrink-0"
+                    >
+                      <Send className="h-3 w-3 mr-1" /> Mark Paid
+                    </Button>
+                  </div>
                 </div>
               ))
             )}
