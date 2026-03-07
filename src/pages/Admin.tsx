@@ -503,6 +503,47 @@ export default function Admin() {
     setLoadingId(null);
   };
 
+  // Agent management
+  const handleAddAgent = async () => {
+    if (!newAgentName.trim() || !newAgentPlatform.trim()) {
+      toast.error("Agent name and platform are required");
+      return;
+    }
+    setLoadingId("add-agent");
+    try {
+      const { error } = await supabase.from("confirmed_agents").insert({
+        agent_name: newAgentName.trim(),
+        platform: newAgentPlatform.trim(),
+        notes: newAgentNotes.trim() || null,
+      } as any);
+      if (error) throw error;
+      toast.success(`Agent "${newAgentName}" added`);
+      setNewAgentName("");
+      setNewAgentPlatform("");
+      setNewAgentNotes("");
+      fetchAgents();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to add agent");
+    }
+    setLoadingId(null);
+  };
+
+  const handleDeleteAgent = async (agent: ConfirmedAgent) => {
+    if (loadingId) return;
+    const confirmed = window.confirm(`Remove agent "${agent.agent_name}"?`);
+    if (!confirmed) return;
+    setLoadingId(agent.id);
+    try {
+      const { error } = await supabase.from("confirmed_agents").delete().eq("id", agent.id);
+      if (error) throw error;
+      toast.success(`Agent "${agent.agent_name}" removed`);
+      fetchAgents();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to remove agent");
+    }
+    setLoadingId(null);
+  };
+
   const statusColor: Record<string, string> = {
     live: "bg-live/20 text-live border-live/30",
     funding: "bg-primary/20 text-primary border-primary/30",
