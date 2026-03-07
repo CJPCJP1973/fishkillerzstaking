@@ -36,12 +36,9 @@ export default function ScreenshotComparison({
         .upload(path, file, { upsert: true });
       if (uploadErr) throw uploadErr;
 
-      const { data: urlData } = supabase.storage
-        .from("session-screenshots")
-        .getPublicUrl(path);
-
+      // Store the storage path (not a public URL) since bucket is now private
       const col = type === "start" ? "start_screenshot_url" : "end_screenshot_url";
-      await supabase.from("sessions").update({ [col]: urlData.publicUrl } as any).eq("id", sessionId);
+      await supabase.from("sessions").update({ [col]: path } as any).eq("id", sessionId);
 
       toast.success(`${type === "start" ? "Start" : "End"} screenshot uploaded`);
       onUpdate();
@@ -50,6 +47,23 @@ export default function ScreenshotComparison({
     }
     setUploading(null);
   };
+
+  const getSignedUrl = async (storagePath: string): Promise<string | null> => {
+    const { data, error } = await supabase.storage
+      .from("session-screenshots")
+      .createSignedUrl(storagePath, 300); // 5-minute expiry
+    if (error) return null;
+    return data.signedUrl;
+  };
+
+  const [startSignedUrl, setStartSignedUrl] = useState<string | null>(null);
+  const [endSignedUrl, setEndSignedUrl] = useState<string | null>(null);
+
+  // Generate signed URLs when screenshot paths change
+  useState(() => {
+    if (startScreenshotUrl) getSignedUrl(startScreenshotUrl).then(setStartSignedUrl);
+    if (endScreenshotUrl) getSignedUrl(endScreenshotUrl).then(setEndSignedUrl);
+  });
 
   const runOcr = async () => {
     if (!startScreenshotUrl && !endScreenshotUrl) {
