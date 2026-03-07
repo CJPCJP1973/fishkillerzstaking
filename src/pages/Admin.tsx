@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle } from "lucide-react";
+import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle, Plus, UserCog } from "lucide-react";
 import ScreenshotComparison from "@/components/admin/ScreenshotComparison";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,12 +80,31 @@ interface UserRow {
   roles: string[];
 }
 
+interface ConfirmedAgent {
+  id: string;
+  agent_name: string;
+  platform: string;
+  notes: string | null;
+  created_at: string | null;
+}
+
+interface ConfirmedSeller {
+  user_id: string;
+  display_name: string;
+  username: string;
+  email: string | null;
+  seller_status: string;
+  verified: boolean | null;
+}
+
 export default function Admin() {
   const [requests, setRequests] = useState<SellerRequest[]>([]);
   const [stakes, setStakes] = useState<PendingStake[]>([]);
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [payouts, setPayouts] = useState<PayoutRow[]>([]);
   const [users, setUsers] = useState<UserRow[]>([]);
+  const [confirmedSellers, setConfirmedSellers] = useState<ConfirmedSeller[]>([]);
+  const [agents, setAgents] = useState<ConfirmedAgent[]>([]);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [settleSessionId, setSettleSessionId] = useState<string | null>(null);
   const [screenshotSessionId, setScreenshotSessionId] = useState<string | null>(null);
@@ -96,6 +115,10 @@ export default function Admin() {
   const [manualPayoutAmount, setManualPayoutAmount] = useState("");
   const [overrideSessionId, setOverrideSessionId] = useState("");
   const [overrideStatus, setOverrideStatus] = useState("");
+  // Agent form state
+  const [newAgentName, setNewAgentName] = useState("");
+  const [newAgentPlatform, setNewAgentPlatform] = useState("");
+  const [newAgentNotes, setNewAgentNotes] = useState("");
 
   const fetchRequests = async () => {
     const { data } = await supabase
@@ -188,12 +211,31 @@ export default function Admin() {
     })));
   };
 
+  const fetchConfirmedSellers = async () => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("user_id, display_name, username, email, seller_status, verified")
+      .eq("seller_status", "active")
+      .order("display_name", { ascending: true });
+    if (data) setConfirmedSellers(data);
+  };
+
+  const fetchAgents = async () => {
+    const { data } = await supabase
+      .from("confirmed_agents")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (data) setAgents(data as any);
+  };
+
   useEffect(() => {
     fetchRequests();
     fetchPendingStakes();
     fetchSessions();
     fetchPayouts();
     fetchUsers();
+    fetchConfirmedSellers();
+    fetchAgents();
   }, []);
 
   const handleSellerAction = async (request: SellerRequest, action: "approved" | "rejected") => {
@@ -461,6 +503,47 @@ export default function Admin() {
     setLoadingId(null);
   };
 
+  // Agent management
+  const handleAddAgent = async () => {
+    if (!newAgentName.trim() || !newAgentPlatform.trim()) {
+      toast.error("Agent name and platform are required");
+      return;
+    }
+    setLoadingId("add-agent");
+    try {
+      const { error } = await supabase.from("confirmed_agents").insert({
+        agent_name: newAgentName.trim(),
+        platform: newAgentPlatform.trim(),
+        notes: newAgentNotes.trim() || null,
+      } as any);
+      if (error) throw error;
+      toast.success(`Agent "${newAgentName}" added`);
+      setNewAgentName("");
+      setNewAgentPlatform("");
+      setNewAgentNotes("");
+      fetchAgents();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to add agent");
+    }
+    setLoadingId(null);
+  };
+
+  const handleDeleteAgent = async (agent: ConfirmedAgent) => {
+    if (loadingId) return;
+    const confirmed = window.confirm(`Remove agent "${agent.agent_name}"?`);
+    if (!confirmed) return;
+    setLoadingId(agent.id);
+    try {
+      const { error } = await supabase.from("confirmed_agents").delete().eq("id", agent.id);
+      if (error) throw error;
+      toast.success(`Agent "${agent.agent_name}" removed`);
+      fetchAgents();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to remove agent");
+    }
+    setLoadingId(null);
+  };
+
   const statusColor: Record<string, string> = {
     live: "bg-live/20 text-live border-live/30",
     funding: "bg-primary/20 text-primary border-primary/30",
@@ -497,6 +580,12 @@ export default function Admin() {
             </TabsTrigger>
             <TabsTrigger value="users" className="font-display">
               <Users className="h-3 w-3 mr-1" /> Users ({users.length})
+            </TabsTrigger>
+            <TabsTrigger value="confirmed-sellers" className="font-display">
+              <CheckCircle className="h-3 w-3 mr-1" /> Confirmed ({confirmedSellers.length})
+            </TabsTrigger>
+            <TabsTrigger value="agents" className="font-display">
+              <UserCog className="h-3 w-3 mr-1" /> Agents ({agents.length})
             </TabsTrigger>
             <TabsTrigger value="godmode" className="font-display text-accent">
               <Zap className="h-3 w-3 mr-1" /> God Mode
@@ -821,6 +910,152 @@ export default function Admin() {
                           >
                             <Ban className="h-3 w-3 mr-1" />
                             {u.seller_status === "banned" ? "Unban" : "Ban"}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Confirmed Sellers */}
+          <TabsContent value="confirmed-sellers" className="space-y-3 mt-4">
+            <h2 className="font-display text-lg font-bold text-foreground">Confirmed Sellers</h2>
+            {confirmedSellers.length === 0 ? (
+              <div className="gradient-card rounded-lg p-6 text-center">
+                <p className="text-muted-foreground text-sm">No confirmed sellers yet.</p>
+              </div>
+            ) : (
+              <div className="gradient-card rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Seller</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Verified</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {confirmedSellers.map((s) => (
+                      <TableRow key={s.user_id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium text-foreground text-sm">{s.display_name}</p>
+                            <p className="text-xs text-primary">@{s.username}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{s.email || "—"}</TableCell>
+                        <TableCell>
+                          <Badge className="bg-success/20 text-success border-success/30 text-[10px]">
+                            <CheckCircle className="h-3 w-3 mr-1" /> Active
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {s.verified ? (
+                            <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px]">✓ Verified</Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-[10px]">Unverified</Badge>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Confirmed Agents */}
+          <TabsContent value="agents" className="space-y-4 mt-4">
+            <h2 className="font-display text-lg font-bold text-foreground">Confirmed Agents</h2>
+            <p className="text-xs text-muted-foreground">Reputable agents that sellers can use when creating sessions.</p>
+
+            {/* Add Agent Form */}
+            <div className="gradient-card rounded-lg p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Plus className="h-4 w-4 text-primary" />
+                <h3 className="font-display font-bold text-foreground text-sm">Add New Agent</h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Agent Name</Label>
+                  <Input
+                    value={newAgentName}
+                    onChange={(e) => setNewAgentName(e.target.value)}
+                    placeholder="e.g. Agent Mike"
+                    className="bg-secondary border-border text-foreground"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Platform</Label>
+                  <Input
+                    value={newAgentPlatform}
+                    onChange={(e) => setNewAgentPlatform(e.target.value)}
+                    placeholder="e.g. Golden Dragon"
+                    className="bg-secondary border-border text-foreground"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Notes (optional)</Label>
+                  <Input
+                    value={newAgentNotes}
+                    onChange={(e) => setNewAgentNotes(e.target.value)}
+                    placeholder="e.g. Fast payouts, reliable"
+                    className="bg-secondary border-border text-foreground"
+                  />
+                </div>
+              </div>
+              <Button
+                onClick={handleAddAgent}
+                disabled={loadingId === "add-agent"}
+                className="gradient-primary text-primary-foreground font-display font-bold text-xs"
+              >
+                <Plus className="h-3 w-3 mr-1" /> Add Agent
+              </Button>
+            </div>
+
+            {/* Agents List */}
+            {agents.length === 0 ? (
+              <div className="gradient-card rounded-lg p-6 text-center">
+                <p className="text-muted-foreground text-sm">No agents added yet.</p>
+              </div>
+            ) : (
+              <div className="gradient-card rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Agent Name</TableHead>
+                      <TableHead>Platform</TableHead>
+                      <TableHead>Notes</TableHead>
+                      <TableHead>Added</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {agents.map((a) => (
+                      <TableRow key={a.id}>
+                        <TableCell className="font-medium text-foreground">{a.agent_name}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-[10px]">
+                            {a.platform}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{a.notes || "—"}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {a.created_at ? new Date(a.created_at).toLocaleDateString() : "—"}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={loadingId === a.id}
+                            onClick={() => handleDeleteAgent(a)}
+                            className="text-destructive border-destructive/30 text-xs"
+                          >
+                            <Trash2 className="h-3 w-3 mr-1" /> Remove
                           </Button>
                         </TableCell>
                       </TableRow>

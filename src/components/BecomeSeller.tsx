@@ -72,21 +72,21 @@ export default function BecomeSeller() {
               <DollarSign className="h-5 w-5 text-primary" />
               <span className="font-display font-bold text-foreground">Registration Fee: $10</span>
             </div>
-            <p className="text-xs text-muted-foreground">Send payment to one of these:</p>
-            <ul className="text-sm text-foreground space-y-1">
-              <li>CashApp: <span className="text-primary font-medium">$unclehomie75</span></li>
-              <li>Chime: <span className="text-primary font-medium">$Christopher-Preston-57</span></li>
-            </ul>
+            <p className="text-xs text-muted-foreground">Send payment to:</p>
+            <div className="text-sm text-foreground">
+              <span className="text-muted-foreground">CashApp:</span>{" "}
+              <span className="text-primary font-bold text-base">$unclehomie75</span>
+            </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            After sending payment, click below. An admin will verify and activate your account within 24 hours.
+            After sending $10 to <span className="text-primary font-medium">$unclehomie75</span> on CashApp, click below. An admin will verify and activate your account within 24 hours.
           </p>
           <Button
             onClick={handleSubmit}
             disabled={submitting}
             className="w-full gradient-primary text-primary-foreground font-display font-bold"
           >
-            {submitting ? "Submitting..." : "I've Paid — Submit Request"}
+            {submitting ? "Submitting..." : "I've Paid $10 — Submit Request"}
           </Button>
         </div>
       </DialogContent>
