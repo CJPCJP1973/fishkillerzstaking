@@ -392,7 +392,54 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      profiles_public: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          display_name: string | null
+          id: string | null
+          seller_status: string | null
+          total_staked: number | null
+          total_wins: number | null
+          updated_at: string | null
+          user_id: string | null
+          username: string | null
+          verified: boolean | null
+          win_rate: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string | null
+          seller_status?: string | null
+          total_staked?: number | null
+          total_wins?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          username?: string | null
+          verified?: boolean | null
+          win_rate?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string | null
+          seller_status?: string | null
+          total_staked?: number | null
+          total_wins?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          username?: string | null
+          verified?: boolean | null
+          win_rate?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
