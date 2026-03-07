@@ -116,6 +116,7 @@ export default function Admin() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [confirmedSellers, setConfirmedSellers] = useState<ConfirmedSeller[]>([]);
   const [agents, setAgents] = useState<ConfirmedAgent[]>([]);
+  const [walletTxns, setWalletTxns] = useState<WalletTransaction[]>([]);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [settleSessionId, setSettleSessionId] = useState<string | null>(null);
   const [screenshotSessionId, setScreenshotSessionId] = useState<string | null>(null);
@@ -129,6 +130,7 @@ export default function Admin() {
   // Agent form state
   const [newAgentName, setNewAgentName] = useState("");
   const [newAgentNotes, setNewAgentNotes] = useState("");
+  const [payoutRefs, setPayoutRefs] = useState<Record<string, string>>({});
 
   const fetchRequests = async () => {
     const { data } = await supabase
