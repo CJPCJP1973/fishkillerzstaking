@@ -581,6 +581,12 @@ export default function Admin() {
             <TabsTrigger value="users" className="font-display">
               <Users className="h-3 w-3 mr-1" /> Users ({users.length})
             </TabsTrigger>
+            <TabsTrigger value="confirmed-sellers" className="font-display">
+              <CheckCircle className="h-3 w-3 mr-1" /> Confirmed ({confirmedSellers.length})
+            </TabsTrigger>
+            <TabsTrigger value="agents" className="font-display">
+              <UserCog className="h-3 w-3 mr-1" /> Agents ({agents.length})
+            </TabsTrigger>
             <TabsTrigger value="godmode" className="font-display text-accent">
               <Zap className="h-3 w-3 mr-1" /> God Mode
             </TabsTrigger>
