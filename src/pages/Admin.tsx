@@ -66,7 +66,19 @@ interface PayoutRow {
   backer_cashtag: string | null;
   amount_owed: number;
   status: string;
+  transaction_reference: string | null;
   session_info?: { shooter_name: string; platform: string } | null;
+}
+
+interface WalletTransaction {
+  id: string;
+  user_id: string;
+  amount: number;
+  type: string;
+  status: string;
+  payment_method: string | null;
+  created_at: string;
+  user_profile?: { display_name: string; username: string } | null;
 }
 
 interface UserRow {
