@@ -1152,6 +1152,55 @@ export default function Admin() {
             )}
           </TabsContent>
 
+          {/* Wallet Ledger */}
+          <TabsContent value="wallet-ledger" className="space-y-3 mt-4">
+            <h2 className="font-display text-lg font-bold text-foreground">Pending Wallet Transactions</h2>
+            {walletTxns.length === 0 ? (
+              <div className="gradient-card rounded-lg p-6 text-center">
+                <p className="text-muted-foreground text-sm">No pending wallet transactions.</p>
+              </div>
+            ) : (
+              walletTxns.map((tx) => (
+                <div key={tx.id} className="gradient-card rounded-lg p-4 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`p-2 rounded-md shrink-0 ${tx.type === "deposit" ? "bg-success/20" : "bg-accent/20"}`}>
+                      <Wallet className={`h-4 w-4 ${tx.type === "deposit" ? "text-success" : "text-accent"}`} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {tx.user_profile?.display_name || "Unknown"}
+                        {tx.user_profile?.username && <span className="text-primary ml-1">@{tx.user_profile.username}</span>}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        <span className="capitalize font-medium">{tx.type}</span> • ${Number(tx.amount).toFixed(2)} • {tx.payment_method || "—"}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">{new Date(tx.created_at).toLocaleString()}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={loadingId === tx.id}
+                      onClick={() => handleRejectTransaction(tx)}
+                      className="text-destructive border-destructive/30 text-xs"
+                    >
+                      <XCircle className="h-3 w-3 mr-1" /> Reject
+                    </Button>
+                    <Button
+                      size="sm"
+                      disabled={loadingId === tx.id}
+                      onClick={() => tx.type === "deposit" ? handleApproveDeposit(tx) : handleApproveWithdrawal(tx)}
+                      className="gradient-primary text-primary-foreground font-display font-bold text-xs"
+                    >
+                      <CheckCircle className="h-3 w-3 mr-1" /> Approve
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </TabsContent>
+
           {/* God Mode Tab */}
           <TabsContent value="godmode" className="space-y-6 mt-4">
             <div className="flex items-center gap-2 mb-2">
