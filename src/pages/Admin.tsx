@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle } from "lucide-react";
+import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle, Plus, UserCog } from "lucide-react";
 import ScreenshotComparison from "@/components/admin/ScreenshotComparison";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,12 +80,31 @@ interface UserRow {
   roles: string[];
 }
 
+interface ConfirmedAgent {
+  id: string;
+  agent_name: string;
+  platform: string;
+  notes: string | null;
+  created_at: string | null;
+}
+
+interface ConfirmedSeller {
+  user_id: string;
+  display_name: string;
+  username: string;
+  email: string | null;
+  seller_status: string;
+  verified: boolean | null;
+}
+
 export default function Admin() {
   const [requests, setRequests] = useState<SellerRequest[]>([]);
   const [stakes, setStakes] = useState<PendingStake[]>([]);
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [payouts, setPayouts] = useState<PayoutRow[]>([]);
   const [users, setUsers] = useState<UserRow[]>([]);
+  const [confirmedSellers, setConfirmedSellers] = useState<ConfirmedSeller[]>([]);
+  const [agents, setAgents] = useState<ConfirmedAgent[]>([]);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [settleSessionId, setSettleSessionId] = useState<string | null>(null);
   const [screenshotSessionId, setScreenshotSessionId] = useState<string | null>(null);
@@ -96,6 +115,10 @@ export default function Admin() {
   const [manualPayoutAmount, setManualPayoutAmount] = useState("");
   const [overrideSessionId, setOverrideSessionId] = useState("");
   const [overrideStatus, setOverrideStatus] = useState("");
+  // Agent form state
+  const [newAgentName, setNewAgentName] = useState("");
+  const [newAgentPlatform, setNewAgentPlatform] = useState("");
+  const [newAgentNotes, setNewAgentNotes] = useState("");
 
   const fetchRequests = async () => {
     const { data } = await supabase
