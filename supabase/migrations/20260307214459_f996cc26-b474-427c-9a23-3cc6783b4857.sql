@@ -1,0 +1,1 @@
+ALTER TABLE public.confirmed_agents DROP COLUMN platform;

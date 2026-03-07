@@ -83,7 +83,6 @@ interface UserRow {
 interface ConfirmedAgent {
   id: string;
   agent_name: string;
-  platform: string;
   notes: string | null;
   created_at: string | null;
 }
@@ -117,7 +116,6 @@ export default function Admin() {
   const [overrideStatus, setOverrideStatus] = useState("");
   // Agent form state
   const [newAgentName, setNewAgentName] = useState("");
-  const [newAgentPlatform, setNewAgentPlatform] = useState("");
   const [newAgentNotes, setNewAgentNotes] = useState("");
 
   const fetchRequests = async () => {
@@ -505,21 +503,19 @@ export default function Admin() {
 
   // Agent management
   const handleAddAgent = async () => {
-    if (!newAgentName.trim() || !newAgentPlatform.trim()) {
-      toast.error("Agent name and platform are required");
+    if (!newAgentName.trim()) {
+      toast.error("Agent name is required");
       return;
     }
     setLoadingId("add-agent");
     try {
       const { error } = await supabase.from("confirmed_agents").insert({
         agent_name: newAgentName.trim(),
-        platform: newAgentPlatform.trim(),
         notes: newAgentNotes.trim() || null,
       } as any);
       if (error) throw error;
       toast.success(`Agent "${newAgentName}" added`);
       setNewAgentName("");
-      setNewAgentPlatform("");
       setNewAgentNotes("");
       fetchAgents();
     } catch (err: any) {
@@ -979,22 +975,13 @@ export default function Admin() {
                 <Plus className="h-4 w-4 text-primary" />
                 <h3 className="font-display font-bold text-foreground text-sm">Add New Agent</h3>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label className="text-xs text-muted-foreground">Agent Name</Label>
                   <Input
                     value={newAgentName}
                     onChange={(e) => setNewAgentName(e.target.value)}
                     placeholder="e.g. Agent Mike"
-                    className="bg-secondary border-border text-foreground"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Platform</Label>
-                  <Input
-                    value={newAgentPlatform}
-                    onChange={(e) => setNewAgentPlatform(e.target.value)}
-                    placeholder="e.g. Golden Dragon"
                     className="bg-secondary border-border text-foreground"
                   />
                 </div>
@@ -1028,7 +1015,6 @@ export default function Admin() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Agent Name</TableHead>
-                      <TableHead>Platform</TableHead>
                       <TableHead>Notes</TableHead>
                       <TableHead>Added</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -1038,11 +1024,6 @@ export default function Admin() {
                     {agents.map((a) => (
                       <TableRow key={a.id}>
                         <TableCell className="font-medium text-foreground">{a.agent_name}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-[10px]">
-                            {a.platform}
-                          </Badge>
-                        </TableCell>
                         <TableCell className="text-xs text-muted-foreground">{a.notes || "—"}</TableCell>
                         <TableCell className="text-xs text-muted-foreground">
                           {a.created_at ? new Date(a.created_at).toLocaleDateString() : "—"}
