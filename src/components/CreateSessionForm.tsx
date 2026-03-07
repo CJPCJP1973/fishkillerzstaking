@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,14 +8,11 @@ import { Crosshair } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-const platforms = [
-  "Golden Dragon",
-  "Diamond Dragon",
-  "Fire Phoenix",
-  "Vblink",
-  "Riversweeps",
-  "Magic City",
-];
+interface ConfirmedAgent {
+  id: string;
+  agent_name: string;
+  platform: string;
+}
 
 export default function CreateSessionForm() {
   const { user, username } = useAuth();
@@ -28,6 +25,23 @@ export default function CreateSessionForm() {
   const [sharePrice, setSharePrice] = useState("");
   const [streamUrl, setStreamUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [agents, setAgents] = useState<ConfirmedAgent[]>([]);
+
+  useEffect(() => {
+    const fetchAgents = async () => {
+      const { data } = await supabase
+        .from("confirmed_agents")
+        .select("id, agent_name, platform")
+        .order("agent_name", { ascending: true });
+      if (data) setAgents(data as any);
+    };
+    fetchAgents();
+  }, []);
+
+  // Derive unique platforms from confirmed agents
+  const platforms = [...new Set(agents.map((a) => a.platform))];
+  // Filter agents by selected platform
+  const filteredAgents = platform ? agents.filter((a) => a.platform === platform) : agents;
 
   const buyInNum = parseFloat(totalBuyIn) || 0;
   const percentNum = parseFloat(stakePercent) || 0;
