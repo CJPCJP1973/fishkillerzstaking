@@ -40,6 +40,12 @@ interface SessionRow {
   end_time: string;
   created_at: string;
   winnings: number | null;
+  platform_fee: number | null;
+  start_screenshot_url: string | null;
+  end_screenshot_url: string | null;
+  ocr_start_amount: number | null;
+  ocr_end_amount: number | null;
+  ocr_confidence: number | null;
 }
 
 interface PayoutRow {
@@ -61,6 +67,7 @@ export default function Admin() {
   const [payouts, setPayouts] = useState<PayoutRow[]>([]);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [settleSessionId, setSettleSessionId] = useState<string | null>(null);
+  const [screenshotSessionId, setScreenshotSessionId] = useState<string | null>(null);
   const [cashOutAmount, setCashOutAmount] = useState("");
 
   const fetchRequests = async () => {
