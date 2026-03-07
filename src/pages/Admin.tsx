@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle, Plus, UserCog } from "lucide-react";
+import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle, Plus, UserCog, Wallet } from "lucide-react";
 import ScreenshotComparison from "@/components/admin/ScreenshotComparison";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,7 +66,19 @@ interface PayoutRow {
   backer_cashtag: string | null;
   amount_owed: number;
   status: string;
+  transaction_reference: string | null;
   session_info?: { shooter_name: string; platform: string } | null;
+}
+
+interface WalletTransaction {
+  id: string;
+  user_id: string;
+  amount: number;
+  type: string;
+  status: string;
+  payment_method: string | null;
+  created_at: string;
+  user_profile?: { display_name: string; username: string } | null;
 }
 
 interface UserRow {
@@ -104,6 +116,7 @@ export default function Admin() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [confirmedSellers, setConfirmedSellers] = useState<ConfirmedSeller[]>([]);
   const [agents, setAgents] = useState<ConfirmedAgent[]>([]);
+  const [walletTxns, setWalletTxns] = useState<WalletTransaction[]>([]);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [settleSessionId, setSettleSessionId] = useState<string | null>(null);
   const [screenshotSessionId, setScreenshotSessionId] = useState<string | null>(null);
@@ -117,6 +130,7 @@ export default function Admin() {
   // Agent form state
   const [newAgentName, setNewAgentName] = useState("");
   const [newAgentNotes, setNewAgentNotes] = useState("");
+  const [payoutRefs, setPayoutRefs] = useState<Record<string, string>>({});
 
   const fetchRequests = async () => {
     const { data } = await supabase
@@ -226,6 +240,26 @@ export default function Admin() {
     if (data) setAgents(data as any);
   };
 
+  const fetchWalletTxns = async () => {
+    const { data } = await supabase
+      .from("transactions")
+      .select("*")
+      .eq("status", "pending")
+      .order("created_at", { ascending: true });
+    if (!data) return;
+
+    const userIds = [...new Set((data as any[]).map((t: any) => t.user_id))];
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("user_id, display_name, username")
+      .in("user_id", userIds);
+
+    setWalletTxns((data as any[]).map((t: any) => ({
+      ...t,
+      user_profile: profiles?.find((p) => p.user_id === t.user_id) || null,
+    })));
+  };
+
   useEffect(() => {
     fetchRequests();
     fetchPendingStakes();
@@ -234,6 +268,7 @@ export default function Admin() {
     fetchUsers();
     fetchConfirmedSellers();
     fetchAgents();
+    fetchWalletTxns();
   }, []);
 
   const handleSellerAction = async (request: SellerRequest, action: "approved" | "rejected") => {
@@ -368,9 +403,10 @@ export default function Admin() {
 
   const handleMarkPaid = async (payout: PayoutRow) => {
     if (loadingId) return;
+    const ref = payoutRefs[payout.id]?.trim() || null;
     setLoadingId(payout.id);
     try {
-      await supabase.from("payouts").update({ status: "paid" } as any).eq("id", payout.id);
+      await supabase.from("payouts").update({ status: "paid", transaction_reference: ref } as any).eq("id", payout.id);
       await supabase.from("stakes").update({
         winnings_amount: payout.amount_owed,
         winnings_released: true,
@@ -379,6 +415,62 @@ export default function Admin() {
       fetchPayouts();
     } catch (err: any) {
       toast.error(err.message || "Failed to mark payout");
+    }
+    setLoadingId(null);
+  };
+
+  // Wallet: Approve deposit
+  const handleApproveDeposit = async (tx: WalletTransaction) => {
+    if (loadingId) return;
+    setLoadingId(tx.id);
+    try {
+      // Update transaction status
+      await supabase.from("transactions").update({ status: "confirmed" } as any).eq("id", tx.id);
+      // Add to user balance
+      const { data: profile } = await supabase.from("profiles").select("balance").eq("user_id", tx.user_id).single();
+      const newBalance = (Number((profile as any)?.balance) || 0) + Number(tx.amount);
+      await supabase.from("profiles").update({ balance: newBalance } as any).eq("user_id", tx.user_id);
+      toast.success(`Deposit of $${tx.amount} approved for ${tx.user_profile?.display_name}`);
+      fetchWalletTxns();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to approve deposit");
+    }
+    setLoadingId(null);
+  };
+
+  // Wallet: Approve withdrawal
+  const handleApproveWithdrawal = async (tx: WalletTransaction) => {
+    if (loadingId) return;
+    setLoadingId(tx.id);
+    try {
+      const { data: profile } = await supabase.from("profiles").select("balance").eq("user_id", tx.user_id).single();
+      const currentBalance = Number((profile as any)?.balance) || 0;
+      if (currentBalance < tx.amount) {
+        toast.error("User has insufficient balance");
+        setLoadingId(null);
+        return;
+      }
+      const newBalance = currentBalance - tx.amount;
+      await supabase.from("profiles").update({ balance: newBalance } as any).eq("user_id", tx.user_id);
+      await supabase.from("transactions").update({ status: "settled" } as any).eq("id", tx.id);
+      toast.success(`Withdrawal of $${tx.amount} settled for ${tx.user_profile?.display_name}`);
+      fetchWalletTxns();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to approve withdrawal");
+    }
+    setLoadingId(null);
+  };
+
+  // Wallet: Reject transaction
+  const handleRejectTransaction = async (tx: WalletTransaction) => {
+    if (loadingId) return;
+    setLoadingId(tx.id);
+    try {
+      await supabase.from("transactions").update({ status: "rejected" } as any).eq("id", tx.id);
+      toast.success(`Transaction rejected`);
+      fetchWalletTxns();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to reject");
     }
     setLoadingId(null);
   };
@@ -583,6 +675,9 @@ export default function Admin() {
             <TabsTrigger value="agents" className="font-display">
               <UserCog className="h-3 w-3 mr-1" /> Agents ({agents.length})
             </TabsTrigger>
+            <TabsTrigger value="wallet-ledger" className="font-display">
+              <Wallet className="h-3 w-3 mr-1" /> Wallet ({walletTxns.length})
+            </TabsTrigger>
             <TabsTrigger value="godmode" className="font-display text-accent">
               <Zap className="h-3 w-3 mr-1" /> God Mode
             </TabsTrigger>
@@ -650,32 +745,42 @@ export default function Admin() {
               </div>
             ) : (
               payouts.map((payout) => (
-                <div key={payout.id} className="gradient-card rounded-lg p-4 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="p-2 rounded-md bg-success/20 shrink-0">
-                      <Banknote className="h-4 w-4 text-success" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">
-                        {payout.backer_name || "Unknown"}
-                      </p>
-                      <p className="text-xs text-primary font-medium truncate">
-                        {payout.backer_cashtag || "No CashApp on file"}
-                      </p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        Owes: <span className="text-accent font-display font-bold">${Number(payout.amount_owed).toLocaleString()}</span>
-                        {" "}• {payout.session_info?.shooter_name} ({payout.session_info?.platform})
-                      </p>
+                <div key={payout.id} className="gradient-card rounded-lg p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="p-2 rounded-md bg-success/20 shrink-0">
+                        <Banknote className="h-4 w-4 text-success" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {payout.backer_name || "Unknown"}
+                        </p>
+                        <p className="text-xs text-primary font-medium truncate">
+                          {payout.backer_cashtag || "No CashApp on file"}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          Owes: <span className="text-accent font-display font-bold">${Number(payout.amount_owed).toLocaleString()}</span>
+                          {" "}• {payout.session_info?.shooter_name} ({payout.session_info?.platform})
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  <Button
-                    size="sm"
-                    disabled={loadingId === payout.id}
-                    onClick={() => handleMarkPaid(payout)}
-                    className="gradient-primary text-primary-foreground font-display font-bold text-xs shrink-0"
-                  >
-                    <Send className="h-3 w-3 mr-1" /> Mark Paid
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={payoutRefs[payout.id] || ""}
+                      onChange={(e) => setPayoutRefs((prev) => ({ ...prev, [payout.id]: e.target.value }))}
+                      placeholder="Transaction ref (CashApp/Venmo #)"
+                      className="bg-secondary border-border text-foreground text-xs flex-1"
+                    />
+                    <Button
+                      size="sm"
+                      disabled={loadingId === payout.id}
+                      onClick={() => handleMarkPaid(payout)}
+                      className="gradient-primary text-primary-foreground font-display font-bold text-xs shrink-0"
+                    >
+                      <Send className="h-3 w-3 mr-1" /> Mark Paid
+                    </Button>
+                  </div>
                 </div>
               ))
             )}
@@ -1044,6 +1149,55 @@ export default function Admin() {
                   </TableBody>
                 </Table>
               </div>
+            )}
+          </TabsContent>
+
+          {/* Wallet Ledger */}
+          <TabsContent value="wallet-ledger" className="space-y-3 mt-4">
+            <h2 className="font-display text-lg font-bold text-foreground">Pending Wallet Transactions</h2>
+            {walletTxns.length === 0 ? (
+              <div className="gradient-card rounded-lg p-6 text-center">
+                <p className="text-muted-foreground text-sm">No pending wallet transactions.</p>
+              </div>
+            ) : (
+              walletTxns.map((tx) => (
+                <div key={tx.id} className="gradient-card rounded-lg p-4 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`p-2 rounded-md shrink-0 ${tx.type === "deposit" ? "bg-success/20" : "bg-accent/20"}`}>
+                      <Wallet className={`h-4 w-4 ${tx.type === "deposit" ? "text-success" : "text-accent"}`} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {tx.user_profile?.display_name || "Unknown"}
+                        {tx.user_profile?.username && <span className="text-primary ml-1">@{tx.user_profile.username}</span>}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        <span className="capitalize font-medium">{tx.type}</span> • ${Number(tx.amount).toFixed(2)} • {tx.payment_method || "—"}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">{new Date(tx.created_at).toLocaleString()}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={loadingId === tx.id}
+                      onClick={() => handleRejectTransaction(tx)}
+                      className="text-destructive border-destructive/30 text-xs"
+                    >
+                      <XCircle className="h-3 w-3 mr-1" /> Reject
+                    </Button>
+                    <Button
+                      size="sm"
+                      disabled={loadingId === tx.id}
+                      onClick={() => tx.type === "deposit" ? handleApproveDeposit(tx) : handleApproveWithdrawal(tx)}
+                      className="gradient-primary text-primary-foreground font-display font-bold text-xs"
+                    >
+                      <CheckCircle className="h-3 w-3 mr-1" /> Approve
+                    </Button>
+                  </div>
+                </div>
+              ))
             )}
           </TabsContent>
 
