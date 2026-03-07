@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,12 +36,9 @@ export default function ScreenshotComparison({
         .upload(path, file, { upsert: true });
       if (uploadErr) throw uploadErr;
 
-      const { data: urlData } = supabase.storage
-        .from("session-screenshots")
-        .getPublicUrl(path);
-
+      // Store the storage path (not a public URL) since bucket is now private
       const col = type === "start" ? "start_screenshot_url" : "end_screenshot_url";
-      await supabase.from("sessions").update({ [col]: urlData.publicUrl } as any).eq("id", sessionId);
+      await supabase.from("sessions").update({ [col]: path } as any).eq("id", sessionId);
 
       toast.success(`${type === "start" ? "Start" : "End"} screenshot uploaded`);
       onUpdate();
@@ -51,6 +48,25 @@ export default function ScreenshotComparison({
     setUploading(null);
   };
 
+  const getSignedUrl = async (storagePath: string): Promise<string | null> => {
+    const { data, error } = await supabase.storage
+      .from("session-screenshots")
+      .createSignedUrl(storagePath, 300); // 5-minute expiry
+    if (error) return null;
+    return data.signedUrl;
+  };
+
+  const [startSignedUrl, setStartSignedUrl] = useState<string | null>(null);
+  const [endSignedUrl, setEndSignedUrl] = useState<string | null>(null);
+
+  // Generate signed URLs when screenshot paths change
+  useEffect(() => {
+    if (startScreenshotUrl) getSignedUrl(startScreenshotUrl).then(setStartSignedUrl);
+    else setStartSignedUrl(null);
+    if (endScreenshotUrl) getSignedUrl(endScreenshotUrl).then(setEndSignedUrl);
+    else setEndSignedUrl(null);
+  }, [startScreenshotUrl, endScreenshotUrl]);
+
   const runOcr = async () => {
     if (!startScreenshotUrl && !endScreenshotUrl) {
       toast.error("Upload at least one screenshot first");
@@ -58,10 +74,14 @@ export default function ScreenshotComparison({
     }
     setAnalyzing(true);
     try {
+      // Generate fresh signed URLs for the AI to access private screenshots
+      const startUrl = startScreenshotUrl ? await getSignedUrl(startScreenshotUrl) : null;
+      const endUrl = endScreenshotUrl ? await getSignedUrl(endScreenshotUrl) : null;
+
       const { data, error } = await supabase.functions.invoke("analyze-screenshot", {
         body: {
-          start_screenshot_url: startScreenshotUrl,
-          end_screenshot_url: endScreenshotUrl,
+          start_screenshot_url: startUrl,
+          end_screenshot_url: endUrl,
         },
       });
       if (error) throw error;
@@ -107,12 +127,12 @@ export default function ScreenshotComparison({
         {/* Start */}
         <div className="space-y-1.5">
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Start</p>
-          {startScreenshotUrl ? (
+          {startSignedUrl ? (
             <img
-              src={startScreenshotUrl}
+              src={startSignedUrl}
               alt="Start screenshot"
               className="rounded border border-border w-full aspect-video object-cover cursor-pointer"
-              onClick={() => window.open(startScreenshotUrl, "_blank")}
+              onClick={() => window.open(startSignedUrl, "_blank")}
             />
           ) : (
             <div className="rounded border border-dashed border-border aspect-video flex items-center justify-center bg-background/50">
@@ -154,12 +174,12 @@ export default function ScreenshotComparison({
         {/* End */}
         <div className="space-y-1.5">
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider">End</p>
-          {endScreenshotUrl ? (
+          {endSignedUrl ? (
             <img
-              src={endScreenshotUrl}
+              src={endSignedUrl}
               alt="End screenshot"
               className="rounded border border-border w-full aspect-video object-cover cursor-pointer"
-              onClick={() => window.open(endScreenshotUrl, "_blank")}
+              onClick={() => window.open(endSignedUrl, "_blank")}
             />
           ) : (
             <div className="rounded border border-dashed border-border aspect-video flex items-center justify-center bg-background/50">
