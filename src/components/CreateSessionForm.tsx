@@ -92,7 +92,7 @@ export default function CreateSessionForm() {
         </div>
         <div>
           <h2 className="font-display text-xl font-bold text-foreground">Create Session</h2>
-          <p className="text-xs text-muted-foreground">List a new staking session for backers</p>
+          <p className="text-xs text-muted-foreground">List a new staking session for users</p>
         </div>
       </div>
 

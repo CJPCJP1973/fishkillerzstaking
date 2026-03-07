@@ -66,7 +66,7 @@ export default function Index() {
               FISH<span className="text-primary glow-text-cyan">KILLERZ</span>
             </h1>
             <p className="text-muted-foreground text-base md:text-lg mb-6 max-w-md">
-              Back elite shooters on fish table sessions. Buy stakes, track live wins, and collect your cut.
+              Back elite players on fish table sessions. Buy stakes, track live wins, and collect your cut.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link to="/sessions">
@@ -76,7 +76,7 @@ export default function Index() {
               </Link>
               <Link to="/create">
                 <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/10 font-display font-bold px-6 py-5 text-base">
-                  I'm a Shooter
+                  I'm a Seller
                 </Button>
               </Link>
             </div>

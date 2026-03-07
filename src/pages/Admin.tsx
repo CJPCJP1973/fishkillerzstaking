@@ -1,14 +1,23 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye } from "lucide-react";
+import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle } from "lucide-react";
 import ScreenshotComparison from "@/components/admin/ScreenshotComparison";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface SellerRequest {
   id: string;
@@ -60,15 +69,33 @@ interface PayoutRow {
   session_info?: { shooter_name: string; platform: string } | null;
 }
 
+interface UserRow {
+  user_id: string;
+  display_name: string;
+  username: string;
+  email: string | null;
+  seller_status: string;
+  verified: boolean | null;
+  created_at: string | null;
+  roles: string[];
+}
+
 export default function Admin() {
   const [requests, setRequests] = useState<SellerRequest[]>([]);
   const [stakes, setStakes] = useState<PendingStake[]>([]);
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [payouts, setPayouts] = useState<PayoutRow[]>([]);
+  const [users, setUsers] = useState<UserRow[]>([]);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [settleSessionId, setSettleSessionId] = useState<string | null>(null);
   const [screenshotSessionId, setScreenshotSessionId] = useState<string | null>(null);
   const [cashOutAmount, setCashOutAmount] = useState("");
+  // God Mode state
+  const [manualPayoutSessionId, setManualPayoutSessionId] = useState("");
+  const [manualPayoutUserId, setManualPayoutUserId] = useState("");
+  const [manualPayoutAmount, setManualPayoutAmount] = useState("");
+  const [overrideSessionId, setOverrideSessionId] = useState("");
+  const [overrideStatus, setOverrideStatus] = useState("");
 
   const fetchRequests = async () => {
     const { data } = await supabase
@@ -141,11 +168,32 @@ export default function Admin() {
     })));
   };
 
+  const fetchUsers = async () => {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("user_id, display_name, username, email, seller_status, verified, created_at")
+      .order("created_at", { ascending: false });
+
+    if (!profiles) return;
+
+    const userIds = profiles.map((p) => p.user_id);
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("user_id, role")
+      .in("user_id", userIds);
+
+    setUsers(profiles.map((p) => ({
+      ...p,
+      roles: roles?.filter((r) => r.user_id === p.user_id).map((r) => r.role) || [],
+    })));
+  };
+
   useEffect(() => {
     fetchRequests();
     fetchPendingStakes();
     fetchSessions();
     fetchPayouts();
+    fetchUsers();
   }, []);
 
   const handleSellerAction = async (request: SellerRequest, action: "approved" | "rejected") => {
@@ -162,6 +210,7 @@ export default function Admin() {
       }
       toast.success(`Seller request ${action}`);
       fetchRequests();
+      fetchUsers();
     } catch (err: any) {
       toast.error(err.message || "Action failed");
     }
@@ -216,7 +265,6 @@ export default function Admin() {
     if (loadingId) return;
     setLoadingId(session.id);
     try {
-      // Get confirmed stakes for this session
       const { data: confirmedStakes } = await supabase
         .from("stakes")
         .select("id, backer_id, amount")
@@ -236,14 +284,12 @@ export default function Admin() {
       const feeAmount = Math.round(cashOut * PLATFORM_FEE_RATE * 100) / 100;
       const distributableAmount = cashOut - feeAmount;
 
-      // Fetch backer profiles and payment info
       const backerIds = confirmedStakes.map((s) => s.backer_id);
       const [{ data: profiles }, { data: paymentProfiles }] = await Promise.all([
         supabase.from("profiles").select("user_id, display_name, username").in("user_id", backerIds),
         supabase.from("payment_profiles").select("user_id, cashapp_tag").in("user_id", backerIds),
       ]);
 
-      // Calculate each backer's share of distributable amount (after rake)
       const payoutInserts = confirmedStakes.map((stake) => {
         const share = Number(stake.amount) / totalStaked;
         const amountOwed = Math.round(distributableAmount * share * 100) / 100;
@@ -263,7 +309,6 @@ export default function Admin() {
       const { error: payoutError } = await supabase.from("payouts").insert(payoutInserts as any);
       if (payoutError) throw payoutError;
 
-      // Update session status with fee info
       await supabase.from("sessions").update({
         status: "completed",
         winnings: cashOut,
@@ -286,17 +331,132 @@ export default function Admin() {
     setLoadingId(payout.id);
     try {
       await supabase.from("payouts").update({ status: "paid" } as any).eq("id", payout.id);
-
-      // Also update the stake's winnings fields
       await supabase.from("stakes").update({
         winnings_amount: payout.amount_owed,
         winnings_released: true,
       } as any).eq("id", payout.stake_id);
-
       toast.success(`Payout of $${payout.amount_owed} marked as paid`);
       fetchPayouts();
     } catch (err: any) {
       toast.error(err.message || "Failed to mark payout");
+    }
+    setLoadingId(null);
+  };
+
+  // God Mode: Toggle user ban (remove/add seller role + set status)
+  const handleBanUser = async (userRow: UserRow) => {
+    if (loadingId) return;
+    const isBanned = userRow.seller_status === "banned";
+    const confirmed = window.confirm(
+      isBanned
+        ? `Unban user "${userRow.display_name}"?`
+        : `Ban user "${userRow.display_name}"? They will lose seller access and cannot participate.`
+    );
+    if (!confirmed) return;
+    setLoadingId(userRow.user_id);
+    try {
+      if (isBanned) {
+        await supabase.from("profiles").update({ seller_status: "none" } as any).eq("user_id", userRow.user_id);
+        toast.success(`${userRow.display_name} unbanned`);
+      } else {
+        await supabase.from("profiles").update({ seller_status: "banned" } as any).eq("user_id", userRow.user_id);
+        // Remove seller role if they have it
+        await supabase.from("user_roles").delete().eq("user_id", userRow.user_id).eq("role", "seller" as any);
+        toast.success(`${userRow.display_name} banned`);
+      }
+      fetchUsers();
+    } catch (err: any) {
+      toast.error(err.message || "Action failed");
+    }
+    setLoadingId(null);
+  };
+
+  // God Mode: Toggle verified
+  const handleToggleVerified = async (userRow: UserRow) => {
+    if (loadingId) return;
+    setLoadingId(userRow.user_id);
+    try {
+      await supabase.from("profiles").update({ verified: !userRow.verified } as any).eq("user_id", userRow.user_id);
+      toast.success(`${userRow.display_name} ${userRow.verified ? "unverified" : "verified"}`);
+      fetchUsers();
+    } catch (err: any) {
+      toast.error(err.message || "Action failed");
+    }
+    setLoadingId(null);
+  };
+
+  // God Mode: Manual Payout Override
+  const handleManualPayout = async () => {
+    const amount = parseFloat(manualPayoutAmount);
+    if (!manualPayoutSessionId || !manualPayoutUserId || !amount || amount <= 0) {
+      toast.error("Fill in all manual payout fields");
+      return;
+    }
+    setLoadingId("manual-payout");
+    try {
+      // Get or create a dummy stake reference
+      const { data: existingStakes } = await supabase
+        .from("stakes")
+        .select("id")
+        .eq("session_id", manualPayoutSessionId)
+        .eq("backer_id", manualPayoutUserId)
+        .limit(1);
+
+      let stakeId = existingStakes?.[0]?.id;
+      if (!stakeId) {
+        // Create a manual stake record
+        const { data: newStake, error: stakeErr } = await supabase.from("stakes").insert({
+          session_id: manualPayoutSessionId,
+          backer_id: manualPayoutUserId,
+          amount: amount,
+          deposit_confirmed: true,
+          payment_method: "MANUAL_OVERRIDE",
+        } as any).select("id").single();
+        if (stakeErr) throw stakeErr;
+        stakeId = newStake?.id;
+      }
+
+      const { data: profile } = await supabase.from("profiles").select("display_name").eq("user_id", manualPayoutUserId).single();
+      const { data: payment } = await supabase.from("payment_profiles").select("cashapp_tag").eq("user_id", manualPayoutUserId).single();
+
+      const { error } = await supabase.from("payouts").insert({
+        session_id: manualPayoutSessionId,
+        stake_id: stakeId,
+        backer_id: manualPayoutUserId,
+        backer_name: profile?.display_name || "Manual Override",
+        backer_cashtag: payment?.cashapp_tag || null,
+        amount_owed: amount,
+        status: "pending",
+      } as any);
+      if (error) throw error;
+
+      toast.success(`Manual payout of $${amount} created`);
+      setManualPayoutSessionId("");
+      setManualPayoutUserId("");
+      setManualPayoutAmount("");
+      fetchPayouts();
+    } catch (err: any) {
+      toast.error(err.message || "Manual payout failed");
+    }
+    setLoadingId(null);
+  };
+
+  // God Mode: Session Status Override
+  const handleStatusOverride = async () => {
+    if (!overrideSessionId || !overrideStatus) {
+      toast.error("Select a session and status");
+      return;
+    }
+    setLoadingId("status-override");
+    try {
+      const { error } = await supabase.from("sessions").update({ status: overrideStatus } as any).eq("id", overrideSessionId);
+      if (error) throw error;
+      toast.success(`Session status overridden to "${overrideStatus}"`);
+      setOverrideSessionId("");
+      setOverrideStatus("");
+      fetchSessions();
+    } catch (err: any) {
+      toast.error(err.message || "Status override failed");
     }
     setLoadingId(null);
   };
@@ -317,12 +477,12 @@ export default function Admin() {
           <Shield className="h-6 w-6 text-accent" />
           <div>
             <h1 className="font-display text-2xl font-bold text-foreground">Admin Panel</h1>
-            <p className="text-xs text-muted-foreground">Manage sellers, escrow, sessions & payouts</p>
+            <p className="text-xs text-muted-foreground">Manage users, escrow, sessions & payouts</p>
           </div>
         </div>
 
         <Tabs defaultValue="escrow" className="w-full">
-          <TabsList className="bg-secondary">
+          <TabsList className="bg-secondary flex-wrap">
             <TabsTrigger value="escrow" className="font-display">
               Stakes ({stakes.length})
             </TabsTrigger>
@@ -334,6 +494,12 @@ export default function Admin() {
             </TabsTrigger>
             <TabsTrigger value="sessions" className="font-display">
               Sessions ({sessions.length})
+            </TabsTrigger>
+            <TabsTrigger value="users" className="font-display">
+              <Users className="h-3 w-3 mr-1" /> Users ({users.length})
+            </TabsTrigger>
+            <TabsTrigger value="godmode" className="font-display text-accent">
+              <Zap className="h-3 w-3 mr-1" /> God Mode
             </TabsTrigger>
           </TabsList>
 
@@ -572,17 +738,245 @@ export default function Admin() {
                       {cashOutAmount && (
                         <div className="text-[10px] text-muted-foreground space-y-0.5">
                           <p>Platform rake (10%): <span className="text-accent font-bold">${(parseFloat(cashOutAmount) * 0.1).toFixed(2)}</span></p>
-                          <p>Distributed to backers: <span className="text-success font-bold">${(parseFloat(cashOutAmount) * 0.9).toFixed(2)}</span></p>
+                          <p>Distributed to users: <span className="text-success font-bold">${(parseFloat(cashOutAmount) * 0.9).toFixed(2)}</span></p>
                         </div>
                       )}
                       <p className="text-[10px] text-muted-foreground">
-                        10% auto-rake deducted. Remainder split proportionally among backers.
+                        10% auto-rake deducted. Remainder split proportionally among stakers.
                       </p>
                     </div>
                   )}
                 </div>
               ))
             )}
+          </TabsContent>
+
+          {/* Users Tab */}
+          <TabsContent value="users" className="space-y-3 mt-4">
+            <h2 className="font-display text-lg font-bold text-foreground">All Users</h2>
+            {users.length === 0 ? (
+              <div className="gradient-card rounded-lg p-6 text-center">
+                <p className="text-muted-foreground text-sm">No users yet.</p>
+              </div>
+            ) : (
+              <div className="gradient-card rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>User</TableHead>
+                      <TableHead>Roles</TableHead>
+                      <TableHead>Seller</TableHead>
+                      <TableHead>Verified</TableHead>
+                      <TableHead>Joined</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users.map((u) => (
+                      <TableRow key={u.user_id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium text-foreground text-sm">{u.display_name}</p>
+                            <p className="text-xs text-primary">@{u.username}</p>
+                            <p className="text-[10px] text-muted-foreground">{u.user_id.slice(0, 8)}...</p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {u.roles.map((r) => (
+                              <Badge key={r} variant="outline" className="text-[10px]">{r}</Badge>
+                            ))}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={
+                            u.seller_status === "active" ? "bg-success/20 text-success border-success/30" :
+                            u.seller_status === "banned" ? "bg-destructive/20 text-destructive border-destructive/30" :
+                            u.seller_status === "pending" ? "bg-accent/20 text-accent border-accent/30" :
+                            "bg-secondary text-muted-foreground"
+                          }>
+                            {u.seller_status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Switch
+                            checked={!!u.verified}
+                            onCheckedChange={() => handleToggleVerified(u)}
+                            disabled={loadingId === u.user_id}
+                          />
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {u.created_at ? new Date(u.created_at).toLocaleDateString() : "—"}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={loadingId === u.user_id}
+                            onClick={() => handleBanUser(u)}
+                            className={u.seller_status === "banned"
+                              ? "text-success border-success/30 text-xs"
+                              : "text-destructive border-destructive/30 text-xs"
+                            }
+                          >
+                            <Ban className="h-3 w-3 mr-1" />
+                            {u.seller_status === "banned" ? "Unban" : "Ban"}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* God Mode Tab */}
+          <TabsContent value="godmode" className="space-y-6 mt-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Zap className="h-5 w-5 text-accent" />
+              <h2 className="font-display text-lg font-bold text-accent">GOD MODE</h2>
+              <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[10px]">
+                <AlertTriangle className="h-3 w-3 mr-1" /> Owner Only
+              </Badge>
+            </div>
+
+            {/* Manual Payout Override */}
+            <div className="gradient-card rounded-lg p-5 space-y-3">
+              <div className="flex items-center gap-2">
+                <Banknote className="h-4 w-4 text-success" />
+                <h3 className="font-display font-bold text-foreground">Manual Payout Override</h3>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Force-create a payout for a user on a session (e.g. crash/video proof override).
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Session ID</Label>
+                  <select
+                    value={manualPayoutSessionId}
+                    onChange={(e) => setManualPayoutSessionId(e.target.value)}
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">Select session</option>
+                    {sessions.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.shooter_name} — {s.platform} ({s.status})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">User ID</Label>
+                  <select
+                    value={manualPayoutUserId}
+                    onChange={(e) => setManualPayoutUserId(e.target.value)}
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">Select user</option>
+                    {users.map((u) => (
+                      <option key={u.user_id} value={u.user_id}>
+                        {u.display_name} (@{u.username})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Amount ($)</Label>
+                  <Input
+                    type="number"
+                    value={manualPayoutAmount}
+                    onChange={(e) => setManualPayoutAmount(e.target.value)}
+                    placeholder="500"
+                    className="bg-secondary border-border text-foreground"
+                    min={1}
+                  />
+                </div>
+              </div>
+              <Button
+                onClick={handleManualPayout}
+                disabled={loadingId === "manual-payout"}
+                className="gradient-primary text-primary-foreground font-display font-bold text-xs"
+              >
+                <Send className="h-3 w-3 mr-1" /> Force Create Payout
+              </Button>
+            </div>
+
+            {/* Session Status Override */}
+            <div className="gradient-card rounded-lg p-5 space-y-3">
+              <div className="flex items-center gap-2">
+                <Settings className="h-4 w-4 text-primary" />
+                <h3 className="font-display font-bold text-foreground">Session Status Override</h3>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Force-change the status of any session (e.g. mark disputed, cancel, reopen).
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Session</Label>
+                  <select
+                    value={overrideSessionId}
+                    onChange={(e) => setOverrideSessionId(e.target.value)}
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">Select session</option>
+                    {sessions.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.shooter_name} — {s.platform} [{s.status}]
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">New Status</Label>
+                  <select
+                    value={overrideStatus}
+                    onChange={(e) => setOverrideStatus(e.target.value)}
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">Select status</option>
+                    <option value="pending">Pending</option>
+                    <option value="funding">Funding</option>
+                    <option value="live">Live</option>
+                    <option value="completed">Completed</option>
+                    <option value="disputed">Disputed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+              </div>
+              <Button
+                onClick={handleStatusOverride}
+                disabled={loadingId === "status-override"}
+                className="gradient-primary text-primary-foreground font-display font-bold text-xs"
+              >
+                <Zap className="h-3 w-3 mr-1" /> Override Status
+              </Button>
+            </div>
+
+            {/* Platform Fee Info */}
+            <div className="gradient-card rounded-lg p-5 space-y-3">
+              <div className="flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-accent" />
+                <h3 className="font-display font-bold text-foreground">Auto-Rake Settings</h3>
+              </div>
+              <div className="bg-secondary rounded-md p-3 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Current Commission Rate</span>
+                  <span className="text-accent font-display font-bold">10%</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Seller Registration Fee</span>
+                  <span className="text-primary font-display font-bold">$10</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Seller Skin-in-the-Game Min</span>
+                  <span className="text-foreground font-display font-bold">25%</span>
+                </div>
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                Fixed global rate. Applied automatically on every session settlement.
+              </p>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

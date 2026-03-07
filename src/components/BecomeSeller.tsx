@@ -70,7 +70,7 @@ export default function BecomeSeller() {
           <div className="gradient-card rounded-lg p-4 space-y-2">
             <div className="flex items-center gap-2">
               <DollarSign className="h-5 w-5 text-primary" />
-              <span className="font-display font-bold text-foreground">Registration Fee: $25</span>
+              <span className="font-display font-bold text-foreground">Registration Fee: $10</span>
             </div>
             <p className="text-xs text-muted-foreground">Send payment to one of these:</p>
             <ul className="text-sm text-foreground space-y-1">
