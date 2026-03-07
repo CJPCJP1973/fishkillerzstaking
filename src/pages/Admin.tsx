@@ -211,12 +211,31 @@ export default function Admin() {
     })));
   };
 
+  const fetchConfirmedSellers = async () => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("user_id, display_name, username, email, seller_status, verified")
+      .eq("seller_status", "active")
+      .order("display_name", { ascending: true });
+    if (data) setConfirmedSellers(data);
+  };
+
+  const fetchAgents = async () => {
+    const { data } = await supabase
+      .from("confirmed_agents")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (data) setAgents(data as any);
+  };
+
   useEffect(() => {
     fetchRequests();
     fetchPendingStakes();
     fetchSessions();
     fetchPayouts();
     fetchUsers();
+    fetchConfirmedSellers();
+    fetchAgents();
   }, []);
 
   const handleSellerAction = async (request: SellerRequest, action: "approved" | "rejected") => {
