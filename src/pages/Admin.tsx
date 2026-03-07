@@ -489,6 +489,9 @@ export default function Admin() {
                         <p className="text-xs text-muted-foreground">
                           ${Number(s.total_buy_in).toLocaleString()} buy-in • ${Number(s.stake_sold || 0).toLocaleString()} sold
                           {s.winnings != null && ` • $${Number(s.winnings).toLocaleString()} cash-out`}
+                          {s.platform_fee != null && Number(s.platform_fee) > 0 && (
+                            <span className="text-accent"> • ${Number(s.platform_fee).toLocaleString()} rake</span>
+                          )}
                         </p>
                       </div>
                     </div>
@@ -496,6 +499,15 @@ export default function Admin() {
                       <Badge variant="outline" className={statusColor[s.status] || "bg-secondary text-muted-foreground"}>
                         {(s.status || "pending").toUpperCase()}
                       </Badge>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={loadingId === s.id}
+                        onClick={() => setScreenshotSessionId(screenshotSessionId === s.id ? null : s.id)}
+                        className="text-primary border-primary/30 text-xs"
+                      >
+                        <Eye className="h-3 w-3 mr-1" /> Verify
+                      </Button>
                       {s.status !== "completed" && (
                         <Button
                           size="sm"
@@ -522,6 +534,19 @@ export default function Admin() {
                     </div>
                   </div>
 
+                  {/* Screenshot Comparison */}
+                  {screenshotSessionId === s.id && (
+                    <ScreenshotComparison
+                      sessionId={s.id}
+                      startScreenshotUrl={s.start_screenshot_url}
+                      endScreenshotUrl={s.end_screenshot_url}
+                      ocrStartAmount={s.ocr_start_amount}
+                      ocrEndAmount={s.ocr_end_amount}
+                      ocrConfidence={s.ocr_confidence}
+                      onUpdate={fetchSessions}
+                    />
+                  )}
+
                   {/* Settle Form */}
                   {settleSessionId === s.id && (
                     <div className="bg-secondary rounded-md p-3 space-y-2">
@@ -544,8 +569,14 @@ export default function Admin() {
                           {loadingId === s.id ? "Settling..." : "Confirm Settle"}
                         </Button>
                       </div>
+                      {cashOutAmount && (
+                        <div className="text-[10px] text-muted-foreground space-y-0.5">
+                          <p>Platform rake (10%): <span className="text-accent font-bold">${(parseFloat(cashOutAmount) * 0.1).toFixed(2)}</span></p>
+                          <p>Distributed to backers: <span className="text-success font-bold">${(parseFloat(cashOutAmount) * 0.9).toFixed(2)}</span></p>
+                        </div>
+                      )}
                       <p className="text-[10px] text-muted-foreground">
-                        This will mark the session as completed, calculate each backer's share, and create pending payouts.
+                        10% auto-rake deducted. Remainder split proportionally among backers.
                       </p>
                     </div>
                   )}
