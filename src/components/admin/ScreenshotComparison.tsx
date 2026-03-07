@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
@@ -60,10 +60,12 @@ export default function ScreenshotComparison({
   const [endSignedUrl, setEndSignedUrl] = useState<string | null>(null);
 
   // Generate signed URLs when screenshot paths change
-  useState(() => {
+  useEffect(() => {
     if (startScreenshotUrl) getSignedUrl(startScreenshotUrl).then(setStartSignedUrl);
+    else setStartSignedUrl(null);
     if (endScreenshotUrl) getSignedUrl(endScreenshotUrl).then(setEndSignedUrl);
-  });
+    else setEndSignedUrl(null);
+  }, [startScreenshotUrl, endScreenshotUrl]);
 
   const runOcr = async () => {
     if (!startScreenshotUrl && !endScreenshotUrl) {
@@ -121,12 +123,12 @@ export default function ScreenshotComparison({
         {/* Start */}
         <div className="space-y-1.5">
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Start</p>
-          {startScreenshotUrl ? (
+          {startSignedUrl ? (
             <img
-              src={startScreenshotUrl}
+              src={startSignedUrl}
               alt="Start screenshot"
               className="rounded border border-border w-full aspect-video object-cover cursor-pointer"
-              onClick={() => window.open(startScreenshotUrl, "_blank")}
+              onClick={() => window.open(startSignedUrl, "_blank")}
             />
           ) : (
             <div className="rounded border border-dashed border-border aspect-video flex items-center justify-center bg-background/50">
@@ -168,12 +170,12 @@ export default function ScreenshotComparison({
         {/* End */}
         <div className="space-y-1.5">
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider">End</p>
-          {endScreenshotUrl ? (
+          {endSignedUrl ? (
             <img
-              src={endScreenshotUrl}
+              src={endSignedUrl}
               alt="End screenshot"
               className="rounded border border-border w-full aspect-video object-cover cursor-pointer"
-              onClick={() => window.open(endScreenshotUrl, "_blank")}
+              onClick={() => window.open(endSignedUrl, "_blank")}
             />
           ) : (
             <div className="rounded border border-dashed border-border aspect-video flex items-center justify-center bg-background/50">
