@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle, Plus, UserCog } from "lucide-react";
+import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle, Plus, UserCog, Wallet } from "lucide-react";
 import ScreenshotComparison from "@/components/admin/ScreenshotComparison";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -674,6 +674,9 @@ export default function Admin() {
             </TabsTrigger>
             <TabsTrigger value="agents" className="font-display">
               <UserCog className="h-3 w-3 mr-1" /> Agents ({agents.length})
+            </TabsTrigger>
+            <TabsTrigger value="wallet-ledger" className="font-display">
+              <Wallet className="h-3 w-3 mr-1" /> Wallet ({walletTxns.length})
             </TabsTrigger>
             <TabsTrigger value="godmode" className="font-display text-accent">
               <Zap className="h-3 w-3 mr-1" /> God Mode
