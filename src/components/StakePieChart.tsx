@@ -5,6 +5,7 @@ interface StakePieChartProps {
   pending: number;
   sold: number;
   sharePrice: number;
+  totalBuyIn: number;
   onClickAvailable?: () => void;
 }
 
@@ -12,23 +13,29 @@ const COLORS = {
   available: "hsl(150, 80%, 45%)",
   pending: "hsl(45, 100%, 50%)",
   sold: "hsl(0, 85%, 55%)",
+  skin: "hsl(200, 80%, 60%)",
 };
 
-export default function StakePieChart({ available, pending, sold, sharePrice, onClickAvailable }: StakePieChartProps) {
-  const total = available + pending + sold;
-  if (total === 0 || sharePrice <= 0) return null;
+export default function StakePieChart({ available, pending, sold, sharePrice, totalBuyIn, onClickAvailable }: StakePieChartProps) {
+  const stakedTotal = available + pending + sold;
+  if (totalBuyIn <= 0 || sharePrice <= 0) return null;
 
-  // Calculate individual shares
+  // Shooter's retained skin (the portion NOT offered for staking)
+  const skinAmount = Math.max(totalBuyIn - stakedTotal, 0);
+
   const availableShares = Math.floor(available / sharePrice);
   const pendingShares = Math.floor(pending / sharePrice);
   const soldShares = Math.floor(sold / sharePrice);
-  const totalShares = availableShares + pendingShares + soldShares;
+  const skinShares = Math.max(Math.floor(skinAmount / sharePrice), skinAmount > 0 ? 1 : 0);
+  const totalShares = availableShares + pendingShares + soldShares + skinShares;
 
   if (totalShares === 0) return null;
 
-  // Build individual slices — one per share
   const data: { name: string; value: number; color: string; label: string }[] = [];
 
+  for (let i = 0; i < skinShares; i++) {
+    data.push({ name: "Seller Skin", value: 1, color: COLORS.skin, label: `Seller #${i + 1}` });
+  }
   for (let i = 0; i < soldShares; i++) {
     data.push({ name: "Sold", value: 1, color: COLORS.sold, label: `Sold #${i + 1}` });
   }
@@ -94,8 +101,9 @@ export default function StakePieChart({ available, pending, sold, sharePrice, on
       </div>
 
       {/* Legend */}
-      <div className="flex justify-center gap-4 mt-2">
+      <div className="flex flex-wrap justify-center gap-3 mt-2">
         {[
+          { label: "Seller", color: "bg-sky-400", value: skinShares },
           { label: "Available", color: "bg-success", value: availableShares },
           { label: "Pending", color: "bg-accent", value: pendingShares },
           { label: "Sold", color: "bg-destructive", value: soldShares },

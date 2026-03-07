@@ -105,6 +105,7 @@ export default function SessionCard({ session }: { session: SessionData }) {
           pending={pendingAmount}
           sold={confirmedAmount}
           sharePrice={session.sharePrice}
+          totalBuyIn={session.totalBuyIn}
           onClickAvailable={() => available > 0 && setDrawerOpen(true)}
         />
 
