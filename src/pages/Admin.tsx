@@ -231,6 +231,11 @@ export default function Admin() {
 
       const totalStaked = confirmedStakes.reduce((sum, s) => sum + Number(s.amount), 0);
 
+      // Auto-Rake: 10% platform fee
+      const PLATFORM_FEE_RATE = 0.10;
+      const feeAmount = Math.round(cashOut * PLATFORM_FEE_RATE * 100) / 100;
+      const distributableAmount = cashOut - feeAmount;
+
       // Fetch backer profiles and payment info
       const backerIds = confirmedStakes.map((s) => s.backer_id);
       const [{ data: profiles }, { data: paymentProfiles }] = await Promise.all([
@@ -238,10 +243,10 @@ export default function Admin() {
         supabase.from("payment_profiles").select("user_id, cashapp_tag").in("user_id", backerIds),
       ]);
 
-      // Calculate each backer's share of the cash-out and create payouts
+      // Calculate each backer's share of distributable amount (after rake)
       const payoutInserts = confirmedStakes.map((stake) => {
         const share = Number(stake.amount) / totalStaked;
-        const amountOwed = Math.round(cashOut * share * 100) / 100;
+        const amountOwed = Math.round(distributableAmount * share * 100) / 100;
         const profile = profiles?.find((p) => p.user_id === stake.backer_id);
         const payment = paymentProfiles?.find((p) => p.user_id === stake.backer_id);
         return {
@@ -258,13 +263,14 @@ export default function Admin() {
       const { error: payoutError } = await supabase.from("payouts").insert(payoutInserts as any);
       if (payoutError) throw payoutError;
 
-      // Update session status
+      // Update session status with fee info
       await supabase.from("sessions").update({
         status: "completed",
         winnings: cashOut,
+        platform_fee: feeAmount,
       } as any).eq("id", session.id);
 
-      toast.success(`Session settled! ${payoutInserts.length} payouts created.`);
+      toast.success(`Settled! $${feeAmount} rake • ${payoutInserts.length} payouts created`);
       setSettleSessionId(null);
       setCashOutAmount("");
       fetchSessions();
