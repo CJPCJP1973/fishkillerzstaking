@@ -74,10 +74,14 @@ export default function ScreenshotComparison({
     }
     setAnalyzing(true);
     try {
+      // Generate fresh signed URLs for the AI to access private screenshots
+      const startUrl = startScreenshotUrl ? await getSignedUrl(startScreenshotUrl) : null;
+      const endUrl = endScreenshotUrl ? await getSignedUrl(endScreenshotUrl) : null;
+
       const { data, error } = await supabase.functions.invoke("analyze-screenshot", {
         body: {
-          start_screenshot_url: startScreenshotUrl,
-          end_screenshot_url: endScreenshotUrl,
+          start_screenshot_url: startUrl,
+          end_screenshot_url: endUrl,
         },
       });
       if (error) throw error;
