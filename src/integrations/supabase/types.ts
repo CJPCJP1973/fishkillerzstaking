@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      confirmed_agents: {
+        Row: {
+          agent_name: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          notes: string | null
+          platform: string
+        }
+        Insert: {
+          agent_name: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          platform: string
+        }
+        Update: {
+          agent_name?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          platform?: string
+        }
+        Relationships: []
+      }
       payment_profiles: {
         Row: {
           btc_address: string | null
