@@ -240,6 +240,26 @@ export default function Admin() {
     if (data) setAgents(data as any);
   };
 
+  const fetchWalletTxns = async () => {
+    const { data } = await supabase
+      .from("transactions")
+      .select("*")
+      .eq("status", "pending")
+      .order("created_at", { ascending: true });
+    if (!data) return;
+
+    const userIds = [...new Set((data as any[]).map((t: any) => t.user_id))];
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("user_id, display_name, username")
+      .in("user_id", userIds);
+
+    setWalletTxns((data as any[]).map((t: any) => ({
+      ...t,
+      user_profile: profiles?.find((p) => p.user_id === t.user_id) || null,
+    })));
+  };
+
   useEffect(() => {
     fetchRequests();
     fetchPendingStakes();
@@ -248,6 +268,7 @@ export default function Admin() {
     fetchUsers();
     fetchConfirmedSellers();
     fetchAgents();
+    fetchWalletTxns();
   }, []);
 
   const handleSellerAction = async (request: SellerRequest, action: "approved" | "rejected") => {
