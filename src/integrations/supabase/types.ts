@@ -21,7 +21,6 @@ export type Database = {
           created_by: string | null
           id: string
           notes: string | null
-          platform: string
         }
         Insert: {
           agent_name: string
@@ -29,7 +28,6 @@ export type Database = {
           created_by?: string | null
           id?: string
           notes?: string | null
-          platform: string
         }
         Update: {
           agent_name?: string
@@ -37,7 +35,6 @@ export type Database = {
           created_by?: string | null
           id?: string
           notes?: string | null
-          platform?: string
         }
         Relationships: []
       }

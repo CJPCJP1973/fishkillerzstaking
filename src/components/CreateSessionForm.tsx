@@ -11,7 +11,6 @@ import { useAuth } from "@/hooks/useAuth";
 interface ConfirmedAgent {
   id: string;
   agent_name: string;
-  platform: string;
 }
 
 export default function CreateSessionForm() {
@@ -31,17 +30,12 @@ export default function CreateSessionForm() {
     const fetchAgents = async () => {
       const { data } = await supabase
         .from("confirmed_agents")
-        .select("id, agent_name, platform")
+        .select("id, agent_name")
         .order("agent_name", { ascending: true });
       if (data) setAgents(data as any);
     };
     fetchAgents();
   }, []);
-
-  // Derive unique platforms from confirmed agents
-  const platforms = [...new Set(agents.map((a) => a.platform))];
-  // Filter agents by selected platform
-  const filteredAgents = platform ? agents.filter((a) => a.platform === platform) : agents;
 
   const buyInNum = parseFloat(totalBuyIn) || 0;
   const percentNum = parseFloat(stakePercent) || 0;
@@ -123,31 +117,25 @@ export default function CreateSessionForm() {
 
         <div>
           <Label className="text-sm text-muted-foreground">Game Platform</Label>
-          <Select value={platform} onValueChange={(val) => { setPlatform(val); setAgentRoom(""); }}>
-            <SelectTrigger className="bg-secondary border-border text-foreground">
-              <SelectValue placeholder="Select platform" />
-            </SelectTrigger>
-            <SelectContent className="bg-card border-border">
-              {platforms.length > 0 ? platforms.map((p) => (
-                <SelectItem key={p} value={p}>{p}</SelectItem>
-              )) : (
-                <div className="px-3 py-2 text-xs text-muted-foreground">No platforms available. Admin must add agents first.</div>
-              )}
-            </SelectContent>
-          </Select>
+          <Input
+            value={platform}
+            onChange={(e) => setPlatform(e.target.value)}
+            placeholder="e.g. Golden Dragon"
+            className="bg-secondary border-border text-foreground"
+          />
         </div>
 
         <div>
           <Label className="text-sm text-muted-foreground">Agent</Label>
-          <Select value={agentRoom} onValueChange={setAgentRoom} disabled={!platform}>
+          <Select value={agentRoom} onValueChange={setAgentRoom}>
             <SelectTrigger className="bg-secondary border-border text-foreground">
-              <SelectValue placeholder={platform ? "Select confirmed agent" : "Select a platform first"} />
+              <SelectValue placeholder="Select confirmed agent" />
             </SelectTrigger>
             <SelectContent className="bg-card border-border">
-              {filteredAgents.length > 0 ? filteredAgents.map((a) => (
+              {agents.length > 0 ? agents.map((a) => (
                 <SelectItem key={a.id} value={a.agent_name}>{a.agent_name}</SelectItem>
               )) : (
-                <div className="px-3 py-2 text-xs text-muted-foreground">No confirmed agents for this platform.</div>
+                <div className="px-3 py-2 text-xs text-muted-foreground">No agents available. Admin must add agents first.</div>
               )}
             </SelectContent>
           </Select>
