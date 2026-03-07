@@ -123,26 +123,35 @@ export default function CreateSessionForm() {
 
         <div>
           <Label className="text-sm text-muted-foreground">Game Platform</Label>
-          <Select value={platform} onValueChange={setPlatform}>
+          <Select value={platform} onValueChange={(val) => { setPlatform(val); setAgentRoom(""); }}>
             <SelectTrigger className="bg-secondary border-border text-foreground">
               <SelectValue placeholder="Select platform" />
             </SelectTrigger>
             <SelectContent className="bg-card border-border">
-              {platforms.map((p) => (
+              {platforms.length > 0 ? platforms.map((p) => (
                 <SelectItem key={p} value={p}>{p}</SelectItem>
-              ))}
+              )) : (
+                <div className="px-3 py-2 text-xs text-muted-foreground">No platforms available. Admin must add agents first.</div>
+              )}
             </SelectContent>
           </Select>
         </div>
 
         <div>
-          <Label className="text-sm text-muted-foreground">Agent / Room Name</Label>
-          <Input
-            value={agentRoom}
-            onChange={(e) => setAgentRoom(e.target.value)}
-            placeholder="e.g. Room #42"
-            className="bg-secondary border-border text-foreground"
-          />
+          <Label className="text-sm text-muted-foreground">Agent</Label>
+          <Select value={agentRoom} onValueChange={setAgentRoom} disabled={!platform}>
+            <SelectTrigger className="bg-secondary border-border text-foreground">
+              <SelectValue placeholder={platform ? "Select confirmed agent" : "Select a platform first"} />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-border">
+              {filteredAgents.length > 0 ? filteredAgents.map((a) => (
+                <SelectItem key={a.id} value={a.agent_name}>{a.agent_name}</SelectItem>
+              )) : (
+                <div className="px-3 py-2 text-xs text-muted-foreground">No confirmed agents for this platform.</div>
+              )}
+            </SelectContent>
+          </Select>
+          <p className="text-[10px] text-muted-foreground mt-1">Only admin-approved agents are available.</p>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
