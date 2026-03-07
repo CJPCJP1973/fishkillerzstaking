@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 import BecomeSeller from "@/components/BecomeSeller";
 import PaymentSettings from "@/components/PaymentSettings";
+import WalletTab from "@/components/WalletTab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 
@@ -59,12 +60,17 @@ export default function Profile() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue={isSeller ? "sessions" : "stakes"} className="w-full">
+        <Tabs defaultValue="wallet" className="w-full">
           <TabsList className="w-full bg-secondary">
+            <TabsTrigger value="wallet" className="flex-1 font-display">Wallet</TabsTrigger>
             {isSeller && <TabsTrigger value="sessions" className="flex-1 font-display">My Sessions</TabsTrigger>}
             <TabsTrigger value="stakes" className="flex-1 font-display">My Stakes</TabsTrigger>
             <TabsTrigger value="payments" className="flex-1 font-display">Payments</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="wallet" className="mt-4">
+            <WalletTab />
+          </TabsContent>
 
           {isSeller && (
             <TabsContent value="sessions" className="space-y-4 mt-4">
