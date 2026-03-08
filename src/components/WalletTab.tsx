@@ -288,7 +288,7 @@ export default function WalletTab() {
           </div>
         ) : (
           <div className="space-y-2">
-            {transactions.map((tx) => (
+            {filteredTxns.map((tx) => (
               <div key={tx.id} className="gradient-card rounded-lg p-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {typeConfig[tx.type]?.icon || <Clock className="h-5 w-5 text-muted-foreground" />}
