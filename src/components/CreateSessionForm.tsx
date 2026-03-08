@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Crosshair } from "lucide-react";
+import { Crosshair, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import PaymentSettings from "@/components/PaymentSettings";
@@ -24,6 +25,9 @@ export default function CreateSessionForm() {
   const [endTime, setEndTime] = useState("");
   const [sharePrice, setSharePrice] = useState("");
   const [streamUrl, setStreamUrl] = useState("");
+  const [cashoutWindow, setCashoutWindow] = useState("");
+  const [dailyLimit, setDailyLimit] = useState("");
+  const [payoutAgreement, setPayoutAgreement] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [agents, setAgents] = useState<ConfirmedAgent[]>([]);
 
@@ -52,8 +56,12 @@ export default function CreateSessionForm() {
       toast.error("Maximum stake is 75%. You must keep 25% skin-in-the-game!");
       return;
     }
-    if (!shooterName || !platform || !agentRoom || !totalBuyIn || !stakePercent || !sharePrice || !endTime) {
+    if (!shooterName || !platform || !agentRoom || !totalBuyIn || !stakePercent || !sharePrice || !endTime || !cashoutWindow || !dailyLimit) {
       toast.error("Please fill in all fields");
+      return;
+    }
+    if (!payoutAgreement) {
+      toast.error("You must agree to the payout terms before creating a session");
       return;
     }
     if (!user) {
@@ -74,6 +82,9 @@ export default function CreateSessionForm() {
         end_time: new Date(endTime).toISOString(),
         stream_url: streamUrl || null,
         status: "funding",
+        agent_cashout_window: cashoutWindow,
+        agent_daily_limit: dailyLimit,
+        seller_payout_agreement: true,
       } as any);
 
       if (error) throw error;
@@ -87,6 +98,9 @@ export default function CreateSessionForm() {
       setSharePrice("");
       setEndTime("");
       setStreamUrl("");
+      setCashoutWindow("");
+      setDailyLimit("");
+      setPayoutAgreement(false);
     } catch (err: any) {
       toast.error(err.message || "Failed to create session");
     }
@@ -225,6 +239,44 @@ export default function CreateSessionForm() {
             placeholder="https://kick.com/yourstream"
             className="bg-secondary border-border text-foreground"
           />
+        </div>
+
+        {/* Agent Disclosure */}
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
+          <div className="flex items-center gap-2 mb-1">
+            <FileText className="h-4 w-4 text-primary" />
+            <span className="font-display font-bold text-sm text-foreground">Agent Disclosure (Required)</span>
+          </div>
+          <p className="text-[10px] text-muted-foreground">These terms will be shown to backers before they accept a stake. They form a binding agreement for dispute resolution.</p>
+          <div>
+            <Label className="text-sm text-muted-foreground">Agent Cashout Window</Label>
+            <Input
+              value={cashoutWindow}
+              onChange={(e) => setCashoutWindow(e.target.value)}
+              placeholder="e.g. 12pm - 10pm EST"
+              className="bg-secondary border-border text-foreground"
+            />
+          </div>
+          <div>
+            <Label className="text-sm text-muted-foreground">Daily Cashout Limit</Label>
+            <Input
+              value={dailyLimit}
+              onChange={(e) => setDailyLimit(e.target.value)}
+              placeholder="e.g. $1,000 or Unlimited"
+              className="bg-secondary border-border text-foreground"
+            />
+          </div>
+          <div className="flex items-start gap-2 pt-1">
+            <Checkbox
+              id="payout-agreement"
+              checked={payoutAgreement}
+              onCheckedChange={(v) => setPayoutAgreement(v === true)}
+              className="mt-0.5"
+            />
+            <label htmlFor="payout-agreement" className="text-xs text-foreground leading-tight cursor-pointer">
+              I agree to pay the Backer their pro-rata share within 60 minutes of any partial agent cashout.
+            </label>
+          </div>
         </div>
       </div>
 
