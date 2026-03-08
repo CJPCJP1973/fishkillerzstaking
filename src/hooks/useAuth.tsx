@@ -66,7 +66,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
+        // On password recovery, redirect to reset page instead of auto-login
+        if (event === "PASSWORD_RECOVERY") {
+          // Navigate to reset-password page — use window.location to ensure it works
+          // even before React Router is fully ready
+          if (window.location.pathname !== "/reset-password") {
+            window.location.href = "/reset-password";
+          }
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+          return;
+        }
+
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
