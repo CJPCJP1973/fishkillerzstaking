@@ -517,10 +517,8 @@ export default function Admin() {
     try {
       // Update transaction status
       await supabase.from("transactions").update({ status: "confirmed" } as any).eq("id", tx.id);
-      // Add to user balance
-      const { data: profile } = await supabase.from("profiles").select("balance").eq("user_id", tx.user_id).single();
-      const newBalance = (Number((profile as any)?.balance) || 0) + Number(tx.amount);
-      await supabase.from("profiles").update({ balance: newBalance } as any).eq("user_id", tx.user_id);
+      // Atomically add to user balance
+      await supabase.rpc("adjust_balance", { target_uid: tx.user_id, delta: tx.amount });
       toast.success(`Deposit of $${tx.amount} approved for ${tx.user_profile?.display_name}`);
       fetchWalletTxns();
     } catch (err: any) {
@@ -534,15 +532,8 @@ export default function Admin() {
     if (loadingId) return;
     setLoadingId(tx.id);
     try {
-      const { data: profile } = await supabase.from("profiles").select("balance").eq("user_id", tx.user_id).single();
-      const currentBalance = Number((profile as any)?.balance) || 0;
-      if (currentBalance < tx.amount) {
-        toast.error("User has insufficient balance");
-        setLoadingId(null);
-        return;
-      }
-      const newBalance = currentBalance - tx.amount;
-      await supabase.from("profiles").update({ balance: newBalance } as any).eq("user_id", tx.user_id);
+      // Atomically deduct from user balance
+      await supabase.rpc("adjust_balance", { target_uid: tx.user_id, delta: -tx.amount });
       await supabase.from("transactions").update({ status: "settled" } as any).eq("id", tx.id);
       toast.success(`Withdrawal of $${tx.amount} settled for ${tx.user_profile?.display_name}`);
       fetchWalletTxns();
