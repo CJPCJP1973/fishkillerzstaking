@@ -32,6 +32,8 @@ const statusStyles: Record<string, string> = {
 
 export default function SessionCard({ session }: { session: SessionData }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [journalOpen, setJournalOpen] = useState(false);
+  const { user } = useAuth();
   const [pendingAmount, setPendingAmount] = useState(0);
   const [confirmedAmount, setConfirmedAmount] = useState(0);
 
