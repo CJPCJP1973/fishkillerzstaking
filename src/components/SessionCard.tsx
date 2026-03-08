@@ -122,15 +122,29 @@ export default function SessionCard({ session }: { session: SessionData }) {
             <Clock className="h-3.5 w-3.5" />
             <span>Ends: {session.endTime}</span>
           </div>
-          {available > 0 && (
-            <button
-              onClick={() => setDrawerOpen(true)}
-              className="text-xs font-display font-bold text-primary hover:text-primary/80 transition-colors"
-            >
-              TAP GREEN TO BUY →
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {user && (
+              <button
+                onClick={() => setJournalOpen(!journalOpen)}
+                className="text-xs font-display font-bold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5"
+              >
+                Journal
+                {journalOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+              </button>
+            )}
+            {available > 0 && (
+              <button
+                onClick={() => setDrawerOpen(true)}
+                className="text-xs font-display font-bold text-primary hover:text-primary/80 transition-colors"
+              >
+                TAP GREEN TO BUY →
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Session Journal */}
+        {journalOpen && <SessionJournal sessionId={session.id} />}
       </div>
 
       <BuyStakeDrawer
