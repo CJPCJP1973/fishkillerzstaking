@@ -107,6 +107,16 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
 
       // Update stake_sold on session for FishDollarz (auto-confirmed)
       if (paymentMethod === "fishdollarz") {
+        // Record transaction for wallet history
+        await supabase.from("transactions").insert({
+          user_id: user.id,
+          amount: numAmount,
+          type: "stake",
+          status: "completed",
+          payment_method: "FishDollarz",
+          notes: `Stake on ${session.shooterName} (${session.platform})`,
+        } as any);
+
         await supabase
           .from("sessions")
           .update({ stake_sold: (session.stakeSold || 0) + numAmount })
