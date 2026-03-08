@@ -52,6 +52,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                 </Link>
               );
             })}
+            <NotificationBell />
             {user ? (
               <button
                 onClick={handleSignOut}
