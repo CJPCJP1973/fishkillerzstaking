@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { Clock, Crosshair, DollarSign } from "lucide-react";
+import { Clock, Crosshair, DollarSign, ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import StakePieChart from "./StakePieChart";
 import BuyStakeDrawer from "./BuyStakeDrawer";
 import TierBadge from "./TierBadge";
+import SessionJournal from "./SessionJournal";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export interface SessionData {
   id: string;
