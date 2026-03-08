@@ -41,6 +41,9 @@ export default function WalletTab() {
   const [amount, setAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [filter, setFilter] = useState("all");
+
+  const filteredTxns = filter === "all" ? transactions : transactions.filter((t) => t.type === filter);
 
   const fetchBalance = async () => {
     if (!user) return;
@@ -263,14 +266,29 @@ export default function WalletTab() {
 
       {/* Transaction History */}
       <div>
-        <h3 className="font-display font-bold text-foreground text-sm mb-3">Transaction History</h3>
-        {transactions.length === 0 ? (
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-display font-bold text-foreground text-sm">Transaction History</h3>
+          <div className="flex gap-1">
+            {["all", "deposit", "withdrawal", "stake", "payout"].map((f) => (
+              <Button
+                key={f}
+                size="sm"
+                variant={filter === f ? "default" : "ghost"}
+                className={`text-[10px] h-7 px-2 ${filter === f ? "gradient-primary text-primary-foreground" : "text-muted-foreground"}`}
+                onClick={() => setFilter(f)}
+              >
+                {f === "all" ? "All" : typeConfig[f]?.label || f}
+              </Button>
+            ))}
+          </div>
+        </div>
+        {filteredTxns.length === 0 ? (
           <div className="gradient-card rounded-lg p-6 text-center">
             <p className="text-muted-foreground text-sm">No transactions yet.</p>
           </div>
         ) : (
           <div className="space-y-2">
-            {transactions.map((tx) => (
+            {filteredTxns.map((tx) => (
               <div key={tx.id} className="gradient-card rounded-lg p-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {typeConfig[tx.type]?.icon || <Clock className="h-5 w-5 text-muted-foreground" />}
