@@ -7,6 +7,7 @@ import { SpeedInsights } from "@vercel/speed-insights/react";
 import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Sessions from "./pages/Sessions";
+import VipSessions from "./pages/VipSessions";
 import CreateSession from "./pages/CreateSession";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
@@ -31,6 +32,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/sessions" element={<Sessions />} />
+            <Route path="/vip-sessions" element={<VipSessions />} />
             <Route path="/create" element={<CreateSession />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/admin" element={<ProtectedRoute requireAdmin><Admin /></ProtectedRoute>} />
