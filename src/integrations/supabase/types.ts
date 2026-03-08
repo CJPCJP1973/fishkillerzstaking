@@ -146,6 +146,8 @@ export type Database = {
           updated_at: string | null
           user_id: string
           username: string
+          verification_note: string | null
+          verification_status: string
           verified: boolean | null
           win_rate: number | null
         }
@@ -163,6 +165,8 @@ export type Database = {
           updated_at?: string | null
           user_id: string
           username: string
+          verification_note?: string | null
+          verification_status?: string
           verified?: boolean | null
           win_rate?: number | null
         }
@@ -180,6 +184,8 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           username?: string
+          verification_note?: string | null
+          verification_status?: string
           verified?: boolean | null
           win_rate?: number | null
         }
