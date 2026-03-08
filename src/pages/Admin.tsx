@@ -127,6 +127,9 @@ export default function Admin() {
   const [confirmedSellers, setConfirmedSellers] = useState<ConfirmedSeller[]>([]);
   const [agents, setAgents] = useState<ConfirmedAgent[]>([]);
   const [walletTxns, setWalletTxns] = useState<WalletTransaction[]>([]);
+  const [pendingVerifications, setPendingVerifications] = useState<PendingVerification[]>([]);
+  const [verificationNotes, setVerificationNotes] = useState<Record<string, string>>({});
+  const [verificationImages, setVerificationImages] = useState<Record<string, string>>({});
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [settleSessionId, setSettleSessionId] = useState<string | null>(null);
   const [screenshotSessionId, setScreenshotSessionId] = useState<string | null>(null);
