@@ -260,6 +260,44 @@ export type Database = {
         }
         Relationships: []
       }
+      session_journal: {
+        Row: {
+          author_name: string
+          created_at: string
+          entry_type: string
+          id: string
+          message: string
+          session_id: string
+          user_id: string | null
+        }
+        Insert: {
+          author_name?: string
+          created_at?: string
+          entry_type?: string
+          id?: string
+          message: string
+          session_id: string
+          user_id?: string | null
+        }
+        Update: {
+          author_name?: string
+          created_at?: string
+          entry_type?: string
+          id?: string
+          message?: string
+          session_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_journal_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sessions: {
         Row: {
           admin_confirmed_deposit: boolean | null
