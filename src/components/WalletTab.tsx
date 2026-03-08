@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Wallet, ArrowDownCircle, ArrowUpCircle, Clock } from "lucide-react";
+import { Wallet, ArrowDownCircle, ArrowUpCircle, Clock, Crosshair, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +28,7 @@ interface Transaction {
   type: string;
   status: string;
   payment_method: string | null;
+  notes: string | null;
   created_at: string;
 }
 
@@ -132,11 +133,11 @@ export default function WalletTab() {
     rejected: "bg-destructive/20 text-destructive border-destructive/30",
   };
 
-  const typeIcon: Record<string, string> = {
-    deposit: "↓",
-    withdrawal: "↑",
-    stake: "🎯",
-    payout: "💰",
+  const typeConfig: Record<string, { icon: React.ReactNode; label: string; color: string }> = {
+    deposit: { icon: <ArrowDownCircle className="h-5 w-5 text-success" />, label: "Deposit", color: "text-success" },
+    withdrawal: { icon: <ArrowUpCircle className="h-5 w-5 text-destructive" />, label: "Withdrawal", color: "text-destructive" },
+    stake: { icon: <Crosshair className="h-5 w-5 text-primary" />, label: "Stake Purchase", color: "text-destructive" },
+    payout: { icon: <Gift className="h-5 w-5 text-accent" />, label: "Payout", color: "text-success" },
   };
 
   return (
@@ -272,16 +273,17 @@ export default function WalletTab() {
             {transactions.map((tx) => (
               <div key={tx.id} className="gradient-card rounded-lg p-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="text-lg">{typeIcon[tx.type] || "•"}</span>
+                  {typeConfig[tx.type]?.icon || <Clock className="h-5 w-5 text-muted-foreground" />}
                   <div>
-                    <p className="text-sm font-medium text-foreground capitalize">{tx.type}</p>
+                    <p className="text-sm font-medium text-foreground">{typeConfig[tx.type]?.label || tx.type}</p>
+                    {tx.notes && <p className="text-[10px] text-primary/80 font-medium">{tx.notes}</p>}
                     <p className="text-[10px] text-muted-foreground">
                       {tx.payment_method || "—"} • {new Date(tx.created_at).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className={`text-sm font-display font-bold ${tx.type === "deposit" || tx.type === "payout" ? "text-success" : "text-destructive"}`}>
+                  <p className={`text-sm font-display font-bold ${typeConfig[tx.type]?.color || "text-foreground"}`}>
                     {tx.type === "deposit" || tx.type === "payout" ? "+" : "-"}${Number(tx.amount).toFixed(2)}
                   </p>
                   <Badge variant="outline" className={`text-[10px] ${statusColor[tx.status] || ""}`}>
