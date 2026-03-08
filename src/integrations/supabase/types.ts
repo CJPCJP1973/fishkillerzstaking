@@ -123,6 +123,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "payouts_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "payouts_stake_id_fkey"
             columns: ["stake_id"]
             isOneToOne: false
@@ -344,6 +351,13 @@ export type Database = {
             referencedRelation: "sessions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "stakes_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       transactions: {
@@ -433,6 +447,13 @@ export type Database = {
             referencedRelation: "sessions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "win_feed_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
@@ -482,6 +503,51 @@ export type Database = {
           username?: string | null
           verified?: boolean | null
           win_rate?: number | null
+        }
+        Relationships: []
+      }
+      sessions_public: {
+        Row: {
+          agent_room: string | null
+          created_at: string | null
+          end_time: string | null
+          id: string | null
+          platform: string | null
+          share_price: number | null
+          shooter_name: string | null
+          stake_available: number | null
+          stake_sold: number | null
+          status: Database["public"]["Enums"]["session_status"] | null
+          stream_url: string | null
+          total_buy_in: number | null
+        }
+        Insert: {
+          agent_room?: string | null
+          created_at?: string | null
+          end_time?: string | null
+          id?: string | null
+          platform?: string | null
+          share_price?: number | null
+          shooter_name?: string | null
+          stake_available?: number | null
+          stake_sold?: number | null
+          status?: Database["public"]["Enums"]["session_status"] | null
+          stream_url?: string | null
+          total_buy_in?: number | null
+        }
+        Update: {
+          agent_room?: string | null
+          created_at?: string | null
+          end_time?: string | null
+          id?: string | null
+          platform?: string | null
+          share_price?: number | null
+          shooter_name?: string | null
+          stake_available?: number | null
+          stake_sold?: number | null
+          status?: Database["public"]["Enums"]["session_status"] | null
+          stream_url?: string | null
+          total_buy_in?: number | null
         }
         Relationships: []
       }
