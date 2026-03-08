@@ -743,6 +743,26 @@ export default function Admin() {
           </div>
         </div>
 
+        {/* Platform Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: "FishDollarz in Escrow", value: `$${platformStats.totalEscrow.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: Wallet, color: "text-primary" },
+            { label: "Total Paid Out", value: `$${platformStats.totalPaidOut.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: Send, color: "text-success" },
+            { label: "Total Raked", value: `$${platformStats.totalRaked.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: TrendingUp, color: "text-accent" },
+            { label: "Registration Fees", value: `$${platformStats.totalRegFees.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: Users, color: "text-primary" },
+          ].map((stat) => (
+            <div key={stat.label} className="gradient-card rounded-lg p-3 flex items-center gap-3">
+              <div className={`p-2 rounded-md bg-secondary ${stat.color}`}>
+                <stat.icon className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-lg font-display font-bold text-foreground">{stat.value}</p>
+                <p className="text-xs text-muted-foreground">{stat.label}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
         <Tabs defaultValue="escrow" className="w-full">
           <TabsList className="bg-secondary flex-wrap">
             <TabsTrigger value="escrow" className="font-display">
