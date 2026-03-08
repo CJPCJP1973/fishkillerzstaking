@@ -563,6 +563,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_session_backer: {
+        Args: { _session_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_session_shooter: {
+        Args: { _session_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "shooter" | "backer" | "seller"
