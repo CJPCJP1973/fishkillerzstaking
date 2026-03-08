@@ -275,6 +275,57 @@ export default function Admin() {
     })));
   };
 
+  const fetchPendingVerifications = async () => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("user_id, display_name, username, email, verification_status, verification_note")
+      .eq("verification_status", "pending_verification")
+      .order("created_at", { ascending: true });
+    if (!data) return;
+    setPendingVerifications(data as any);
+
+    // Fetch signed URLs for each user's ID image
+    const imageMap: Record<string, string> = {};
+    for (const profile of data) {
+      const { data: files } = await supabase.storage
+        .from("user-ids")
+        .list(profile.user_id, { limit: 1 });
+      if (files && files.length > 0) {
+        const { data: signedData } = await supabase.storage
+          .from("user-ids")
+          .createSignedUrl(`${profile.user_id}/${files[0].name}`, 3600);
+        if (signedData?.signedUrl) {
+          imageMap[profile.user_id] = signedData.signedUrl;
+        }
+      }
+    }
+    setVerificationImages(imageMap);
+  };
+
+  const handleVerificationAction = async (profile: PendingVerification, action: "verified" | "rejected") => {
+    if (loadingId) return;
+    setLoadingId(profile.user_id);
+    try {
+      const updateData: any = { verification_status: action };
+      if (action === "verified") {
+        updateData.verified = true;
+        updateData.verification_note = null;
+      } else {
+        updateData.verification_note = verificationNotes[profile.user_id]?.trim() || "ID rejected";
+      }
+      const { error } = await supabase
+        .from("profiles")
+        .update(updateData)
+        .eq("user_id", profile.user_id);
+      if (error) throw error;
+      toast.success(`User ${action === "verified" ? "approved" : "rejected"}`);
+      fetchPendingVerifications();
+    } catch (err: any) {
+      toast.error(err.message || "Action failed");
+    }
+    setLoadingId(null);
+  };
+
   useEffect(() => {
     fetchRequests();
     fetchPendingStakes();
@@ -284,6 +335,7 @@ export default function Admin() {
     fetchConfirmedSellers();
     fetchAgents();
     fetchWalletTxns();
+    fetchPendingVerifications();
   }, []);
 
   const handleSellerAction = async (request: SellerRequest, action: "approved" | "rejected") => {
