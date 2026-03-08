@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { Clock, Crosshair, DollarSign } from "lucide-react";
+import { Clock, Crosshair, DollarSign, ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import StakePieChart from "./StakePieChart";
 import BuyStakeDrawer from "./BuyStakeDrawer";
 import TierBadge from "./TierBadge";
+import SessionJournal from "./SessionJournal";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export interface SessionData {
   id: string;
@@ -30,6 +32,8 @@ const statusStyles: Record<string, string> = {
 
 export default function SessionCard({ session }: { session: SessionData }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [journalOpen, setJournalOpen] = useState(false);
+  const { user } = useAuth();
   const [pendingAmount, setPendingAmount] = useState(0);
   const [confirmedAmount, setConfirmedAmount] = useState(0);
 
@@ -118,15 +122,29 @@ export default function SessionCard({ session }: { session: SessionData }) {
             <Clock className="h-3.5 w-3.5" />
             <span>Ends: {session.endTime}</span>
           </div>
-          {available > 0 && (
-            <button
-              onClick={() => setDrawerOpen(true)}
-              className="text-xs font-display font-bold text-primary hover:text-primary/80 transition-colors"
-            >
-              TAP GREEN TO BUY →
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {user && (
+              <button
+                onClick={() => setJournalOpen(!journalOpen)}
+                className="text-xs font-display font-bold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5"
+              >
+                Journal
+                {journalOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+              </button>
+            )}
+            {available > 0 && (
+              <button
+                onClick={() => setDrawerOpen(true)}
+                className="text-xs font-display font-bold text-primary hover:text-primary/80 transition-colors"
+              >
+                TAP GREEN TO BUY →
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Session Journal */}
+        {journalOpen && <SessionJournal sessionId={session.id} />}
       </div>
 
       <BuyStakeDrawer
