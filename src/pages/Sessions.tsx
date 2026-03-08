@@ -10,10 +10,7 @@ export default function Sessions() {
 
   useEffect(() => {
     const fetch = async () => {
-      const { data } = await supabase
-        .from("sessions")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const { data } = await supabase.rpc("get_public_sessions");
 
       if (data) {
         setSessions(
