@@ -11,6 +11,8 @@ interface AuthContextType {
   isSeller: boolean;
   sellerStatus: string;
   username: string | null;
+  verificationStatus: string;
+  verificationNote: string | null;
   signOut: () => Promise<void>;
 }
 
@@ -23,6 +25,8 @@ const AuthContext = createContext<AuthContextType>({
   isSeller: false,
   sellerStatus: "none",
   username: null,
+  verificationStatus: "none",
+  verificationNote: null,
   signOut: async () => {},
 });
 
@@ -35,6 +39,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userRoles, setUserRoles] = useState<string[]>([]);
   const [sellerStatus, setSellerStatus] = useState("none");
   const [username, setUsername] = useState<string | null>(null);
+  const [verificationStatus, setVerificationStatus] = useState("none");
+  const [verificationNote, setVerificationNote] = useState<string | null>(null);
 
   const fetchRoles = async (userId: string) => {
     const { data } = await supabase
@@ -47,12 +53,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase
       .from("profiles")
-      .select("seller_status, username")
+      .select("seller_status, username, verification_status, verification_note")
       .eq("user_id", userId)
       .single();
     if (data) {
-      setSellerStatus(data.seller_status || "none");
-      setUsername(data.username || null);
+      setSellerStatus((data as any).seller_status || "none");
+      setUsername((data as any).username || null);
+      setVerificationStatus((data as any).verification_status || "none");
+      setVerificationNote((data as any).verification_note || null);
     }
   };
 
@@ -70,6 +78,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUserRoles([]);
           setSellerStatus("none");
           setUsername(null);
+          setVerificationStatus("none");
+          setVerificationNote(null);
         }
         setLoading(false);
       }
@@ -103,6 +113,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isSeller: userRoles.includes("seller") || sellerStatus === "active",
         sellerStatus,
         username,
+        verificationStatus,
+        verificationNote,
         signOut,
       }}
     >

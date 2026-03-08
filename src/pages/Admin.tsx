@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle, Plus, UserCog, Wallet } from "lucide-react";
+import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle, Plus, UserCog, Wallet, ShieldCheck, Image } from "lucide-react";
 import ScreenshotComparison from "@/components/admin/ScreenshotComparison";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -109,6 +109,15 @@ interface ConfirmedSeller {
   verified: boolean | null;
 }
 
+interface PendingVerification {
+  user_id: string;
+  display_name: string;
+  username: string;
+  email: string | null;
+  verification_status: string;
+  verification_note: string | null;
+}
+
 export default function Admin() {
   const [requests, setRequests] = useState<SellerRequest[]>([]);
   const [stakes, setStakes] = useState<PendingStake[]>([]);
@@ -118,6 +127,9 @@ export default function Admin() {
   const [confirmedSellers, setConfirmedSellers] = useState<ConfirmedSeller[]>([]);
   const [agents, setAgents] = useState<ConfirmedAgent[]>([]);
   const [walletTxns, setWalletTxns] = useState<WalletTransaction[]>([]);
+  const [pendingVerifications, setPendingVerifications] = useState<PendingVerification[]>([]);
+  const [verificationNotes, setVerificationNotes] = useState<Record<string, string>>({});
+  const [verificationImages, setVerificationImages] = useState<Record<string, string>>({});
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [settleSessionId, setSettleSessionId] = useState<string | null>(null);
   const [screenshotSessionId, setScreenshotSessionId] = useState<string | null>(null);
@@ -263,6 +275,57 @@ export default function Admin() {
     })));
   };
 
+  const fetchPendingVerifications = async () => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("user_id, display_name, username, email, verification_status, verification_note")
+      .eq("verification_status", "pending_verification")
+      .order("created_at", { ascending: true });
+    if (!data) return;
+    setPendingVerifications(data as any);
+
+    // Fetch signed URLs for each user's ID image
+    const imageMap: Record<string, string> = {};
+    for (const profile of data) {
+      const { data: files } = await supabase.storage
+        .from("user-ids")
+        .list(profile.user_id, { limit: 1 });
+      if (files && files.length > 0) {
+        const { data: signedData } = await supabase.storage
+          .from("user-ids")
+          .createSignedUrl(`${profile.user_id}/${files[0].name}`, 3600);
+        if (signedData?.signedUrl) {
+          imageMap[profile.user_id] = signedData.signedUrl;
+        }
+      }
+    }
+    setVerificationImages(imageMap);
+  };
+
+  const handleVerificationAction = async (profile: PendingVerification, action: "verified" | "rejected") => {
+    if (loadingId) return;
+    setLoadingId(profile.user_id);
+    try {
+      const updateData: any = { verification_status: action };
+      if (action === "verified") {
+        updateData.verified = true;
+        updateData.verification_note = null;
+      } else {
+        updateData.verification_note = verificationNotes[profile.user_id]?.trim() || "ID rejected";
+      }
+      const { error } = await supabase
+        .from("profiles")
+        .update(updateData)
+        .eq("user_id", profile.user_id);
+      if (error) throw error;
+      toast.success(`User ${action === "verified" ? "approved" : "rejected"}`);
+      fetchPendingVerifications();
+    } catch (err: any) {
+      toast.error(err.message || "Action failed");
+    }
+    setLoadingId(null);
+  };
+
   useEffect(() => {
     fetchRequests();
     fetchPendingStakes();
@@ -272,6 +335,7 @@ export default function Admin() {
     fetchConfirmedSellers();
     fetchAgents();
     fetchWalletTxns();
+    fetchPendingVerifications();
   }, []);
 
   const handleSellerAction = async (request: SellerRequest, action: "approved" | "rejected") => {
@@ -680,6 +744,9 @@ export default function Admin() {
             </TabsTrigger>
             <TabsTrigger value="wallet-ledger" className="font-display">
               <Wallet className="h-3 w-3 mr-1" /> Wallet ({walletTxns.length})
+            </TabsTrigger>
+            <TabsTrigger value="id-verification" className="font-display">
+              <ShieldCheck className="h-3 w-3 mr-1" /> ID Verify ({pendingVerifications.length})
             </TabsTrigger>
             <TabsTrigger value="godmode" className="font-display text-accent">
               <Zap className="h-3 w-3 mr-1" /> God Mode
@@ -1215,6 +1282,71 @@ export default function Admin() {
                     >
                       <CheckCircle className="h-3 w-3 mr-1" /> Approve
                     </Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </TabsContent>
+
+          {/* ID Verification Tab */}
+          <TabsContent value="id-verification" className="space-y-3 mt-4">
+            <h2 className="font-display text-lg font-bold text-foreground">Pending ID Verifications</h2>
+            {pendingVerifications.length === 0 ? (
+              <div className="gradient-card rounded-lg p-6 text-center">
+                <p className="text-muted-foreground text-sm">No pending verifications.</p>
+              </div>
+            ) : (
+              pendingVerifications.map((pv) => (
+                <div key={pv.user_id} className="gradient-card rounded-lg p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-display font-bold text-foreground">{pv.display_name}</p>
+                      <p className="text-xs text-muted-foreground">@{pv.username} • {pv.email}</p>
+                    </div>
+                    <Badge className="bg-accent/20 text-accent border-accent/30">Pending</Badge>
+                  </div>
+
+                  {verificationImages[pv.user_id] ? (
+                    <div className="space-y-2">
+                      <p className="text-xs text-muted-foreground font-medium">Uploaded ID:</p>
+                      <a href={verificationImages[pv.user_id]} target="_blank" rel="noopener noreferrer">
+                        <img
+                          src={verificationImages[pv.user_id]}
+                          alt="User ID"
+                          className="max-w-full max-h-64 rounded-md border border-border object-contain"
+                        />
+                      </a>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-destructive">No ID image found</p>
+                  )}
+
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Rejection note (optional)"
+                      value={verificationNotes[pv.user_id] || ""}
+                      onChange={(e) => setVerificationNotes((prev) => ({ ...prev, [pv.user_id]: e.target.value }))}
+                      className="text-xs"
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => handleVerificationAction(pv, "verified")}
+                        disabled={loadingId === pv.user_id}
+                        className="gradient-primary text-primary-foreground font-display font-bold text-xs"
+                      >
+                        <CheckCircle className="h-3 w-3 mr-1" /> Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleVerificationAction(pv, "rejected")}
+                        disabled={loadingId === pv.user_id}
+                        className="font-display font-bold text-xs"
+                      >
+                        <XCircle className="h-3 w-3 mr-1" /> Reject
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))

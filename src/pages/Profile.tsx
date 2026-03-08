@@ -4,15 +4,16 @@ import { useAuth } from "@/hooks/useAuth";
 import { User, Trophy, DollarSign, TrendingUp, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import BecomeSeller from "@/components/BecomeSeller";
+import IDVerification from "@/components/IDVerification";
 import PaymentSettings from "@/components/PaymentSettings";
 import WalletTab from "@/components/WalletTab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 
 export default function Profile() {
-  const { user, isAdmin, isSeller, sellerStatus, username, loading } = useAuth();
+  const { user, isAdmin, isSeller, sellerStatus, username, loading, verificationStatus, verificationNote } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,9 +36,12 @@ export default function Profile() {
           {username && <p className="text-primary text-sm font-medium mb-1">@{username}</p>}
           <p className="text-muted-foreground text-xs mb-3">{user.email}</p>
 
-          <div className="flex justify-center gap-2 mb-4">
-            {isAdmin && <Badge className="bg-accent/20 text-accent border-accent/30">Admin</Badge>}
-            <BecomeSeller />
+          <div className="flex flex-col items-center gap-2 mb-4">
+            <div className="flex justify-center gap-2">
+              {isAdmin && <Badge className="bg-accent/20 text-accent border-accent/30">Admin</Badge>}
+              <BecomeSeller />
+            </div>
+            <IDVerification verificationStatus={verificationStatus} verificationNote={verificationNote} />
           </div>
 
           <div className="grid grid-cols-3 gap-3">
