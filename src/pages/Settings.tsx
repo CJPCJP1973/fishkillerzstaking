@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Settings as SettingsIcon } from "lucide-react";
+import AccountSettings from "@/components/AccountSettings";
 import PaymentSettings from "@/components/PaymentSettings";
 
 export default function Settings() {
@@ -22,6 +23,7 @@ export default function Settings() {
           <SettingsIcon className="h-6 w-6 text-primary" />
           <h1 className="font-display text-2xl font-bold text-foreground">User Settings</h1>
         </div>
+        <AccountSettings />
         <PaymentSettings />
       </div>
     </Layout>
