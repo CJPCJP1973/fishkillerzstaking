@@ -1196,13 +1196,45 @@ export default function Admin() {
                       </div>
                       {cashOutAmount && (
                         <div className="text-[10px] text-muted-foreground space-y-0.5">
-                          <p>Platform rake (10%): <span className="text-accent font-bold">${(parseFloat(cashOutAmount) * 0.1).toFixed(2)}</span></p>
-                          <p>Distributed to users: <span className="text-success font-bold">${(parseFloat(cashOutAmount) * 0.9).toFixed(2)}</span></p>
+                          <p>FishDollarz stakes: <span className="text-accent font-bold">6% rake</span> (auto-credited)</p>
+                          <p>P2P stakes: <span className="text-primary font-bold">8% rake</span> (manual fee required)</p>
                         </div>
                       )}
                       <p className="text-[10px] text-muted-foreground">
-                        10% auto-rake deducted. Remainder split proportionally among stakers.
+                        Rake rates vary by payment mode. FishDollarz winnings auto-credited to backer balances.
                       </p>
+                    </div>
+                  )}
+
+                  {/* P2P Manual Rake Confirmation */}
+                  {s.status === "completed" && (s as any).manual_rake_status === "pending_manual_rake" && (
+                    <div className="bg-accent/10 border border-accent/30 rounded-md p-3 space-y-2">
+                      <p className="text-sm font-display font-bold text-accent flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4" />
+                        Pending P2P Manual Rake
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Seller must pay the 8% P2P fee via CashApp ($fishkllerzstaking). Confirm receipt below.
+                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          disabled={loadingId === s.id}
+                          onClick={() => handleConfirmManualRake(s)}
+                          className="gradient-primary text-primary-foreground font-display font-bold text-xs"
+                        >
+                          <CheckCircle className="h-3 w-3 mr-1" /> Confirm Fee Received
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={loadingId === s.id}
+                          onClick={() => handleLateManualRake(s)}
+                          className="text-destructive border-destructive/30 text-xs"
+                        >
+                          <AlertTriangle className="h-3 w-3 mr-1" /> Mark Late (-5 Score)
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
