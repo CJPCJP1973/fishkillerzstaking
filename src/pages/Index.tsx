@@ -74,11 +74,22 @@ export default function Index() {
                   Browse Sessions <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
+              <Link to="/profile">
+                <Button variant="outline" className="border-accent/30 text-accent hover:bg-accent/10 font-display font-bold px-6 py-5 text-base">
+                  💰 Buy FishDollarz
+                </Button>
+              </Link>
               <Link to="/create">
                 <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/10 font-display font-bold px-6 py-5 text-base">
                   I'm a Seller
                 </Button>
               </Link>
+            </div>
+            <div className="mt-4 space-y-1">
+              <p className="text-sm font-display font-semibold text-accent">1 FishDollar = $1</p>
+              <p className="text-[10px] text-muted-foreground/60 italic">
+                FishDollarz are virtual items with no real-world value outside the FishKillerz platform.
+              </p>
             </div>
           </div>
         </div>
