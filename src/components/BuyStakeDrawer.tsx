@@ -348,12 +348,62 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
             </>
           )}
 
+          {/* Agent Disclosure Terms */}
+          {(agentTerms?.cashout_window || agentTerms?.daily_limit) && (
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" />
+                <span className="font-display font-bold text-sm text-foreground">Agent Disclosure Terms</span>
+              </div>
+              {agentTerms.cashout_window && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Cashout Window</span>
+                  <span className="text-foreground font-medium">{agentTerms.cashout_window}</span>
+                </div>
+              )}
+              {agentTerms.daily_limit && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Daily Cashout Limit</span>
+                  <span className="text-foreground font-medium">{agentTerms.daily_limit}</span>
+                </div>
+              )}
+              <Separator className="bg-border" />
+              <div className="flex items-start gap-2 pt-1">
+                <Checkbox
+                  id="accept-terms"
+                  checked={termsAccepted}
+                  onCheckedChange={(v) => setTermsAccepted(v === true)}
+                  className="mt-0.5"
+                />
+                <label htmlFor="accept-terms" className="text-xs text-foreground leading-tight cursor-pointer">
+                  I accept the agent disclosure terms and understand the seller agrees to pay my pro-rata share within 60 minutes of any partial agent cashout.
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* If no agent terms, still require generic acceptance */}
+          {!agentTerms?.cashout_window && !agentTerms?.daily_limit && (
+            <div className="flex items-start gap-2">
+              <Checkbox
+                id="accept-terms-generic"
+                checked={termsAccepted}
+                onCheckedChange={(v) => setTermsAccepted(v === true)}
+                className="mt-0.5"
+              />
+              <label htmlFor="accept-terms-generic" className="text-xs text-muted-foreground leading-tight cursor-pointer">
+                I accept the staking terms and understand the applicable platform fee.
+              </label>
+            </div>
+          )}
+
           {/* Submit */}
           <Button
             onClick={handleSubmit}
             disabled={
               submitting ||
               !amount ||
+              !termsAccepted ||
               (paymentMode === "p2p" && !confirmationRef.trim())
             }
             className="w-full gradient-primary text-primary-foreground font-display font-bold text-base py-5"
