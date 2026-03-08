@@ -519,6 +519,13 @@ export default function Admin() {
       await supabase.from("transactions").update({ status: "confirmed" } as any).eq("id", tx.id);
       // Atomically add to user balance
       await supabase.rpc("adjust_balance", { target_uid: tx.user_id, delta: tx.amount });
+      // Notify user
+      await supabase.from("notifications").insert({
+        user_id: tx.user_id,
+        title: "Deposit Approved ✅",
+        message: `Your $${tx.amount.toLocaleString()} deposit has been confirmed and added to your FishDollarz balance.`,
+        type: "success",
+      } as any);
       toast.success(`Deposit of $${tx.amount} approved for ${tx.user_profile?.display_name}`);
       fetchWalletTxns();
     } catch (err: any) {
@@ -535,6 +542,13 @@ export default function Admin() {
       // Atomically deduct from user balance
       await supabase.rpc("adjust_balance", { target_uid: tx.user_id, delta: -tx.amount });
       await supabase.from("transactions").update({ status: "settled" } as any).eq("id", tx.id);
+      // Notify user
+      await supabase.from("notifications").insert({
+        user_id: tx.user_id,
+        title: "Withdrawal Settled ✅",
+        message: `Your $${tx.amount.toLocaleString()} withdrawal has been processed and settled.`,
+        type: "success",
+      } as any);
       toast.success(`Withdrawal of $${tx.amount} settled for ${tx.user_profile?.display_name}`);
       fetchWalletTxns();
     } catch (err: any) {
@@ -549,6 +563,13 @@ export default function Admin() {
     setLoadingId(tx.id);
     try {
       await supabase.from("transactions").update({ status: "rejected" } as any).eq("id", tx.id);
+      // Notify user
+      await supabase.from("notifications").insert({
+        user_id: tx.user_id,
+        title: "Transaction Rejected ❌",
+        message: `Your $${tx.amount.toLocaleString()} ${tx.type} request was rejected. Contact support if you believe this is an error.`,
+        type: "error",
+      } as any);
       toast.success(`Transaction rejected`);
       fetchWalletTxns();
     } catch (err: any) {
