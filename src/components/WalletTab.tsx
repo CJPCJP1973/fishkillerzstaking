@@ -41,6 +41,9 @@ export default function WalletTab() {
   const [amount, setAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [filter, setFilter] = useState("all");
+
+  const filteredTxns = filter === "all" ? transactions : transactions.filter((t) => t.type === filter);
 
   const fetchBalance = async () => {
     if (!user) return;
