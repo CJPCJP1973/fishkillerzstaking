@@ -255,6 +255,8 @@ export type Database = {
         Row: {
           admin_confirmed_deposit: boolean | null
           admin_released_winnings: boolean | null
+          agent_cashout_window: string | null
+          agent_daily_limit: string | null
           agent_room: string
           created_at: string | null
           end_screenshot_url: string | null
@@ -267,6 +269,7 @@ export type Database = {
           platform: string
           platform_fee: number | null
           proof_url: string | null
+          seller_payout_agreement: boolean
           share_price: number
           shooter_id: string
           shooter_name: string
@@ -282,6 +285,8 @@ export type Database = {
         Insert: {
           admin_confirmed_deposit?: boolean | null
           admin_released_winnings?: boolean | null
+          agent_cashout_window?: string | null
+          agent_daily_limit?: string | null
           agent_room: string
           created_at?: string | null
           end_screenshot_url?: string | null
@@ -294,6 +299,7 @@ export type Database = {
           platform: string
           platform_fee?: number | null
           proof_url?: string | null
+          seller_payout_agreement?: boolean
           share_price?: number
           shooter_id: string
           shooter_name: string
@@ -309,6 +315,8 @@ export type Database = {
         Update: {
           admin_confirmed_deposit?: boolean | null
           admin_released_winnings?: boolean | null
+          agent_cashout_window?: string | null
+          agent_daily_limit?: string | null
           agent_room?: string
           created_at?: string | null
           end_screenshot_url?: string | null
@@ -321,6 +329,7 @@ export type Database = {
           platform?: string
           platform_fee?: number | null
           proof_url?: string | null
+          seller_payout_agreement?: boolean
           share_price?: number
           shooter_id?: string
           shooter_name?: string
