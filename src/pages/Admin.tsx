@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle, Plus, UserCog, Wallet, ShieldCheck, Image } from "lucide-react";
+import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle, Plus, UserCog, Wallet, ShieldCheck, Image, TrendingUp } from "lucide-react";
 import ScreenshotComparison from "@/components/admin/ScreenshotComparison";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -143,6 +143,13 @@ export default function Admin() {
   // Agent form state
   const [newAgentName, setNewAgentName] = useState("");
   const [newAgentNotes, setNewAgentNotes] = useState("");
+  // Platform stats
+  const [platformStats, setPlatformStats] = useState({
+    totalEscrow: 0,
+    totalPaidOut: 0,
+    totalRaked: 0,
+    totalRegFees: 0,
+  });
   const [payoutRefs, setPayoutRefs] = useState<Record<string, string>>({});
 
   const fetchRequests = async () => {
@@ -326,6 +333,22 @@ export default function Admin() {
     setLoadingId(null);
   };
 
+  const fetchPlatformStats = async () => {
+    const [{ data: allProfiles }, { data: paidPayouts }, { data: completedSessions }, { data: regFeeTxns }] = await Promise.all([
+      supabase.from("profiles").select("balance"),
+      supabase.from("payouts").select("amount_owed").eq("status", "paid"),
+      supabase.from("sessions").select("platform_fee").eq("status", "completed"),
+      supabase.from("transactions").select("amount").eq("type", "registration_fee").eq("status", "confirmed"),
+    ]);
+
+    setPlatformStats({
+      totalEscrow: allProfiles?.reduce((sum, p) => sum + Number(p.balance || 0), 0) || 0,
+      totalPaidOut: paidPayouts?.reduce((sum, p) => sum + Number(p.amount_owed || 0), 0) || 0,
+      totalRaked: completedSessions?.reduce((sum, s) => sum + Number(s.platform_fee || 0), 0) || 0,
+      totalRegFees: regFeeTxns?.reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0,
+    });
+  };
+
   useEffect(() => {
     fetchRequests();
     fetchPendingStakes();
@@ -336,6 +359,7 @@ export default function Admin() {
     fetchAgents();
     fetchWalletTxns();
     fetchPendingVerifications();
+    fetchPlatformStats();
   }, []);
 
   const handleSellerAction = async (request: SellerRequest, action: "approved" | "rejected") => {
@@ -717,6 +741,26 @@ export default function Admin() {
             <h1 className="font-display text-2xl font-bold text-foreground">Admin Panel</h1>
             <p className="text-xs text-muted-foreground">Manage users, escrow, sessions & payouts</p>
           </div>
+        </div>
+
+        {/* Platform Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: "FishDollarz in Escrow", value: `$${platformStats.totalEscrow.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: Wallet, color: "text-primary" },
+            { label: "Total Paid Out", value: `$${platformStats.totalPaidOut.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: Send, color: "text-success" },
+            { label: "Total Raked", value: `$${platformStats.totalRaked.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: TrendingUp, color: "text-accent" },
+            { label: "Registration Fees", value: `$${platformStats.totalRegFees.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: Users, color: "text-primary" },
+          ].map((stat) => (
+            <div key={stat.label} className="gradient-card rounded-lg p-3 flex items-center gap-3">
+              <div className={`p-2 rounded-md bg-secondary ${stat.color}`}>
+                <stat.icon className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-lg font-display font-bold text-foreground">{stat.value}</p>
+                <p className="text-xs text-muted-foreground">{stat.label}</p>
+              </div>
+            </div>
+          ))}
         </div>
 
         <Tabs defaultValue="escrow" className="w-full">
