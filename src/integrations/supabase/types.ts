@@ -487,6 +487,10 @@ export type Database = {
       }
     }
     Functions: {
+      adjust_balance: {
+        Args: { delta: number; target_uid: string }
+        Returns: undefined
+      }
       get_public_sessions: {
         Args: never
         Returns: {
