@@ -109,6 +109,15 @@ interface ConfirmedSeller {
   verified: boolean | null;
 }
 
+interface PendingVerification {
+  user_id: string;
+  display_name: string;
+  username: string;
+  email: string | null;
+  verification_status: string;
+  verification_note: string | null;
+}
+
 export default function Admin() {
   const [requests, setRequests] = useState<SellerRequest[]>([]);
   const [stakes, setStakes] = useState<PendingStake[]>([]);
