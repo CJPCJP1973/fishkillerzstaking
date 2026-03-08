@@ -13,6 +13,9 @@ interface AuthContextType {
   username: string | null;
   verificationStatus: string;
   verificationNote: string | null;
+  sellerTier: number;
+  isVip: boolean;
+  completedSessions: number;
   signOut: () => Promise<void>;
 }
 
@@ -27,6 +30,9 @@ const AuthContext = createContext<AuthContextType>({
   username: null,
   verificationStatus: "none",
   verificationNote: null,
+  sellerTier: 1,
+  isVip: false,
+  completedSessions: 0,
   signOut: async () => {},
 });
 
@@ -41,6 +47,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [username, setUsername] = useState<string | null>(null);
   const [verificationStatus, setVerificationStatus] = useState("none");
   const [verificationNote, setVerificationNote] = useState<string | null>(null);
+  const [sellerTier, setSellerTier] = useState(1);
+  const [isVip, setIsVip] = useState(false);
+  const [completedSessions, setCompletedSessions] = useState(0);
 
   const fetchRoles = async (userId: string) => {
     const { data } = await supabase
@@ -53,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase
       .from("profiles")
-      .select("seller_status, username, verification_status, verification_note")
+      .select("seller_status, username, verification_status, verification_note, seller_tier, is_vip, completed_sessions")
       .eq("user_id", userId)
       .single();
     if (data) {
@@ -61,6 +70,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUsername((data as any).username || null);
       setVerificationStatus((data as any).verification_status || "none");
       setVerificationNote((data as any).verification_note || null);
+      setSellerTier((data as any).seller_tier ?? 1);
+      setIsVip((data as any).is_vip ?? false);
+      setCompletedSessions((data as any).completed_sessions ?? 0);
     }
   };
 
@@ -93,6 +105,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUsername(null);
           setVerificationStatus("none");
           setVerificationNote(null);
+          setSellerTier(1);
+          setIsVip(false);
+          setCompletedSessions(0);
         }
         setLoading(false);
       }
@@ -128,6 +143,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         username,
         verificationStatus,
         verificationNote,
+        sellerTier: isVip ? 4 : sellerTier,
+        isVip,
+        completedSessions,
         signOut,
       }}
     >

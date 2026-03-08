@@ -9,6 +9,8 @@ import { Crosshair, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import PaymentSettings from "@/components/PaymentSettings";
+import TierBadge from "@/components/TierBadge";
+import { getTierConfig } from "@/lib/tierConfig";
 
 interface ConfirmedAgent {
   id: string;
@@ -16,7 +18,8 @@ interface ConfirmedAgent {
 }
 
 export default function CreateSessionForm() {
-  const { user, username } = useAuth();
+  const { user, username, sellerTier } = useAuth();
+  const tierConfig = getTierConfig(sellerTier);
   const [shooterName, setShooterName] = useState(username || "");
   const [platform, setPlatform] = useState("");
   const [agentRoom, setAgentRoom] = useState("");
@@ -45,7 +48,7 @@ export default function CreateSessionForm() {
   const buyInNum = parseFloat(totalBuyIn) || 0;
   const percentNum = parseFloat(stakePercent) || 0;
   const sharePriceNum = parseFloat(sharePrice) || 0;
-  const maxPercent = 75;
+  const maxPercent = tierConfig.maxStakePercent;
   const stakeAmount = buyInNum * (Math.min(percentNum, maxPercent) / 100);
   const isOverLimit = percentNum > maxPercent;
   const sharesAvailable = sharePriceNum > 0 ? Math.floor(stakeAmount / sharePriceNum) : 0;
@@ -53,7 +56,7 @@ export default function CreateSessionForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isOverLimit) {
-      toast.error("Maximum stake is 75%. You must keep 25% skin-in-the-game!");
+      toast.error(`Maximum stake is ${maxPercent}% for your tier (${tierConfig.name}). You must keep ${100 - maxPercent}% skin-in-the-game!`);
       return;
     }
     if (!shooterName || !platform || !agentRoom || !totalBuyIn || !stakePercent || !sharePrice || !endTime || !cashoutWindow || !dailyLimit) {
@@ -113,9 +116,14 @@ export default function CreateSessionForm() {
         <div className="p-2 rounded-md bg-primary/20">
           <Crosshair className="h-5 w-5 text-primary" />
         </div>
-        <div>
-          <h2 className="font-display text-xl font-bold text-foreground">Create Session</h2>
-          <p className="text-xs text-muted-foreground">List a new staking session for users</p>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h2 className="font-display text-xl font-bold text-foreground">Create Session</h2>
+            <TierBadge tier={sellerTier} />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Max stake: {tierConfig.maxStakePercent}% · Rake: {tierConfig.rakePercent}%
+          </p>
         </div>
       </div>
 
