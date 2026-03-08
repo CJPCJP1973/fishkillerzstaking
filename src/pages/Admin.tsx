@@ -1288,6 +1288,71 @@ export default function Admin() {
             )}
           </TabsContent>
 
+          {/* ID Verification Tab */}
+          <TabsContent value="id-verification" className="space-y-3 mt-4">
+            <h2 className="font-display text-lg font-bold text-foreground">Pending ID Verifications</h2>
+            {pendingVerifications.length === 0 ? (
+              <div className="gradient-card rounded-lg p-6 text-center">
+                <p className="text-muted-foreground text-sm">No pending verifications.</p>
+              </div>
+            ) : (
+              pendingVerifications.map((pv) => (
+                <div key={pv.user_id} className="gradient-card rounded-lg p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-display font-bold text-foreground">{pv.display_name}</p>
+                      <p className="text-xs text-muted-foreground">@{pv.username} • {pv.email}</p>
+                    </div>
+                    <Badge className="bg-accent/20 text-accent border-accent/30">Pending</Badge>
+                  </div>
+
+                  {verificationImages[pv.user_id] ? (
+                    <div className="space-y-2">
+                      <p className="text-xs text-muted-foreground font-medium">Uploaded ID:</p>
+                      <a href={verificationImages[pv.user_id]} target="_blank" rel="noopener noreferrer">
+                        <img
+                          src={verificationImages[pv.user_id]}
+                          alt="User ID"
+                          className="max-w-full max-h-64 rounded-md border border-border object-contain"
+                        />
+                      </a>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-destructive">No ID image found</p>
+                  )}
+
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Rejection note (optional)"
+                      value={verificationNotes[pv.user_id] || ""}
+                      onChange={(e) => setVerificationNotes((prev) => ({ ...prev, [pv.user_id]: e.target.value }))}
+                      className="text-xs"
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => handleVerificationAction(pv, "verified")}
+                        disabled={loadingId === pv.user_id}
+                        className="gradient-primary text-primary-foreground font-display font-bold text-xs"
+                      >
+                        <CheckCircle className="h-3 w-3 mr-1" /> Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleVerificationAction(pv, "rejected")}
+                        disabled={loadingId === pv.user_id}
+                        className="font-display font-bold text-xs"
+                      >
+                        <XCircle className="h-3 w-3 mr-1" /> Reject
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </TabsContent>
+
           {/* God Mode Tab */}
           <TabsContent value="godmode" className="space-y-6 mt-4">
             <div className="flex items-center gap-2 mb-2">
