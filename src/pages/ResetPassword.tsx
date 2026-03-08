@@ -10,15 +10,29 @@ import { Crosshair, Lock } from "lucide-react";
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [ready, setReady] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for recovery token in URL hash
-    const hash = window.location.hash;
-    if (!hash.includes("type=recovery")) {
-      toast.error("Invalid reset link");
-      navigate("/auth");
-    }
+    // Listen for PASSWORD_RECOVERY event to confirm this is a valid reset session
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        setReady(true);
+      }
+    });
+
+    // Also check if we already have a session (user arrived via redirect)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setReady(true);
+      } else {
+        // No session and no recovery event — invalid access
+        toast.error("Invalid reset link");
+        navigate("/auth");
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
