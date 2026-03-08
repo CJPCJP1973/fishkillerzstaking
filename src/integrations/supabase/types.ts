@@ -567,6 +567,7 @@ export type Database = {
           platform: string
           share_price: number
           shooter_name: string
+          shooter_tier: number
           stake_available: number
           stake_sold: number
           status: Database["public"]["Enums"]["session_status"]
