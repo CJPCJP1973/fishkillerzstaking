@@ -7,7 +7,8 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { DollarSign, Crosshair, ShieldCheck, Wallet, Info, AlertTriangle } from "lucide-react";
+import { DollarSign, Crosshair, ShieldCheck, Wallet, Info, AlertTriangle, FileText } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface BuyStakeDrawerProps {
@@ -36,6 +37,8 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
   const [balance, setBalance] = useState<number>(0);
   const [reliabilityScore, setReliabilityScore] = useState<number>(75);
   const [forceFishdollarz, setForceFishdollarz] = useState(false);
+  const [agentTerms, setAgentTerms] = useState<{ cashout_window: string | null; daily_limit: string | null } | null>(null);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const remaining = session.stakeAvailable - session.stakeSold - session.pendingAmount;
   const sharePrice = Math.min(remaining, 50);
@@ -63,6 +66,23 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
             }
           }
         });
+
+      // Fetch agent disclosure terms
+      supabase
+        .from("sessions")
+        .select("agent_cashout_window, agent_daily_limit")
+        .eq("id", session.id)
+        .single()
+        .then(({ data }) => {
+          if (data) {
+            setAgentTerms({
+              cashout_window: (data as any).agent_cashout_window,
+              daily_limit: (data as any).agent_daily_limit,
+            });
+          }
+        });
+
+      setTermsAccepted(false);
     }
   }, [open, user]);
 
@@ -79,6 +99,10 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
     }
     if (numAmount > remaining) {
       toast.error(`Maximum available: $${remaining.toLocaleString()}`);
+      return;
+    }
+    if (!termsAccepted) {
+      toast.error("You must accept the agent disclosure terms before purchasing");
       return;
     }
 
@@ -324,12 +348,62 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
             </>
           )}
 
+          {/* Agent Disclosure Terms */}
+          {(agentTerms?.cashout_window || agentTerms?.daily_limit) && (
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" />
+                <span className="font-display font-bold text-sm text-foreground">Agent Disclosure Terms</span>
+              </div>
+              {agentTerms.cashout_window && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Cashout Window</span>
+                  <span className="text-foreground font-medium">{agentTerms.cashout_window}</span>
+                </div>
+              )}
+              {agentTerms.daily_limit && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Daily Cashout Limit</span>
+                  <span className="text-foreground font-medium">{agentTerms.daily_limit}</span>
+                </div>
+              )}
+              <Separator className="bg-border" />
+              <div className="flex items-start gap-2 pt-1">
+                <Checkbox
+                  id="accept-terms"
+                  checked={termsAccepted}
+                  onCheckedChange={(v) => setTermsAccepted(v === true)}
+                  className="mt-0.5"
+                />
+                <label htmlFor="accept-terms" className="text-xs text-foreground leading-tight cursor-pointer">
+                  I accept the agent disclosure terms and understand the seller agrees to pay my pro-rata share within 60 minutes of any partial agent cashout.
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* If no agent terms, still require generic acceptance */}
+          {!agentTerms?.cashout_window && !agentTerms?.daily_limit && (
+            <div className="flex items-start gap-2">
+              <Checkbox
+                id="accept-terms-generic"
+                checked={termsAccepted}
+                onCheckedChange={(v) => setTermsAccepted(v === true)}
+                className="mt-0.5"
+              />
+              <label htmlFor="accept-terms-generic" className="text-xs text-muted-foreground leading-tight cursor-pointer">
+                I accept the staking terms and understand the applicable platform fee.
+              </label>
+            </div>
+          )}
+
           {/* Submit */}
           <Button
             onClick={handleSubmit}
             disabled={
               submitting ||
               !amount ||
+              !termsAccepted ||
               (paymentMode === "p2p" && !confirmationRef.trim())
             }
             className="w-full gradient-primary text-primary-foreground font-display font-bold text-base py-5"
