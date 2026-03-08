@@ -2,6 +2,7 @@ import { ReactNode, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Crosshair, Home, Plus, User, Shield, Menu, X, LogOut, LogIn } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import NotificationBell from "@/components/NotificationBell";
 
 export default function Layout({ children }: { children: ReactNode }) {
   const location = useLocation();
