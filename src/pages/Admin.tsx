@@ -143,6 +143,13 @@ export default function Admin() {
   // Agent form state
   const [newAgentName, setNewAgentName] = useState("");
   const [newAgentNotes, setNewAgentNotes] = useState("");
+  // Platform stats
+  const [platformStats, setPlatformStats] = useState({
+    totalEscrow: 0,
+    totalPaidOut: 0,
+    totalRaked: 0,
+    totalRegFees: 0,
+  });
   const [payoutRefs, setPayoutRefs] = useState<Record<string, string>>({});
 
   const fetchRequests = async () => {
