@@ -487,6 +487,23 @@ export type Database = {
       }
     }
     Functions: {
+      get_public_sessions: {
+        Args: never
+        Returns: {
+          agent_room: string
+          created_at: string
+          end_time: string
+          id: string
+          platform: string
+          share_price: number
+          shooter_name: string
+          stake_available: number
+          stake_sold: number
+          status: Database["public"]["Enums"]["session_status"]
+          stream_url: string
+          total_buy_in: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

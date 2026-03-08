@@ -18,12 +18,10 @@ export default function Index() {
 
   useEffect(() => {
     const fetchSessions = async () => {
-      const { data } = await supabase
-        .from("sessions")
-        .select("*")
-        .in("status", ["funding", "live", "pending"])
-        .order("created_at", { ascending: false })
-        .limit(6);
+      const { data: allData } = await supabase.rpc("get_public_sessions");
+      const data = (allData || [])
+        .filter((s: any) => ["funding", "live", "pending"].includes(s.status))
+        .slice(0, 6);
 
       if (data) {
         setSessions(
