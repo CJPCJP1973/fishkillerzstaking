@@ -23,8 +23,8 @@ export default defineConfig(({ mode }) => ({
         name: "FishKillerz Staking",
         short_name: "FishKillerz",
         description: "Fish Table Staking App – Buy & sell shares in fish table gameplay",
-        theme_color: "#0a0f1e",
-        background_color: "#0a0f1e",
+        theme_color: "#000000",
+        background_color: "#000000",
         display: "standalone",
         start_url: "/",
         icons: [
