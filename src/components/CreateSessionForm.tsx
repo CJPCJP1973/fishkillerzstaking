@@ -235,6 +235,9 @@ export default function CreateSessionForm() {
       >
         {submitting ? "Creating..." : "🎯 LAUNCH SESSION"}
       </Button>
+
+      {/* Payment Settings - persists across sessions */}
+      <PaymentSettings />
     </form>
   );
 }
