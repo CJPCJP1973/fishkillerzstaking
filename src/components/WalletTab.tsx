@@ -263,8 +263,23 @@ export default function WalletTab() {
 
       {/* Transaction History */}
       <div>
-        <h3 className="font-display font-bold text-foreground text-sm mb-3">Transaction History</h3>
-        {transactions.length === 0 ? (
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-display font-bold text-foreground text-sm">Transaction History</h3>
+          <div className="flex gap-1">
+            {["all", "deposit", "withdrawal", "stake", "payout"].map((f) => (
+              <Button
+                key={f}
+                size="sm"
+                variant={filter === f ? "default" : "ghost"}
+                className={`text-[10px] h-7 px-2 ${filter === f ? "gradient-primary text-primary-foreground" : "text-muted-foreground"}`}
+                onClick={() => setFilter(f)}
+              >
+                {f === "all" ? "All" : typeConfig[f]?.label || f}
+              </Button>
+            ))}
+          </div>
+        </div>
+        {filteredTxns.length === 0 ? (
           <div className="gradient-card rounded-lg p-6 text-center">
             <p className="text-muted-foreground text-sm">No transactions yet.</p>
           </div>
