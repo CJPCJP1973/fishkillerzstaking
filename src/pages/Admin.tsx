@@ -55,6 +55,7 @@ interface SessionRow {
   ocr_start_amount: number | null;
   ocr_end_amount: number | null;
   ocr_confidence: number | null;
+  manual_rake_status: string | null;
 }
 
 interface PayoutRow {
