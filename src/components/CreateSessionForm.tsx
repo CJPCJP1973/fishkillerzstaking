@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Crosshair } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import PaymentSettings from "@/components/PaymentSettings";
 
 interface ConfirmedAgent {
   id: string;
@@ -234,6 +235,9 @@ export default function CreateSessionForm() {
       >
         {submitting ? "Creating..." : "🎯 LAUNCH SESSION"}
       </Button>
+
+      {/* Payment Settings - persists across sessions */}
+      <PaymentSettings />
     </form>
   );
 }
