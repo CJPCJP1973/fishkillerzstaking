@@ -745,6 +745,9 @@ export default function Admin() {
             <TabsTrigger value="wallet-ledger" className="font-display">
               <Wallet className="h-3 w-3 mr-1" /> Wallet ({walletTxns.length})
             </TabsTrigger>
+            <TabsTrigger value="id-verification" className="font-display">
+              <ShieldCheck className="h-3 w-3 mr-1" /> ID Verify ({pendingVerifications.length})
+            </TabsTrigger>
             <TabsTrigger value="godmode" className="font-display text-accent">
               <Zap className="h-3 w-3 mr-1" /> God Mode
             </TabsTrigger>
