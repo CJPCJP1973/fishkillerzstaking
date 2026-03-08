@@ -7,7 +7,8 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { DollarSign, Crosshair, ShieldCheck, Wallet, Info, AlertTriangle } from "lucide-react";
+import { DollarSign, Crosshair, ShieldCheck, Wallet, Info, AlertTriangle, FileText } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface BuyStakeDrawerProps {
@@ -36,6 +37,8 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
   const [balance, setBalance] = useState<number>(0);
   const [reliabilityScore, setReliabilityScore] = useState<number>(75);
   const [forceFishdollarz, setForceFishdollarz] = useState(false);
+  const [agentTerms, setAgentTerms] = useState<{ cashout_window: string | null; daily_limit: string | null } | null>(null);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const remaining = session.stakeAvailable - session.stakeSold - session.pendingAmount;
   const sharePrice = Math.min(remaining, 50);
@@ -63,6 +66,23 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
             }
           }
         });
+
+      // Fetch agent disclosure terms
+      supabase
+        .from("sessions")
+        .select("agent_cashout_window, agent_daily_limit")
+        .eq("id", session.id)
+        .single()
+        .then(({ data }) => {
+          if (data) {
+            setAgentTerms({
+              cashout_window: (data as any).agent_cashout_window,
+              daily_limit: (data as any).agent_daily_limit,
+            });
+          }
+        });
+
+      setTermsAccepted(false);
     }
   }, [open, user]);
 
@@ -79,6 +99,10 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
     }
     if (numAmount > remaining) {
       toast.error(`Maximum available: $${remaining.toLocaleString()}`);
+      return;
+    }
+    if (!termsAccepted) {
+      toast.error("You must accept the agent disclosure terms before purchasing");
       return;
     }
 
