@@ -3,6 +3,7 @@ import { Clock, Crosshair, DollarSign } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import StakePieChart from "./StakePieChart";
 import BuyStakeDrawer from "./BuyStakeDrawer";
+import TierBadge from "./TierBadge";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface SessionData {
@@ -17,6 +18,7 @@ export interface SessionData {
   endTime: string;
   status: "live" | "funding" | "completed" | "pending";
   streamUrl?: string;
+  shooterTier?: number;
 }
 
 const statusStyles: Record<string, string> = {
@@ -69,6 +71,7 @@ export default function SessionCard({ session }: { session: SessionData }) {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <TierBadge tier={session.shooterTier ?? 1} />
             {session.streamUrl && (
               <span className="flex items-center gap-1 text-xs text-live animate-pulse-glow rounded px-1.5 py-0.5 bg-live/10">
                 <span className="h-1.5 w-1.5 rounded-full bg-live"></span>

@@ -43,8 +43,14 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
   const remaining = session.stakeAvailable - session.stakeSold - session.pendingAmount;
   const sharePrice = Math.min(remaining, 50);
 
-  const FISHDOLLARZ_FEE = 6;
-  const P2P_FEE = 8;
+  const [shooterTier, setShooterTier] = useState(1);
+
+  // Rake is determined by the shooter's tier
+  const tierRakeMap: Record<number, number> = { 1: 8, 2: 6, 3: 4, 4: 2 };
+  const sessionRake = tierRakeMap[shooterTier] ?? 8;
+  // FishDollarz gets a 2% discount on rake (min 2%)
+  const FISHDOLLARZ_FEE = Math.max(2, sessionRake - 2);
+  const P2P_FEE = sessionRake;
 
   useEffect(() => {
     if (open && user) {
@@ -64,6 +70,25 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
             } else {
               setForceFishdollarz(false);
             }
+          }
+        });
+
+      // Fetch shooter tier
+      supabase
+        .from("sessions")
+        .select("shooter_id")
+        .eq("id", session.id)
+        .single()
+        .then(({ data }) => {
+          if (data) {
+            supabase
+              .from("profiles")
+              .select("seller_tier")
+              .eq("user_id", (data as any).shooter_id)
+              .single()
+              .then(({ data: profile }) => {
+                if (profile) setShooterTier((profile as any).seller_tier ?? 1);
+              });
           }
         });
 
@@ -120,7 +145,7 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
 
     setSubmitting(true);
     try {
-      const rakeRate = paymentMode === "fishdollarz" ? 0.06 : 0.08;
+      const rakeRate = paymentMode === "fishdollarz" ? FISHDOLLARZ_FEE / 100 : P2P_FEE / 100;
 
       if (paymentMode === "fishdollarz") {
         // Deduct from balance atomically

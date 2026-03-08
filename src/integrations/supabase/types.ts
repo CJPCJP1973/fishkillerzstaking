@@ -166,12 +166,15 @@ export type Database = {
           avatar_url: string | null
           balance: number
           bio: string | null
+          completed_sessions: number
           created_at: string | null
           display_name: string
           email: string | null
           id: string
+          is_vip: boolean
           reliability_score: number
           seller_status: string
+          seller_tier: number
           total_staked: number | null
           total_wins: number | null
           updated_at: string | null
@@ -186,12 +189,15 @@ export type Database = {
           avatar_url?: string | null
           balance?: number
           bio?: string | null
+          completed_sessions?: number
           created_at?: string | null
           display_name: string
           email?: string | null
           id?: string
+          is_vip?: boolean
           reliability_score?: number
           seller_status?: string
+          seller_tier?: number
           total_staked?: number | null
           total_wins?: number | null
           updated_at?: string | null
@@ -206,12 +212,15 @@ export type Database = {
           avatar_url?: string | null
           balance?: number
           bio?: string | null
+          completed_sessions?: number
           created_at?: string | null
           display_name?: string
           email?: string | null
           id?: string
+          is_vip?: boolean
           reliability_score?: number
           seller_status?: string
+          seller_tier?: number
           total_staked?: number | null
           total_wins?: number | null
           updated_at?: string | null
@@ -558,6 +567,7 @@ export type Database = {
           platform: string
           share_price: number
           shooter_name: string
+          shooter_tier: number
           stake_available: number
           stake_sold: number
           status: Database["public"]["Enums"]["session_status"]

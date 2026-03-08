@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/hooks/useAuth";
 import { User, Trophy, DollarSign, TrendingUp, Plus } from "lucide-react";
+import TierBadge from "@/components/TierBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
@@ -13,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 
 export default function Profile() {
-  const { user, isAdmin, isSeller, sellerStatus, username, loading, verificationStatus, verificationNote } = useAuth();
+  const { user, isAdmin, isSeller, sellerStatus, username, loading, verificationStatus, verificationNote, sellerTier } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,6 +40,7 @@ export default function Profile() {
           <div className="flex flex-col items-center gap-2 mb-4">
             <div className="flex justify-center gap-2">
               {isAdmin && <Badge className="bg-accent/20 text-accent border-accent/30">Admin</Badge>}
+              {isSeller && <TierBadge tier={sellerTier} />}
               <BecomeSeller />
             </div>
             <IDVerification verificationStatus={verificationStatus} verificationNote={verificationNote} />
