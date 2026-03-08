@@ -170,6 +170,7 @@ export type Database = {
           display_name: string
           email: string | null
           id: string
+          reliability_score: number
           seller_status: string
           total_staked: number | null
           total_wins: number | null
@@ -189,6 +190,7 @@ export type Database = {
           display_name: string
           email?: string | null
           id?: string
+          reliability_score?: number
           seller_status?: string
           total_staked?: number | null
           total_wins?: number | null
@@ -208,6 +210,7 @@ export type Database = {
           display_name?: string
           email?: string | null
           id?: string
+          reliability_score?: number
           seller_status?: string
           total_staked?: number | null
           total_wins?: number | null
@@ -257,6 +260,7 @@ export type Database = {
           end_screenshot_url: string | null
           end_time: string
           id: string
+          manual_rake_status: string | null
           ocr_confidence: number | null
           ocr_end_amount: number | null
           ocr_start_amount: number | null
@@ -283,6 +287,7 @@ export type Database = {
           end_screenshot_url?: string | null
           end_time: string
           id?: string
+          manual_rake_status?: string | null
           ocr_confidence?: number | null
           ocr_end_amount?: number | null
           ocr_start_amount?: number | null
@@ -309,6 +314,7 @@ export type Database = {
           end_screenshot_url?: string | null
           end_time?: string
           id?: string
+          manual_rake_status?: string | null
           ocr_confidence?: number | null
           ocr_end_amount?: number | null
           ocr_start_amount?: number | null
@@ -332,11 +338,15 @@ export type Database = {
       stakes: {
         Row: {
           amount: number
+          backer_confirmed: boolean | null
           backer_id: string
           created_at: string | null
           deposit_confirmed: boolean | null
           id: string
           payment_method: string | null
+          payment_mode: string
+          rake_rate: number
+          seller_confirmed: boolean | null
           session_id: string
           updated_at: string | null
           winnings_amount: number | null
@@ -344,11 +354,15 @@ export type Database = {
         }
         Insert: {
           amount: number
+          backer_confirmed?: boolean | null
           backer_id: string
           created_at?: string | null
           deposit_confirmed?: boolean | null
           id?: string
           payment_method?: string | null
+          payment_mode?: string
+          rake_rate?: number
+          seller_confirmed?: boolean | null
           session_id: string
           updated_at?: string | null
           winnings_amount?: number | null
@@ -356,11 +370,15 @@ export type Database = {
         }
         Update: {
           amount?: number
+          backer_confirmed?: boolean | null
           backer_id?: string
           created_at?: string | null
           deposit_confirmed?: boolean | null
           id?: string
           payment_method?: string | null
+          payment_mode?: string
+          rake_rate?: number
+          seller_confirmed?: boolean | null
           session_id?: string
           updated_at?: string | null
           winnings_amount?: number | null
