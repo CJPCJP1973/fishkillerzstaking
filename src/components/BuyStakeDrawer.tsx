@@ -7,7 +7,8 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { DollarSign, Crosshair, ShieldCheck, Wallet } from "lucide-react";
+import { DollarSign, Crosshair, ShieldCheck, Wallet, Info, AlertTriangle } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface BuyStakeDrawerProps {
   open: boolean;
@@ -24,28 +25,43 @@ interface BuyStakeDrawerProps {
   onPurchased?: () => void;
 }
 
-type PaymentMethod = "external" | "fishdollarz";
+type PaymentMode = "fishdollarz" | "p2p";
 
 export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchased }: BuyStakeDrawerProps) {
   const { user } = useAuth();
   const [amount, setAmount] = useState("");
   const [confirmationRef, setConfirmationRef] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("external");
+  const [paymentMode, setPaymentMode] = useState<PaymentMode>("fishdollarz");
   const [balance, setBalance] = useState<number>(0);
+  const [reliabilityScore, setReliabilityScore] = useState<number>(75);
+  const [forceFishdollarz, setForceFishdollarz] = useState(false);
 
   const remaining = session.stakeAvailable - session.stakeSold - session.pendingAmount;
   const sharePrice = Math.min(remaining, 50);
+
+  const FISHDOLLARZ_FEE = 6;
+  const P2P_FEE = 8;
 
   useEffect(() => {
     if (open && user) {
       supabase
         .from("profiles")
-        .select("balance")
+        .select("balance, reliability_score")
         .eq("user_id", user.id)
         .single()
         .then(({ data }) => {
-          if (data) setBalance(Number(data.balance));
+          if (data) {
+            setBalance(Number((data as any).balance));
+            const score = Number((data as any).reliability_score ?? 75);
+            setReliabilityScore(score);
+            if (score < 50) {
+              setForceFishdollarz(true);
+              setPaymentMode("fishdollarz");
+            } else {
+              setForceFishdollarz(false);
+            }
+          }
         });
     }
   }, [open, user]);
@@ -66,7 +82,7 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
       return;
     }
 
-    if (paymentMethod === "fishdollarz") {
+    if (paymentMode === "fishdollarz") {
       if (numAmount > balance) {
         toast.error(`Insufficient FishDollarz balance. You have $${balance.toLocaleString()}`);
         return;
@@ -80,7 +96,9 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
 
     setSubmitting(true);
     try {
-      if (paymentMethod === "fishdollarz") {
+      const rakeRate = paymentMode === "fishdollarz" ? 0.06 : 0.08;
+
+      if (paymentMode === "fishdollarz") {
         // Deduct from balance atomically
         const { error: balanceError } = await supabase.rpc("adjust_balance", {
           target_uid: user.id,
@@ -93,21 +111,23 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
         session_id: session.id,
         backer_id: user.id,
         amount: numAmount,
-        payment_method: paymentMethod === "fishdollarz" ? "FishDollarz" : confirmationRef.trim(),
-        deposit_confirmed: paymentMethod === "fishdollarz", // auto-confirm FishDollarz
-      });
+        payment_method: paymentMode === "fishdollarz" ? "FishDollarz" : confirmationRef.trim(),
+        deposit_confirmed: paymentMode === "fishdollarz",
+        payment_mode: paymentMode,
+        rake_rate: rakeRate,
+        backer_confirmed: paymentMode === "fishdollarz", // auto for fishdollarz
+      } as any);
 
       if (error) {
         // Rollback balance if stake insert fails
-        if (paymentMethod === "fishdollarz") {
+        if (paymentMode === "fishdollarz") {
           await supabase.rpc("adjust_balance", { target_uid: user.id, delta: numAmount });
         }
         throw error;
       }
 
       // Update stake_sold on session for FishDollarz (auto-confirmed)
-      if (paymentMethod === "fishdollarz") {
-        // Record transaction for wallet history
+      if (paymentMode === "fishdollarz") {
         await supabase.from("transactions").insert({
           user_id: user.id,
           amount: numAmount,
@@ -124,13 +144,13 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
       }
 
       toast.success(
-        paymentMethod === "fishdollarz"
-          ? "Stake purchased with FishDollarz! ✅"
-          : "Stake submitted! Awaiting admin verification."
+        paymentMode === "fishdollarz"
+          ? `Stake purchased with FishDollarz! (${FISHDOLLARZ_FEE}% fee applies on settlement) ✅`
+          : `Stake submitted via P2P! (${P2P_FEE}% fee applies) Awaiting admin verification.`
       );
       setAmount("");
       setConfirmationRef("");
-      setPaymentMethod("external");
+      setPaymentMode(forceFishdollarz ? "fishdollarz" : "fishdollarz");
       onOpenChange(false);
       onPurchased?.();
     } catch (err: any) {
@@ -193,52 +213,81 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
             />
           </div>
 
-          {/* Payment Method Toggle */}
+          {/* Reliability Score Warning */}
+          {forceFishdollarz && (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 flex items-start gap-2">
+              <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+              <div className="text-xs text-destructive">
+                <p className="font-display font-bold">Low Reliability Score ({reliabilityScore}/100)</p>
+                <p>You must use FishDollarz until your score recovers above 50.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Payment Mode Toggle */}
           <div>
-            <Label className="text-sm text-muted-foreground mb-2 block">Payment Method</Label>
+            <div className="flex items-center gap-2 mb-2">
+              <Label className="text-sm text-muted-foreground">Payment Mode</Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-[280px] text-xs bg-card border-border">
+                    <p><strong>FishDollarz (6% fee):</strong> Automatic & instant. Deducted from your balance immediately.</p>
+                    <p className="mt-1"><strong>P2P Direct Pay (8% fee):</strong> Manual confirmation required. Pay the seller directly.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => setPaymentMethod("external")}
+                onClick={() => setPaymentMode("fishdollarz")}
                 className={`rounded-lg border p-3 text-center text-sm font-display font-bold transition-all ${
-                  paymentMethod === "external"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border bg-secondary text-muted-foreground hover:border-primary/50"
-                }`}
-              >
-                <DollarSign className="h-4 w-4 mx-auto mb-1" />
-                CashApp / Chime / BTC
-              </button>
-              <button
-                type="button"
-                onClick={() => setPaymentMethod("fishdollarz")}
-                className={`rounded-lg border p-3 text-center text-sm font-display font-bold transition-all ${
-                  paymentMethod === "fishdollarz"
+                  paymentMode === "fishdollarz"
                     ? "border-accent bg-accent/10 text-accent"
                     : "border-border bg-secondary text-muted-foreground hover:border-accent/50"
                 }`}
               >
                 <Wallet className="h-4 w-4 mx-auto mb-1" />
                 FishDollarz
+                <span className="block text-[10px] font-normal mt-0.5 text-muted-foreground">6% fee • Automatic</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => !forceFishdollarz && setPaymentMode("p2p")}
+                disabled={forceFishdollarz}
+                className={`rounded-lg border p-3 text-center text-sm font-display font-bold transition-all ${
+                  forceFishdollarz
+                    ? "border-border bg-secondary/50 text-muted-foreground/50 cursor-not-allowed"
+                    : paymentMode === "p2p"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border bg-secondary text-muted-foreground hover:border-primary/50"
+                }`}
+              >
+                <DollarSign className="h-4 w-4 mx-auto mb-1" />
+                P2P Direct Pay
+                <span className="block text-[10px] font-normal mt-0.5 text-muted-foreground">8% fee • Manual</span>
               </button>
             </div>
           </div>
 
-          {paymentMethod === "fishdollarz" ? (
+          {paymentMode === "fishdollarz" ? (
             <div className="gradient-card rounded-lg p-4 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-display font-bold text-foreground">Your Balance</span>
                 <span className="text-accent font-display font-bold text-lg">${balance.toLocaleString()}</span>
               </div>
               <p className="text-xs text-muted-foreground">
-                FishDollarz will be deducted instantly and the stake will be auto-confirmed.
+                FishDollarz will be deducted instantly and the stake will be auto-confirmed. A 6% platform fee applies when the session is settled.
               </p>
             </div>
           ) : (
             <>
               {/* Payment Instructions */}
               <div className="gradient-card rounded-lg p-4 space-y-2">
-                <p className="text-sm font-display font-bold text-foreground">Payment Instructions</p>
+                <p className="text-sm font-display font-bold text-foreground">P2P Payment Instructions</p>
                 <p className="text-xs text-muted-foreground">Send your stake to one of these:</p>
                 <ul className="text-sm text-foreground space-y-1.5">
                   <li className="flex justify-between">
@@ -269,7 +318,7 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
                   maxLength={200}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Required so the admin can verify your payment
+                  Required so the admin can verify your payment. An 8% platform fee applies on settlement.
                 </p>
               </div>
             </>
@@ -281,19 +330,19 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
             disabled={
               submitting ||
               !amount ||
-              (paymentMethod === "external" && !confirmationRef.trim())
+              (paymentMode === "p2p" && !confirmationRef.trim())
             }
             className="w-full gradient-primary text-primary-foreground font-display font-bold text-base py-5"
           >
             {submitting
               ? "Submitting..."
-              : paymentMethod === "fishdollarz"
-              ? "PAY WITH FISHDOLLARZ"
-              : "CONFIRM PAYMENT"}
+              : paymentMode === "fishdollarz"
+              ? `PAY WITH FISHDOLLARZ (${FISHDOLLARZ_FEE}% FEE)`
+              : `CONFIRM P2P PAYMENT (${P2P_FEE}% FEE)`}
           </Button>
 
           <p className="text-[10px] text-muted-foreground text-center">
-            {paymentMethod === "fishdollarz"
+            {paymentMode === "fishdollarz"
               ? "FishDollarz will be deducted and your stake confirmed instantly."
               : "Your stake will show as Pending (yellow) until the admin verifies your payment."}
           </p>
