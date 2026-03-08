@@ -55,6 +55,7 @@ interface SessionRow {
   ocr_start_amount: number | null;
   ocr_end_amount: number | null;
   ocr_confidence: number | null;
+  manual_rake_status: string | null;
 }
 
 interface PayoutRow {
@@ -433,7 +434,7 @@ export default function Admin() {
     try {
       const { data: confirmedStakes } = await supabase
         .from("stakes")
-        .select("id, backer_id, amount")
+        .select("id, backer_id, amount, payment_mode, rake_rate")
         .eq("session_id", session.id)
         .eq("deposit_confirmed", true);
 
@@ -445,10 +446,26 @@ export default function Admin() {
 
       const totalStaked = confirmedStakes.reduce((sum, s) => sum + Number(s.amount), 0);
 
-      // Auto-Rake: 10% platform fee
-      const PLATFORM_FEE_RATE = 0.10;
-      const feeAmount = Math.round(cashOut * PLATFORM_FEE_RATE * 100) / 100;
-      const distributableAmount = cashOut - feeAmount;
+      // Calculate per-stake rake based on payment_mode
+      let totalFee = 0;
+      const stakeDetails = (confirmedStakes as any[]).map((stake) => {
+        const rakeRate = Number(stake.rake_rate) || 0.08;
+        const share = Number(stake.amount) / totalStaked;
+        const stakeShareOfCashout = cashOut * share;
+        const stakeFee = Math.round(stakeShareOfCashout * rakeRate * 100) / 100;
+        totalFee += stakeFee;
+        return {
+          ...stake,
+          share,
+          stakeShareOfCashout,
+          stakeFee,
+          amountOwed: Math.round((stakeShareOfCashout - stakeFee) * 100) / 100,
+          paymentMode: stake.payment_mode || "p2p",
+        };
+      });
+
+      const hasP2PStakes = stakeDetails.some((s) => s.paymentMode === "p2p");
+      const hasFishdollarzStakes = stakeDetails.some((s) => s.paymentMode === "fishdollarz");
 
       const backerIds = confirmedStakes.map((s) => s.backer_id);
       const [{ data: profiles }, { data: paymentProfiles }] = await Promise.all([
@@ -456,9 +473,7 @@ export default function Admin() {
         supabase.from("payment_profiles").select("user_id, cashapp_tag").in("user_id", backerIds),
       ]);
 
-      const payoutInserts = confirmedStakes.map((stake) => {
-        const share = Number(stake.amount) / totalStaked;
-        const amountOwed = Math.round(distributableAmount * share * 100) / 100;
+      const payoutInserts = stakeDetails.map((stake) => {
         const profile = profiles?.find((p) => p.user_id === stake.backer_id);
         const payment = paymentProfiles?.find((p) => p.user_id === stake.backer_id);
         return {
@@ -467,7 +482,7 @@ export default function Admin() {
           backer_id: stake.backer_id,
           backer_name: profile?.display_name || "Unknown",
           backer_cashtag: payment?.cashapp_tag || null,
-          amount_owed: amountOwed,
+          amount_owed: stake.amountOwed,
           status: "pending",
         };
       });
@@ -475,19 +490,131 @@ export default function Admin() {
       const { error: payoutError } = await supabase.from("payouts").insert(payoutInserts as any);
       if (payoutError) throw payoutError;
 
+      // For FishDollarz stakes, auto-move winnings to backer balances & +1 reliability
+      for (const stake of stakeDetails) {
+        if (stake.paymentMode === "fishdollarz") {
+          // Credit backer's balance with their winnings (minus rake)
+          await supabase.rpc("adjust_balance", {
+            target_uid: stake.backer_id,
+            delta: stake.amountOwed,
+          });
+          // +1 reliability score
+          const { data: prof } = await supabase
+            .from("profiles")
+            .select("reliability_score")
+            .eq("user_id", stake.backer_id)
+            .single();
+          const currentScore = Number((prof as any)?.reliability_score ?? 75);
+          const newScore = Math.min(100, currentScore + 1);
+          await supabase
+            .from("profiles")
+            .update({ reliability_score: newScore } as any)
+            .eq("user_id", stake.backer_id);
+          // Notify backer
+          await supabase.from("notifications").insert({
+            user_id: stake.backer_id,
+            title: "Winnings Credited ✅",
+            message: `$${stake.amountOwed.toLocaleString()} (after ${Math.round(Number(stake.rake_rate) * 100)}% fee) has been added to your FishDollarz balance.`,
+            type: "success",
+          } as any);
+          // Mark payout as paid automatically
+          await supabase.from("payouts").update({ status: "paid" } as any)
+            .eq("stake_id", stake.id)
+            .eq("session_id", session.id);
+          await supabase.from("stakes").update({
+            winnings_amount: stake.amountOwed,
+            winnings_released: true,
+          } as any).eq("id", stake.id);
+        }
+      }
+
+      // Set manual_rake_status if any P2P stakes exist
+      const manualRakeStatus = hasP2PStakes ? "pending_manual_rake" : null;
+
       await supabase.from("sessions").update({
         status: "completed",
         winnings: cashOut,
-        platform_fee: feeAmount,
+        platform_fee: Math.round(totalFee * 100) / 100,
+        manual_rake_status: manualRakeStatus,
       } as any).eq("id", session.id);
 
-      toast.success(`Settled! $${feeAmount} rake • ${payoutInserts.length} payouts created`);
+      const feeBreakdown = `$${totalFee.toFixed(2)} total rake`;
+      toast.success(`Settled! ${feeBreakdown} • ${payoutInserts.length} payouts created${hasP2PStakes ? " • P2P fee pending" : ""}`);
       setSettleSessionId(null);
       setCashOutAmount("");
       fetchSessions();
       fetchPayouts();
     } catch (err: any) {
       toast.error(err.message || "Failed to settle session");
+    }
+    setLoadingId(null);
+  };
+
+  // Handle confirming manual P2P rake received
+  const handleConfirmManualRake = async (session: SessionRow) => {
+    if (loadingId) return;
+    setLoadingId(session.id);
+    try {
+      await supabase.from("sessions").update({
+        manual_rake_status: "confirmed",
+      } as any).eq("id", session.id);
+
+      // +1 reliability for all P2P stakers (fee was paid on time)
+      // No penalty since admin confirmed fee was received
+      toast.success("Manual P2P rake confirmed!");
+      fetchSessions();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to confirm rake");
+    }
+    setLoadingId(null);
+  };
+
+  // Handle marking P2P rake as late (penalty)
+  const handleLateManualRake = async (session: SessionRow) => {
+    if (loadingId) return;
+    const confirmed = window.confirm("Mark this P2P fee as LATE? This will deduct 5 reliability points from all P2P stakers on this session.");
+    if (!confirmed) return;
+    setLoadingId(session.id);
+    try {
+      // Get P2P stakes for this session
+      const { data: p2pStakes } = await supabase
+        .from("stakes")
+        .select("backer_id")
+        .eq("session_id", session.id)
+        .eq("payment_mode", "p2p" as any)
+        .eq("deposit_confirmed", true);
+
+      if (p2pStakes) {
+        for (const stake of p2pStakes) {
+          const { data: prof } = await supabase
+            .from("profiles")
+            .select("reliability_score")
+            .eq("user_id", stake.backer_id)
+            .single();
+          const currentScore = Number((prof as any)?.reliability_score ?? 75);
+          const newScore = Math.max(0, currentScore - 5);
+          await supabase
+            .from("profiles")
+            .update({ reliability_score: newScore } as any)
+            .eq("user_id", stake.backer_id);
+          // Notify user
+          await supabase.from("notifications").insert({
+            user_id: stake.backer_id,
+            title: "Reliability Score Decreased ⚠️",
+            message: `Your reliability score dropped by 5 points to ${newScore}/100 due to late P2P fee payment.`,
+            type: "warning",
+          } as any);
+        }
+      }
+
+      await supabase.from("sessions").update({
+        manual_rake_status: "late_confirmed",
+      } as any).eq("id", session.id);
+
+      toast.success("P2P fee marked as late. Reliability scores adjusted.");
+      fetchSessions();
+    } catch (err: any) {
+      toast.error(err.message || "Failed");
     }
     setLoadingId(null);
   };
@@ -1070,13 +1197,45 @@ export default function Admin() {
                       </div>
                       {cashOutAmount && (
                         <div className="text-[10px] text-muted-foreground space-y-0.5">
-                          <p>Platform rake (10%): <span className="text-accent font-bold">${(parseFloat(cashOutAmount) * 0.1).toFixed(2)}</span></p>
-                          <p>Distributed to users: <span className="text-success font-bold">${(parseFloat(cashOutAmount) * 0.9).toFixed(2)}</span></p>
+                          <p>FishDollarz stakes: <span className="text-accent font-bold">6% rake</span> (auto-credited)</p>
+                          <p>P2P stakes: <span className="text-primary font-bold">8% rake</span> (manual fee required)</p>
                         </div>
                       )}
                       <p className="text-[10px] text-muted-foreground">
-                        10% auto-rake deducted. Remainder split proportionally among stakers.
+                        Rake rates vary by payment mode. FishDollarz winnings auto-credited to backer balances.
                       </p>
+                    </div>
+                  )}
+
+                  {/* P2P Manual Rake Confirmation */}
+                  {s.status === "completed" && (s as any).manual_rake_status === "pending_manual_rake" && (
+                    <div className="bg-accent/10 border border-accent/30 rounded-md p-3 space-y-2">
+                      <p className="text-sm font-display font-bold text-accent flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4" />
+                        Pending P2P Manual Rake
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Seller must pay the 8% P2P fee via CashApp ($fishkllerzstaking). Confirm receipt below.
+                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          disabled={loadingId === s.id}
+                          onClick={() => handleConfirmManualRake(s)}
+                          className="gradient-primary text-primary-foreground font-display font-bold text-xs"
+                        >
+                          <CheckCircle className="h-3 w-3 mr-1" /> Confirm Fee Received
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={loadingId === s.id}
+                          onClick={() => handleLateManualRake(s)}
+                          className="text-destructive border-destructive/30 text-xs"
+                        >
+                          <AlertTriangle className="h-3 w-3 mr-1" /> Mark Late (-5 Score)
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
