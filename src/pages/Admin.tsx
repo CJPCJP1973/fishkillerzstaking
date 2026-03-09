@@ -1141,11 +1141,41 @@ export default function Admin() {
                       >
                         <Eye className="h-3 w-3 mr-1" /> Verify
                       </Button>
+                      {s.status === "funding" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={loadingId === s.id || !(s as any).deposit_proof_url}
+                          title={!(s as any).deposit_proof_url ? "Deposit proof required before starting" : "Start session"}
+                          onClick={async () => {
+                            setLoadingId(s.id);
+                            try {
+                              await supabase.from("sessions").update({ status: "live" } as any).eq("id", s.id);
+                              toast.success("Session started (Live)");
+                              fetchSessions();
+                            } catch (err: any) { toast.error(err.message); }
+                            setLoadingId(null);
+                          }}
+                          className="text-live border-live/30 text-xs"
+                        >
+                          <Crosshair className="h-3 w-3 mr-1" /> Start
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={loadingId === s.id}
+                        onClick={() => setScreenshotSessionId(screenshotSessionId === s.id ? null : s.id)}
+                        className="text-primary border-primary/30 text-xs"
+                      >
+                        <Eye className="h-3 w-3 mr-1" /> Verify
+                      </Button>
                       {s.status !== "completed" && (
                         <Button
                           size="sm"
                           variant="outline"
-                          disabled={loadingId === s.id}
+                          disabled={loadingId === s.id || (s.status === "live" && !(s as any).payout_proof_url)}
+                          title={s.status === "live" && !(s as any).payout_proof_url ? "Payout proof required before settling" : "Settle session"}
                           onClick={() => {
                             setSettleSessionId(settleSessionId === s.id ? null : s.id);
                             setCashOutAmount("");
