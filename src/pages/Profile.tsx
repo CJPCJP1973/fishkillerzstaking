@@ -103,9 +103,70 @@ export default function Profile() {
                   </Button>
                 </Link>
               </div>
-              <div className="gradient-card rounded-lg p-6 text-center">
-                <p className="text-muted-foreground text-sm">No sessions yet. Create your first one!</p>
-              </div>
+
+              {mySessions.length === 0 ? (
+                <div className="gradient-card rounded-lg p-6 text-center">
+                  <p className="text-muted-foreground text-sm">No sessions yet. Create your first one!</p>
+                </div>
+              ) : (
+                mySessions.map((s) => {
+                  const needsDeposit = (s.status === "pending" || s.status === "funding") && !s.deposit_proof_url;
+                  const needsPayout = s.status === "live" && !s.payout_proof_url;
+
+                  return (
+                    <div key={s.id} className="gradient-card rounded-lg p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-display font-bold text-foreground">{s.shooter_name}</p>
+                          <p className="text-xs text-muted-foreground">{s.platform} · {s.agent_room}</p>
+                        </div>
+                        <Badge variant="outline" className="text-xs capitalize">{s.status}</Badge>
+                      </div>
+
+                      {needsDeposit && (
+                        <Alert variant="destructive" className="border-destructive/40 bg-destructive/10">
+                          <AlertTriangle className="h-4 w-4" />
+                          <AlertTitle className="text-sm font-display">Deposit Proof Missing</AlertTitle>
+                          <AlertDescription className="text-xs">
+                            Upload your deposit screenshot before this session can go live. Must show Transaction ID, Payment Status &amp; Timestamp.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+
+                      {needsPayout && (
+                        <Alert variant="destructive" className="border-destructive/40 bg-destructive/10">
+                          <AlertTriangle className="h-4 w-4" />
+                          <AlertTitle className="text-sm font-display">Payout Proof Missing</AlertTitle>
+                          <AlertDescription className="text-xs">
+                            Upload your payout screenshot to settle this session. Must show final withdrawn amount &amp; payout confirmation.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+
+                      {(needsDeposit || needsPayout) && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {needsDeposit && (
+                            <ProofUpload
+                              sessionId={s.id}
+                              type="deposit"
+                              currentUrl={s.deposit_proof_url}
+                              onUploaded={() => fetchMySessions(user.id)}
+                            />
+                          )}
+                          {needsPayout && (
+                            <ProofUpload
+                              sessionId={s.id}
+                              type="payout"
+                              currentUrl={s.payout_proof_url}
+                              onUploaded={() => fetchMySessions(user.id)}
+                            />
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
             </TabsContent>
           )}
 
