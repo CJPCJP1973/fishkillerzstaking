@@ -33,6 +33,9 @@ export default function CreateSessionForm() {
   const [payoutAgreement, setPayoutAgreement] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [agents, setAgents] = useState<ConfirmedAgent[]>([]);
+  const [showAgentRequest, setShowAgentRequest] = useState(false);
+  const [newAgentName, setNewAgentName] = useState("");
+  const [requestingAgent, setRequestingAgent] = useState(false);
 
   useEffect(() => {
     const fetchAgents = async () => {
