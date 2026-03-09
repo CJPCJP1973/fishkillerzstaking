@@ -1128,10 +1128,30 @@ export default function Admin() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-2 shrink-0 flex-wrap">
                       <Badge variant="outline" className={statusColor[s.status] || "bg-secondary text-muted-foreground"}>
                         {(s.status || "pending").toUpperCase()}
                       </Badge>
+                      {s.status === "funding" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={loadingId === s.id || !s.deposit_proof_url}
+                          title={!s.deposit_proof_url ? "Deposit proof required" : "Start session"}
+                          onClick={async () => {
+                            setLoadingId(s.id);
+                            try {
+                              await supabase.from("sessions").update({ status: "live" } as any).eq("id", s.id);
+                              toast.success("Session started (Live)");
+                              fetchSessions();
+                            } catch (err: any) { toast.error(err.message); }
+                            setLoadingId(null);
+                          }}
+                          className="text-live border-live/30 text-xs"
+                        >
+                          <Crosshair className="h-3 w-3 mr-1" /> Start
+                        </Button>
+                      )}
                       <Button
                         size="sm"
                         variant="outline"
@@ -1145,7 +1165,8 @@ export default function Admin() {
                         <Button
                           size="sm"
                           variant="outline"
-                          disabled={loadingId === s.id}
+                          disabled={loadingId === s.id || (s.status === "live" && !s.payout_proof_url)}
+                          title={s.status === "live" && !s.payout_proof_url ? "Payout proof required" : "Settle"}
                           onClick={() => {
                             setSettleSessionId(settleSessionId === s.id ? null : s.id);
                             setCashOutAmount("");
@@ -1165,6 +1186,12 @@ export default function Admin() {
                         <Trash2 className="h-3 w-3 mr-1" /> Delete
                       </Button>
                     </div>
+                  </div>
+
+                  {/* Proof Uploads */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <ProofUpload sessionId={s.id} type="deposit" currentUrl={s.deposit_proof_url} onUploaded={fetchSessions} />
+                    <ProofUpload sessionId={s.id} type="payout" currentUrl={s.payout_proof_url} onUploaded={fetchSessions} />
                   </div>
 
                   {/* Screenshot Comparison */}
@@ -1215,7 +1242,7 @@ export default function Admin() {
                   )}
 
                   {/* P2P Manual Rake Confirmation */}
-                  {s.status === "completed" && (s as any).manual_rake_status === "pending_manual_rake" && (
+                  {s.status === "completed" && s.manual_rake_status === "pending_manual_rake" && (
                     <div className="bg-accent/10 border border-accent/30 rounded-md p-3 space-y-2">
                       <p className="text-sm font-display font-bold text-accent flex items-center gap-2">
                         <AlertTriangle className="h-4 w-4" />
