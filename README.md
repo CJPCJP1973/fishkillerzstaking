@@ -9,6 +9,16 @@ FishKillerz
 ​Internal Currency: All transactions are denominated in FishDollarz.
 ​🎮 The Reputation Economy (Tiered Logic)
 ​The platform automatically scales permissions and fees based on successful session history# Welcome to your Lovable project
+ Security & Integrity Protocols
+​To maintain a "Zero-Bitch" environment, the following protocols are hard-coded into the workflow:
+​Evidence-Based Settlement: Sellers must upload "Bookend" screenshots (Deposit Confirmation and Payout Confirmation) to transition session states.
+​The Session Journal: All user communication is restricted to a chronological, session-specific log that acts as the official audit trail for Admin dispute resolution.
+​Liquidity Guard: Sellers are required to disclose their specific Agent’s cashout windows and daily limits before a stake can be accepted.
+​Identity Verification: Integration of Stripe Identity for high-tier scaling and age verification.
+​🎨 Design & Branding
+​Identity: The "Apex Rise" icon—a geometric orange orca breaching through a dollar-sign splash.
+​Theme: Obsidian Black (#000000) base with Toxic/Electric Orange accents.
+​Terminology: All references to "shooters" or "backers" have been unified under the term "Users".
 
 ## Project info
 
