@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle, Plus, UserCog, Wallet, ShieldCheck, Image, TrendingUp } from "lucide-react";
+import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle, Plus, UserCog, Wallet, ShieldCheck, Image, TrendingUp, Scale } from "lucide-react";
 import ScreenshotComparison from "@/components/admin/ScreenshotComparison";
+import ProofUpload from "@/components/ProofUpload";
+import DisputeReview from "@/components/admin/DisputeReview";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
