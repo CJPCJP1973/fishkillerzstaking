@@ -924,7 +924,7 @@ export default function Admin() {
             </TabsList>
 
             {/* Main navigation tabs - organized grid */}
-            <TabsList className="bg-secondary grid grid-cols-5 md:grid-cols-5 gap-1 h-auto p-2">
+            <TabsList className="bg-secondary grid grid-cols-3 md:grid-cols-5 gap-1 h-auto p-2">
               <TabsTrigger value="escrow" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
                 <DollarSign className="h-4 w-4" />
                 <span>Stakes <span className="text-primary">({stakes.length})</span></span>
@@ -946,7 +946,7 @@ export default function Admin() {
                 <span>Users <span className="text-primary">({users.length})</span></span>
               </TabsTrigger>
             </TabsList>
-            <TabsList className="bg-secondary grid grid-cols-5 md:grid-cols-5 gap-1 h-auto p-2">
+            <TabsList className="bg-secondary grid grid-cols-2 md:grid-cols-5 gap-1 h-auto p-2">
               <TabsTrigger value="confirmed-sellers" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
                 <CheckCircle className="h-4 w-4" />
                 <span>Confirmed <span className="text-primary">({confirmedSellers.length})</span></span>
