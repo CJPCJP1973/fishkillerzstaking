@@ -33,26 +33,33 @@ export default function Profile() {
   };
 
   const fetchStats = async (uid: string) => {
-    // Wins: completed sessions where user was a backer with positive winnings
     const { data: winStakes } = await supabase
       .from("stakes")
       .select("amount, winnings_amount, winnings_released")
       .eq("backer_id", uid)
       .eq("winnings_released", true);
 
-    // All stakes by user
     const { data: allStakes } = await supabase
       .from("stakes")
       .select("amount, deposit_confirmed")
       .eq("backer_id", uid)
       .eq("deposit_confirmed", true);
 
+    // Seller stats: completed sessions & total earnings
+    const { data: completedSessions } = await supabase
+      .from("sessions")
+      .select("id, winnings, total_buy_in, platform_fee")
+      .eq("shooter_id", uid)
+      .eq("status", "completed");
+
     const wins = winStakes?.filter((s) => Number(s.winnings_amount) > Number(s.amount)).length || 0;
     const totalStaked = allStakes?.reduce((sum, s) => sum + Number(s.amount), 0) || 0;
     const totalReturned = winStakes?.reduce((sum, s) => sum + Number(s.winnings_amount || 0), 0) || 0;
     const roi = totalStaked > 0 ? Math.round(((totalReturned - totalStaked) / totalStaked) * 100) : 0;
+    const sellerSessions = completedSessions?.length || 0;
+    const sellerEarnings = completedSessions?.reduce((sum, s) => sum + Number(s.platform_fee || 0), 0) || 0;
 
-    setStats({ wins, totalStaked, roi });
+    setStats({ wins, totalStaked, roi, sellerSessions, sellerEarnings });
   };
 
   useEffect(() => {
