@@ -18,6 +18,7 @@ import NotFound from "./pages/NotFound";
 import Terms from "./pages/Terms";
 import SiteRules from "./pages/SiteRules";
 import Settings from "./pages/Settings";
+import Leaderboard from "./pages/Leaderboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/terms" element={<Terms />} />
             <Route path="/site-rules" element={<SiteRules />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

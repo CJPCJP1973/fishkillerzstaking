@@ -1,6 +1,6 @@
 import { ReactNode, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Crosshair, Home, Plus, User, Shield, Menu, X, LogOut, LogIn, Crown } from "lucide-react";
+import { Crosshair, Home, Plus, User, Shield, Menu, X, LogOut, LogIn, Crown, Trophy } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import NotificationBell from "@/components/NotificationBell";
 
@@ -15,6 +15,7 @@ export default function Layout({ children }: { children: ReactNode }) {
     { to: "/sessions", label: "Sessions", icon: Crosshair, show: true },
     { to: "/create", label: "Create", icon: Plus, show: isSeller },
     { to: "/vip-sessions", label: "VIP", icon: Crown, show: isVip },
+    { to: "/leaderboard", label: "Ranks", icon: Trophy, show: true },
     { to: "/profile", label: "Profile", icon: User, show: !!user },
     { to: "/admin", label: "Admin", icon: Shield, show: isAdmin },
   ].filter((i) => i.show);
