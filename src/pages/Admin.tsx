@@ -738,6 +738,40 @@ export default function Admin() {
     setLoadingId(null);
   };
 
+  // Remove user entirely (profile, roles, payment profile, related data)
+  const handleRemoveUser = async (userRow: UserRow) => {
+    if (loadingId) return;
+    const confirmed = window.confirm(
+      `⚠️ PERMANENTLY REMOVE user "${userRow.display_name}" (@${userRow.username})?\n\nThis will delete their profile, roles, payment info, and all associated data. This action cannot be undone.`
+    );
+    if (!confirmed) return;
+    setLoadingId(userRow.user_id);
+    try {
+      // Delete in order: payouts → stakes → session_journal → sessions → transactions → notifications → seller_requests → payment_profiles → user_roles → profile
+      await supabase.from("payouts").delete().eq("backer_id", userRow.user_id);
+      await supabase.from("stakes").delete().eq("backer_id", userRow.user_id);
+      await supabase.from("session_journal").delete().eq("user_id", userRow.user_id);
+      // Delete sessions they created (and cascading data)
+      const { data: userSessions } = await supabase.from("sessions").select("id").eq("shooter_id", userRow.user_id);
+      if (userSessions && userSessions.length > 0) {
+        const sessionIds = userSessions.map(s => s.id);
+        await supabase.from("payouts").delete().in("session_id", sessionIds);
+        await supabase.from("stakes").delete().in("session_id", sessionIds);
+        await supabase.from("session_journal").delete().in("session_id", sessionIds);
+        await supabase.from("sessions").delete().eq("shooter_id", userRow.user_id);
+      }
+      await supabase.from("transactions").delete().eq("user_id", userRow.user_id);
+      await supabase.from("notifications").delete().eq("user_id", userRow.user_id);
+      await supabase.from("seller_requests").delete().eq("user_id", userRow.user_id);
+      await supabase.from("payment_profiles").delete().eq("user_id", userRow.user_id);
+      await supabase.from("user_roles").delete().eq("user_id", userRow.user_id);
+      await supabase.from("profiles").delete().eq("user_id", userRow.user_id);
+      toast.success(`User "${userRow.display_name}" removed`);
+      fetchUsers();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to remove user");
+    }
+    setLoadingId(null);
   // God Mode: Toggle verified
   const handleToggleVerified = async (userRow: UserRow) => {
     if (loadingId) return;
