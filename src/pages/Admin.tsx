@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle, Plus, UserCog, Wallet, ShieldCheck, Image, TrendingUp } from "lucide-react";
+import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle, Plus, UserCog, Wallet, ShieldCheck, Image, TrendingUp, Scale } from "lucide-react";
 import ScreenshotComparison from "@/components/admin/ScreenshotComparison";
+import ProofUpload from "@/components/ProofUpload";
+import DisputeReview from "@/components/admin/DisputeReview";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -56,6 +58,8 @@ interface SessionRow {
   ocr_end_amount: number | null;
   ocr_confidence: number | null;
   manual_rake_status: string | null;
+  deposit_proof_url: string | null;
+  payout_proof_url: string | null;
 }
 
 interface PayoutRow {
@@ -930,6 +934,9 @@ export default function Admin() {
             </TabsTrigger>
             <TabsTrigger value="id-verification" className="font-display">
               <ShieldCheck className="h-3 w-3 mr-1" /> ID Verify ({pendingVerifications.length})
+            </TabsTrigger>
+            <TabsTrigger value="disputes" className="font-display text-destructive">
+              <Scale className="h-3 w-3 mr-1" /> Disputes
             </TabsTrigger>
             <TabsTrigger value="godmode" className="font-display text-accent">
               <Zap className="h-3 w-3 mr-1" /> God Mode
