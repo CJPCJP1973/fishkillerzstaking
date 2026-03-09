@@ -738,6 +738,42 @@ export default function Admin() {
     setLoadingId(null);
   };
 
+  // Remove user entirely (profile, roles, payment profile, related data)
+  const handleRemoveUser = async (userRow: UserRow) => {
+    if (loadingId) return;
+    const confirmed = window.confirm(
+      `⚠️ PERMANENTLY REMOVE user "${userRow.display_name}" (@${userRow.username})?\n\nThis will delete their profile, roles, payment info, and all associated data. This action cannot be undone.`
+    );
+    if (!confirmed) return;
+    setLoadingId(userRow.user_id);
+    try {
+      // Delete in order: payouts → stakes → session_journal → sessions → transactions → notifications → seller_requests → payment_profiles → user_roles → profile
+      await supabase.from("payouts").delete().eq("backer_id", userRow.user_id);
+      await supabase.from("stakes").delete().eq("backer_id", userRow.user_id);
+      await supabase.from("session_journal").delete().eq("user_id", userRow.user_id);
+      // Delete sessions they created (and cascading data)
+      const { data: userSessions } = await supabase.from("sessions").select("id").eq("shooter_id", userRow.user_id);
+      if (userSessions && userSessions.length > 0) {
+        const sessionIds = userSessions.map(s => s.id);
+        await supabase.from("payouts").delete().in("session_id", sessionIds);
+        await supabase.from("stakes").delete().in("session_id", sessionIds);
+        await supabase.from("session_journal").delete().in("session_id", sessionIds);
+        await supabase.from("sessions").delete().eq("shooter_id", userRow.user_id);
+      }
+      await supabase.from("transactions").delete().eq("user_id", userRow.user_id);
+      await supabase.from("notifications").delete().eq("user_id", userRow.user_id);
+      await supabase.from("seller_requests").delete().eq("user_id", userRow.user_id);
+      await supabase.from("payment_profiles").delete().eq("user_id", userRow.user_id);
+      await supabase.from("user_roles").delete().eq("user_id", userRow.user_id);
+      await supabase.from("profiles").delete().eq("user_id", userRow.user_id);
+      toast.success(`User "${userRow.display_name}" removed`);
+      fetchUsers();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to remove user");
+    }
+    setLoadingId(null);
+  };
+
   // God Mode: Toggle verified
   const handleToggleVerified = async (userRow: UserRow) => {
     if (loadingId) return;
@@ -1378,19 +1414,31 @@ export default function Admin() {
                           {u.created_at ? new Date(u.created_at).toLocaleDateString() : "—"}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={loadingId === u.user_id}
-                            onClick={() => handleBanUser(u)}
-                            className={u.seller_status === "banned"
-                              ? "text-success border-success/30 text-xs"
-                              : "text-destructive border-destructive/30 text-xs"
-                            }
-                          >
-                            <Ban className="h-3 w-3 mr-1" />
-                            {u.seller_status === "banned" ? "Unban" : "Ban"}
-                          </Button>
+                          <div className="flex gap-2 justify-end">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={loadingId === u.user_id}
+                              onClick={() => handleBanUser(u)}
+                              className={u.seller_status === "banned"
+                                ? "text-success border-success/30 text-xs"
+                                : "text-destructive border-destructive/30 text-xs"
+                              }
+                            >
+                              <Ban className="h-3 w-3 mr-1" />
+                              {u.seller_status === "banned" ? "Unban" : "Ban"}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              disabled={loadingId === u.user_id}
+                              onClick={() => handleRemoveUser(u)}
+                              className="text-xs"
+                            >
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Remove
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
