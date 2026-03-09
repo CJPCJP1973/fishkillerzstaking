@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/hooks/useAuth";
-import { User, Trophy, DollarSign, TrendingUp, Plus } from "lucide-react";
+import { User, Trophy, DollarSign, TrendingUp, Plus, Crosshair } from "lucide-react";
 import TierBadge from "@/components/TierBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ export default function Profile() {
   const { user, isAdmin, isSeller, sellerStatus, username, loading, verificationStatus, verificationNote, sellerTier } = useAuth();
   const navigate = useNavigate();
   const [mySessions, setMySessions] = useState<any[]>([]);
-  const [stats, setStats] = useState({ wins: 0, totalStaked: 0, roi: 0 });
+  const [stats, setStats] = useState({ wins: 0, totalStaked: 0, roi: 0, sellerSessions: 0, sellerEarnings: 0 });
 
   const fetchMySessions = async (uid: string) => {
     const { data } = await supabase
@@ -33,26 +33,33 @@ export default function Profile() {
   };
 
   const fetchStats = async (uid: string) => {
-    // Wins: completed sessions where user was a backer with positive winnings
     const { data: winStakes } = await supabase
       .from("stakes")
       .select("amount, winnings_amount, winnings_released")
       .eq("backer_id", uid)
       .eq("winnings_released", true);
 
-    // All stakes by user
     const { data: allStakes } = await supabase
       .from("stakes")
       .select("amount, deposit_confirmed")
       .eq("backer_id", uid)
       .eq("deposit_confirmed", true);
 
+    // Seller stats: completed sessions & total earnings
+    const { data: completedSessions } = await supabase
+      .from("sessions")
+      .select("id, winnings, total_buy_in, platform_fee")
+      .eq("shooter_id", uid)
+      .eq("status", "completed");
+
     const wins = winStakes?.filter((s) => Number(s.winnings_amount) > Number(s.amount)).length || 0;
     const totalStaked = allStakes?.reduce((sum, s) => sum + Number(s.amount), 0) || 0;
     const totalReturned = winStakes?.reduce((sum, s) => sum + Number(s.winnings_amount || 0), 0) || 0;
     const roi = totalStaked > 0 ? Math.round(((totalReturned - totalStaked) / totalStaked) * 100) : 0;
+    const sellerSessions = completedSessions?.length || 0;
+    const sellerEarnings = completedSessions?.reduce((sum, s) => sum + Number(s.platform_fee || 0), 0) || 0;
 
-    setStats({ wins, totalStaked, roi });
+    setStats({ wins, totalStaked, roi, sellerSessions, sellerEarnings });
   };
 
   useEffect(() => {
@@ -88,7 +95,7 @@ export default function Profile() {
             <IDVerification verificationStatus={verificationStatus} verificationNote={verificationNote} />
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className={`grid ${isSeller ? 'grid-cols-5' : 'grid-cols-3'} gap-3`}>
             <div className="bg-secondary rounded-md p-3">
               <Trophy className="h-4 w-4 text-accent mx-auto mb-1" />
               <p className="text-lg font-display font-bold text-foreground">{stats.wins}</p>
@@ -104,6 +111,20 @@ export default function Profile() {
               <p className={`text-lg font-display font-bold ${stats.roi >= 0 ? "text-success" : "text-destructive"}`}>{stats.roi}%</p>
               <p className="text-xs text-muted-foreground">ROI</p>
             </div>
+            {isSeller && (
+              <>
+                <div className="bg-secondary rounded-md p-3">
+                  <Crosshair className="h-4 w-4 text-primary mx-auto mb-1" />
+                  <p className="text-lg font-display font-bold text-foreground">{stats.sellerSessions}</p>
+                  <p className="text-xs text-muted-foreground">Sessions</p>
+                </div>
+                <div className="bg-secondary rounded-md p-3">
+                  <DollarSign className="h-4 w-4 text-accent mx-auto mb-1" />
+                  <p className="text-lg font-display font-bold text-foreground">${stats.sellerEarnings.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">Earnings</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
