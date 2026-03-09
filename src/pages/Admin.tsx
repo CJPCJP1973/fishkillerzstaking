@@ -1602,6 +1602,17 @@ export default function Admin() {
             )}
           </TabsContent>
 
+          {/* Disputes Tab */}
+          <TabsContent value="disputes" className="space-y-3 mt-4">
+            <h2 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
+              <Scale className="h-5 w-5 text-destructive" /> Dispute Review
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Sessions flagged as disputed. Review deposit &amp; payout proofs side-by-side.
+            </p>
+            <DisputeReview />
+          </TabsContent>
+
           {/* God Mode Tab */}
           <TabsContent value="godmode" className="space-y-6 mt-4">
             <div className="flex items-center gap-2 mb-2">
