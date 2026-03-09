@@ -42,6 +42,7 @@ interface PendingStake {
 
 interface SessionRow {
   id: string;
+  shooter_id: string;
   shooter_name: string;
   platform: string;
   total_buy_in: number;
@@ -1139,6 +1140,16 @@ export default function Admin() {
                           disabled={loadingId === s.id || !s.deposit_proof_url}
                           title={!s.deposit_proof_url ? "Deposit proof required" : "Start session"}
                           onClick={async () => {
+                            if (!s.deposit_proof_url) {
+                              await supabase.from("notifications").insert({
+                                user_id: s.shooter_id,
+                                title: "⚠️ Deposit Proof Missing",
+                                message: `Your session "${s.shooter_name} — ${s.platform}" cannot be started. Please upload deposit proof documentation.`,
+                                type: "warning",
+                              } as any);
+                              toast.error("Deposit proof missing — seller notified");
+                              return;
+                            }
                             setLoadingId(s.id);
                             try {
                               await supabase.from("sessions").update({ status: "live" } as any).eq("id", s.id);
@@ -1167,7 +1178,17 @@ export default function Admin() {
                           variant="outline"
                           disabled={loadingId === s.id || (s.status === "live" && !s.payout_proof_url)}
                           title={s.status === "live" && !s.payout_proof_url ? "Payout proof required" : "Settle"}
-                          onClick={() => {
+                          onClick={async () => {
+                            if (s.status === "live" && !s.payout_proof_url) {
+                              await supabase.from("notifications").insert({
+                                user_id: s.shooter_id,
+                                title: "⚠️ Payout Proof Missing",
+                                message: `Your session "${s.shooter_name} — ${s.platform}" cannot be settled. Please upload payout proof documentation.`,
+                                type: "warning",
+                              } as any);
+                              toast.error("Payout proof missing — seller notified");
+                              return;
+                            }
                             setSettleSessionId(settleSessionId === s.id ? null : s.id);
                             setCashOutAmount("");
                           }}
