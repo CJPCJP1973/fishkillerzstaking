@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/hooks/useAuth";
-import { User, Trophy, DollarSign, TrendingUp, Plus } from "lucide-react";
+import { User, Trophy, DollarSign, TrendingUp, Plus, Crosshair } from "lucide-react";
 import TierBadge from "@/components/TierBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
