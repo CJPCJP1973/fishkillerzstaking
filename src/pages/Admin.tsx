@@ -1378,19 +1378,31 @@ export default function Admin() {
                           {u.created_at ? new Date(u.created_at).toLocaleDateString() : "—"}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={loadingId === u.user_id}
-                            onClick={() => handleBanUser(u)}
-                            className={u.seller_status === "banned"
-                              ? "text-success border-success/30 text-xs"
-                              : "text-destructive border-destructive/30 text-xs"
-                            }
-                          >
-                            <Ban className="h-3 w-3 mr-1" />
-                            {u.seller_status === "banned" ? "Unban" : "Ban"}
-                          </Button>
+                          <div className="flex gap-2 justify-end">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={loadingId === u.user_id}
+                              onClick={() => handleBanUser(u)}
+                              className={u.seller_status === "banned"
+                                ? "text-success border-success/30 text-xs"
+                                : "text-destructive border-destructive/30 text-xs"
+                              }
+                            >
+                              <Ban className="h-3 w-3 mr-1" />
+                              {u.seller_status === "banned" ? "Unban" : "Ban"}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              disabled={loadingId === u.user_id}
+                              onClick={() => handleRemoveUser(u)}
+                              className="text-xs"
+                            >
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Remove
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
