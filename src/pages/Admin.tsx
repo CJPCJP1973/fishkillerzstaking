@@ -1178,7 +1178,17 @@ export default function Admin() {
                           variant="outline"
                           disabled={loadingId === s.id || (s.status === "live" && !s.payout_proof_url)}
                           title={s.status === "live" && !s.payout_proof_url ? "Payout proof required" : "Settle"}
-                          onClick={() => {
+                          onClick={async () => {
+                            if (s.status === "live" && !s.payout_proof_url) {
+                              await supabase.from("notifications").insert({
+                                user_id: s.shooter_id,
+                                title: "⚠️ Payout Proof Missing",
+                                message: `Your session "${s.shooter_name} — ${s.platform}" cannot be settled. Please upload payout proof documentation.`,
+                                type: "warning",
+                              } as any);
+                              toast.error("Payout proof missing — seller notified");
+                              return;
+                            }
                             setSettleSessionId(settleSessionId === s.id ? null : s.id);
                             setCashOutAmount("");
                           }}
