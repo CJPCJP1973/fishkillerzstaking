@@ -42,6 +42,7 @@ interface PendingStake {
 
 interface SessionRow {
   id: string;
+  shooter_id: string;
   shooter_name: string;
   platform: string;
   total_buy_in: number;
