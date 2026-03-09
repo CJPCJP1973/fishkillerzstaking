@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Eye, CheckCircle, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 interface DisputedSession {
@@ -29,7 +29,6 @@ export default function DisputeReview() {
       .order("created_at", { ascending: false });
     if (data) {
       setSessions(data as any);
-      // Generate signed URLs
       const urls: Record<string, { deposit?: string; payout?: string }> = {};
       for (const s of data as any[]) {
         urls[s.id] = {};
@@ -135,7 +134,6 @@ export default function DisputeReview() {
             </div>
           </div>
 
-          {/* Missing proof warning */}
           {(!s.deposit_proof_url || !s.payout_proof_url) && (
             <div className="bg-destructive/10 border border-destructive/30 rounded-md p-2">
               <p className="text-xs text-destructive font-display font-bold flex items-center gap-1">
@@ -149,7 +147,6 @@ export default function DisputeReview() {
             </div>
           )}
 
-          {/* Resolve actions */}
           <div className="flex gap-2">
             <Button
               size="sm"

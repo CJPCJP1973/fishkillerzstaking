@@ -1128,25 +1128,16 @@ export default function Admin() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-2 shrink-0 flex-wrap">
                       <Badge variant="outline" className={statusColor[s.status] || "bg-secondary text-muted-foreground"}>
                         {(s.status || "pending").toUpperCase()}
                       </Badge>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={loadingId === s.id}
-                        onClick={() => setScreenshotSessionId(screenshotSessionId === s.id ? null : s.id)}
-                        className="text-primary border-primary/30 text-xs"
-                      >
-                        <Eye className="h-3 w-3 mr-1" /> Verify
-                      </Button>
                       {s.status === "funding" && (
                         <Button
                           size="sm"
                           variant="outline"
-                          disabled={loadingId === s.id || !(s as any).deposit_proof_url}
-                          title={!(s as any).deposit_proof_url ? "Deposit proof required before starting" : "Start session"}
+                          disabled={loadingId === s.id || !s.deposit_proof_url}
+                          title={!s.deposit_proof_url ? "Deposit proof required" : "Start session"}
                           onClick={async () => {
                             setLoadingId(s.id);
                             try {
@@ -1174,8 +1165,8 @@ export default function Admin() {
                         <Button
                           size="sm"
                           variant="outline"
-                          disabled={loadingId === s.id || (s.status === "live" && !(s as any).payout_proof_url)}
-                          title={s.status === "live" && !(s as any).payout_proof_url ? "Payout proof required before settling" : "Settle session"}
+                          disabled={loadingId === s.id || (s.status === "live" && !s.payout_proof_url)}
+                          title={s.status === "live" && !s.payout_proof_url ? "Payout proof required" : "Settle"}
                           onClick={() => {
                             setSettleSessionId(settleSessionId === s.id ? null : s.id);
                             setCashOutAmount("");
@@ -1197,6 +1188,12 @@ export default function Admin() {
                     </div>
                   </div>
 
+                  {/* Proof Uploads */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <ProofUpload sessionId={s.id} type="deposit" currentUrl={s.deposit_proof_url} onUploaded={fetchSessions} />
+                    <ProofUpload sessionId={s.id} type="payout" currentUrl={s.payout_proof_url} onUploaded={fetchSessions} />
+                  </div>
+
                   {/* Screenshot Comparison */}
                   {screenshotSessionId === s.id && (
                     <ScreenshotComparison
@@ -1209,22 +1206,6 @@ export default function Admin() {
                       onUpdate={fetchSessions}
                     />
                   )}
-
-                  {/* Proof Uploads */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <ProofUpload
-                      sessionId={s.id}
-                      type="deposit"
-                      currentUrl={(s as any).deposit_proof_url}
-                      onUploaded={fetchSessions}
-                    />
-                    <ProofUpload
-                      sessionId={s.id}
-                      type="payout"
-                      currentUrl={(s as any).payout_proof_url}
-                      onUploaded={fetchSessions}
-                    />
-                  </div>
 
                   {/* Settle Form */}
                   {settleSessionId === s.id && (
@@ -1261,7 +1242,7 @@ export default function Admin() {
                   )}
 
                   {/* P2P Manual Rake Confirmation */}
-                  {s.status === "completed" && (s as any).manual_rake_status === "pending_manual_rake" && (
+                  {s.status === "completed" && s.manual_rake_status === "pending_manual_rake" && (
                     <div className="bg-accent/10 border border-accent/30 rounded-md p-3 space-y-2">
                       <p className="text-sm font-display font-bold text-accent flex items-center gap-2">
                         <AlertTriangle className="h-4 w-4" />
