@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle, Plus, UserCog, Wallet, ShieldCheck, Image, TrendingUp } from "lucide-react";
+import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle, Plus, UserCog, Wallet, ShieldCheck, Image, TrendingUp, Scale } from "lucide-react";
 import ScreenshotComparison from "@/components/admin/ScreenshotComparison";
+import ProofUpload from "@/components/ProofUpload";
+import DisputeReview from "@/components/admin/DisputeReview";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -56,6 +58,8 @@ interface SessionRow {
   ocr_end_amount: number | null;
   ocr_confidence: number | null;
   manual_rake_status: string | null;
+  deposit_proof_url: string | null;
+  payout_proof_url: string | null;
 }
 
 interface PayoutRow {
@@ -931,6 +935,9 @@ export default function Admin() {
             <TabsTrigger value="id-verification" className="font-display">
               <ShieldCheck className="h-3 w-3 mr-1" /> ID Verify ({pendingVerifications.length})
             </TabsTrigger>
+            <TabsTrigger value="disputes" className="font-display text-destructive">
+              <Scale className="h-3 w-3 mr-1" /> Disputes
+            </TabsTrigger>
             <TabsTrigger value="godmode" className="font-display text-accent">
               <Zap className="h-3 w-3 mr-1" /> God Mode
             </TabsTrigger>
@@ -1134,11 +1141,41 @@ export default function Admin() {
                       >
                         <Eye className="h-3 w-3 mr-1" /> Verify
                       </Button>
+                      {s.status === "funding" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={loadingId === s.id || !(s as any).deposit_proof_url}
+                          title={!(s as any).deposit_proof_url ? "Deposit proof required before starting" : "Start session"}
+                          onClick={async () => {
+                            setLoadingId(s.id);
+                            try {
+                              await supabase.from("sessions").update({ status: "live" } as any).eq("id", s.id);
+                              toast.success("Session started (Live)");
+                              fetchSessions();
+                            } catch (err: any) { toast.error(err.message); }
+                            setLoadingId(null);
+                          }}
+                          className="text-live border-live/30 text-xs"
+                        >
+                          <Crosshair className="h-3 w-3 mr-1" /> Start
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={loadingId === s.id}
+                        onClick={() => setScreenshotSessionId(screenshotSessionId === s.id ? null : s.id)}
+                        className="text-primary border-primary/30 text-xs"
+                      >
+                        <Eye className="h-3 w-3 mr-1" /> Verify
+                      </Button>
                       {s.status !== "completed" && (
                         <Button
                           size="sm"
                           variant="outline"
-                          disabled={loadingId === s.id}
+                          disabled={loadingId === s.id || (s.status === "live" && !(s as any).payout_proof_url)}
+                          title={s.status === "live" && !(s as any).payout_proof_url ? "Payout proof required before settling" : "Settle session"}
                           onClick={() => {
                             setSettleSessionId(settleSessionId === s.id ? null : s.id);
                             setCashOutAmount("");
@@ -1172,6 +1209,22 @@ export default function Admin() {
                       onUpdate={fetchSessions}
                     />
                   )}
+
+                  {/* Proof Uploads */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <ProofUpload
+                      sessionId={s.id}
+                      type="deposit"
+                      currentUrl={(s as any).deposit_proof_url}
+                      onUploaded={fetchSessions}
+                    />
+                    <ProofUpload
+                      sessionId={s.id}
+                      type="payout"
+                      currentUrl={(s as any).payout_proof_url}
+                      onUploaded={fetchSessions}
+                    />
+                  </div>
 
                   {/* Settle Form */}
                   {settleSessionId === s.id && (
@@ -1566,6 +1619,17 @@ export default function Admin() {
                 </div>
               ))
             )}
+          </TabsContent>
+
+          {/* Disputes Tab */}
+          <TabsContent value="disputes" className="space-y-3 mt-4">
+            <h2 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
+              <Scale className="h-5 w-5 text-destructive" /> Dispute Review
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Sessions flagged as disputed. Review deposit &amp; payout proofs side-by-side.
+            </p>
+            <DisputeReview />
           </TabsContent>
 
           {/* God Mode Tab */}
