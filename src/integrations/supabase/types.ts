@@ -619,6 +619,18 @@ export type Database = {
           total_buy_in: number
         }[]
       }
+      get_seller_leaderboard: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          completed_sessions: number
+          display_name: string
+          is_vip: boolean
+          seller_tier: number
+          total_earnings: number
+          username: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
