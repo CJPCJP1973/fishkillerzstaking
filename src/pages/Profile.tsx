@@ -20,9 +20,20 @@ import ProofUpload from "@/components/ProofUpload";
 export default function Profile() {
   const { user, isAdmin, isSeller, sellerStatus, username, loading, verificationStatus, verificationNote, sellerTier } = useAuth();
   const navigate = useNavigate();
+  const [mySessions, setMySessions] = useState<any[]>([]);
+
+  const fetchMySessions = async (uid: string) => {
+    const { data } = await supabase
+      .from("sessions")
+      .select("id, shooter_name, platform, agent_room, status, deposit_proof_url, payout_proof_url, total_buy_in")
+      .eq("shooter_id", uid)
+      .order("created_at", { ascending: false });
+    setMySessions(data || []);
+  };
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
+    if (user) fetchMySessions(user.id);
   }, [user, loading, navigate]);
 
   if (loading || !user) return null;
