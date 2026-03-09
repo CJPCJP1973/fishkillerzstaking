@@ -153,7 +153,13 @@ export default function CreateSessionForm() {
 
         <div>
           <Label className="text-sm text-muted-foreground">Agent</Label>
-          <Select value={agentRoom} onValueChange={setAgentRoom}>
+          <Select value={agentRoom} onValueChange={(val) => {
+            if (val === "__request_new__") {
+              setShowAgentRequest(true);
+              return;
+            }
+            setAgentRoom(val);
+          }}>
             <SelectTrigger className="bg-secondary border-border text-foreground">
               <SelectValue placeholder="Select confirmed agent" />
             </SelectTrigger>
@@ -161,11 +167,81 @@ export default function CreateSessionForm() {
               {agents.length > 0 ? agents.map((a) => (
                 <SelectItem key={a.id} value={a.agent_name}>{a.agent_name}</SelectItem>
               )) : (
-                <div className="px-3 py-2 text-xs text-muted-foreground">No agents available. Admin must add agents first.</div>
+                <div className="px-3 py-2 text-xs text-muted-foreground">No agents available yet.</div>
               )}
+              <div className="border-t border-border mt-1 pt-1">
+                <SelectItem value="__request_new__" className="text-primary">
+                  <span className="flex items-center gap-1.5"><Plus className="h-3 w-3" /> Request New Agent</span>
+                </SelectItem>
+              </div>
             </SelectContent>
           </Select>
           <p className="text-[10px] text-muted-foreground mt-1">Only admin-approved agents are available.</p>
+
+          {showAgentRequest && (
+            <div className="mt-2 rounded-md border border-primary/20 bg-primary/5 p-3 space-y-2">
+              <p className="text-xs font-medium text-foreground">Request a new agent for admin approval</p>
+              <Input
+                value={newAgentName}
+                onChange={(e) => setNewAgentName(e.target.value)}
+                placeholder="Agent name"
+                className="bg-secondary border-border text-foreground text-sm"
+              />
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={!newAgentName.trim() || requestingAgent}
+                  className="gradient-primary text-primary-foreground text-xs"
+                  onClick={async () => {
+                    if (!user || !newAgentName.trim()) return;
+                    setRequestingAgent(true);
+                    try {
+                      const { error } = await supabase.from("session_journal").insert({
+                        session_id: "00000000-0000-0000-0000-000000000000",
+                        user_id: user.id,
+                        author_name: username || "User",
+                        message: `Agent request: "${newAgentName.trim()}" — submitted by ${username || user.email}`,
+                        entry_type: "note",
+                      } as any);
+                      // Also create a notification for admins
+                      const { data: admins } = await supabase
+                        .from("user_roles")
+                        .select("user_id")
+                        .eq("role", "admin");
+                      if (admins) {
+                        for (const admin of admins) {
+                          await supabase.from("notifications").insert({
+                            user_id: admin.user_id,
+                            title: "New Agent Request",
+                            message: `${username || "A user"} requested agent: "${newAgentName.trim()}"`,
+                            type: "agent_request",
+                          } as any);
+                        }
+                      }
+                      toast.success("Agent request submitted! An admin will review it.");
+                      setNewAgentName("");
+                      setShowAgentRequest(false);
+                    } catch {
+                      toast.error("Failed to submit request");
+                    }
+                    setRequestingAgent(false);
+                  }}
+                >
+                  {requestingAgent ? "Sending..." : "Submit Request"}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="text-xs text-muted-foreground"
+                  onClick={() => { setShowAgentRequest(false); setNewAgentName(""); }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
