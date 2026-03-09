@@ -19,6 +19,7 @@ import Terms from "./pages/Terms";
 import SiteRules from "./pages/SiteRules";
 import Settings from "./pages/Settings";
 import Leaderboard from "./pages/Leaderboard";
+import PublicProfile from "./pages/PublicProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/site-rules" element={<SiteRules />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/u/:username" element={<PublicProfile />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

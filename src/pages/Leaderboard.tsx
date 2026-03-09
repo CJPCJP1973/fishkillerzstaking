@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -61,7 +62,8 @@ export default function Leaderboard() {
         ) : (
           <div className="space-y-3">
             {sellers.map((s, i) => (
-              <Card key={s.username} className="overflow-hidden">
+              <Link to={`/u/${s.username}`} key={s.username} className="block">
+              <Card className="overflow-hidden hover:border-primary/40 transition-colors cursor-pointer">
                 <CardContent className="p-0">
                   <div className="flex items-center gap-4 p-4">
                     {/* Rank */}
@@ -119,6 +121,7 @@ export default function Leaderboard() {
                   </div>
                 </CardContent>
               </Card>
+              </Link>
             ))}
           </div>
         )}
