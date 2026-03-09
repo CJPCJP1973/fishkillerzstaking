@@ -91,17 +91,17 @@ export default function Profile() {
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-secondary rounded-md p-3">
               <Trophy className="h-4 w-4 text-accent mx-auto mb-1" />
-              <p className="text-lg font-display font-bold text-foreground">0</p>
+              <p className="text-lg font-display font-bold text-foreground">{stats.wins}</p>
               <p className="text-xs text-muted-foreground">Wins</p>
             </div>
             <div className="bg-secondary rounded-md p-3">
               <DollarSign className="h-4 w-4 text-primary mx-auto mb-1" />
-              <p className="text-lg font-display font-bold text-foreground">$0</p>
+              <p className="text-lg font-display font-bold text-foreground">${stats.totalStaked.toLocaleString()}</p>
               <p className="text-xs text-muted-foreground">Staked</p>
             </div>
             <div className="bg-secondary rounded-md p-3">
               <TrendingUp className="h-4 w-4 text-accent mx-auto mb-1" />
-              <p className="text-lg font-display font-bold text-foreground">0%</p>
+              <p className={`text-lg font-display font-bold ${stats.roi >= 0 ? "text-success" : "text-destructive"}`}>{stats.roi}%</p>
               <p className="text-xs text-muted-foreground">ROI</p>
             </div>
           </div>
