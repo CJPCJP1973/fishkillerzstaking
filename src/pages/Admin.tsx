@@ -1210,6 +1210,22 @@ export default function Admin() {
                     />
                   )}
 
+                  {/* Proof Uploads */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <ProofUpload
+                      sessionId={s.id}
+                      type="deposit"
+                      currentUrl={(s as any).deposit_proof_url}
+                      onUploaded={fetchSessions}
+                    />
+                    <ProofUpload
+                      sessionId={s.id}
+                      type="payout"
+                      currentUrl={(s as any).payout_proof_url}
+                      onUploaded={fetchSessions}
+                    />
+                  </div>
+
                   {/* Settle Form */}
                   {settleSessionId === s.id && (
                     <div className="bg-secondary rounded-md p-3 space-y-2">
