@@ -1,4 +1,14 @@
-# Welcome to your Lovable project
+FishKillerz
+​This README serves as the technical and operational manual for the FishKillerz platform. It aligns with the "Apex Rise" branding and the automated reputation economy established for the ecosystem.
+​🌊 Project Overview
+​FishKillerz is a high-integrity, peer-to-peer (P2P) staking marketplace for online gaming. The platform utilizes a "Trust-by-Evidence" model to eliminate fraud, leveraging a tiered user progression system and mandatory transaction documentation.
+​🔱 Core Architecture
+​Hosting & Deployment: Automated CI/CD pipeline via GitHub and Vercel.
+​Platform Type: Progressive Web App (PWA) designed for standalone mobile installation.
+​Primary Database Entities: users, sessions, fish_dollarz_ledger, and session_journal.
+​Internal Currency: All transactions are denominated in FishDollarz.
+​🎮 The Reputation Economy (Tiered Logic)
+​The platform automatically scales permissions and fees based on successful session history# Welcome to your Lovable project
 
 ## Project info
 
