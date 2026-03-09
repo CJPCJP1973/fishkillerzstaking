@@ -907,42 +907,68 @@ export default function Admin() {
           ))}
         </div>
 
+        {/* God Mode - Top of Page */}
         <Tabs defaultValue="escrow" className="w-full">
-          <TabsList className="bg-secondary flex-wrap">
-            <TabsTrigger value="escrow" className="font-display">
-              Stakes ({stakes.length})
-            </TabsTrigger>
-            <TabsTrigger value="payouts" className="font-display">
-              Payouts ({payouts.length})
-            </TabsTrigger>
-            <TabsTrigger value="sellers" className="font-display">
-              Sellers ({requests.length})
-            </TabsTrigger>
-            <TabsTrigger value="sessions" className="font-display">
-              Sessions ({sessions.length})
-            </TabsTrigger>
-            <TabsTrigger value="users" className="font-display">
-              <Users className="h-3 w-3 mr-1" /> Users ({users.length})
-            </TabsTrigger>
-            <TabsTrigger value="confirmed-sellers" className="font-display">
-              <CheckCircle className="h-3 w-3 mr-1" /> Confirmed ({confirmedSellers.length})
-            </TabsTrigger>
-            <TabsTrigger value="agents" className="font-display">
-              <UserCog className="h-3 w-3 mr-1" /> Agents ({agents.length})
-            </TabsTrigger>
-            <TabsTrigger value="wallet-ledger" className="font-display">
-              <Wallet className="h-3 w-3 mr-1" /> Wallet ({walletTxns.length})
-            </TabsTrigger>
-            <TabsTrigger value="id-verification" className="font-display">
-              <ShieldCheck className="h-3 w-3 mr-1" /> ID Verify ({pendingVerifications.length})
-            </TabsTrigger>
-            <TabsTrigger value="disputes" className="font-display text-destructive">
-              <Scale className="h-3 w-3 mr-1" /> Disputes
-            </TabsTrigger>
-            <TabsTrigger value="godmode" className="font-display text-accent">
-              <Zap className="h-3 w-3 mr-1" /> God Mode
-            </TabsTrigger>
-          </TabsList>
+          <div className="space-y-3">
+            {/* God Mode prominent button at top */}
+            <TabsList className="bg-destructive/10 border border-destructive/20 w-full h-14 p-1">
+              <TabsTrigger
+                value="godmode"
+                className="w-full h-full font-display text-base font-bold text-accent data-[state=active]:bg-accent data-[state=active]:text-accent-foreground gap-2"
+              >
+                <Zap className="h-5 w-5" /> GOD MODE
+                <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[10px] ml-1">
+                  <AlertTriangle className="h-3 w-3" />
+                </Badge>
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Main navigation tabs - organized grid */}
+            <TabsList className="bg-secondary grid grid-cols-5 md:grid-cols-5 gap-1 h-auto p-2">
+              <TabsTrigger value="escrow" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
+                <DollarSign className="h-4 w-4" />
+                <span>Stakes <span className="text-primary">({stakes.length})</span></span>
+              </TabsTrigger>
+              <TabsTrigger value="payouts" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
+                <Send className="h-4 w-4" />
+                <span>Payouts <span className="text-primary">({payouts.length})</span></span>
+              </TabsTrigger>
+              <TabsTrigger value="sellers" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
+                <UserCheck className="h-4 w-4" />
+                <span>Sellers <span className="text-primary">({requests.length})</span></span>
+              </TabsTrigger>
+              <TabsTrigger value="sessions" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
+                <Crosshair className="h-4 w-4" />
+                <span>Sessions <span className="text-primary">({sessions.length})</span></span>
+              </TabsTrigger>
+              <TabsTrigger value="users" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
+                <Users className="h-4 w-4" />
+                <span>Users <span className="text-primary">({users.length})</span></span>
+              </TabsTrigger>
+            </TabsList>
+            <TabsList className="bg-secondary grid grid-cols-5 md:grid-cols-5 gap-1 h-auto p-2">
+              <TabsTrigger value="confirmed-sellers" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
+                <CheckCircle className="h-4 w-4" />
+                <span>Confirmed <span className="text-primary">({confirmedSellers.length})</span></span>
+              </TabsTrigger>
+              <TabsTrigger value="agents" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
+                <UserCog className="h-4 w-4" />
+                <span>Agents <span className="text-primary">({agents.length})</span></span>
+              </TabsTrigger>
+              <TabsTrigger value="wallet-ledger" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
+                <Wallet className="h-4 w-4" />
+                <span>Wallet <span className="text-primary">({walletTxns.length})</span></span>
+              </TabsTrigger>
+              <TabsTrigger value="id-verification" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
+                <ShieldCheck className="h-4 w-4" />
+                <span>ID Verify <span className="text-primary">({pendingVerifications.length})</span></span>
+              </TabsTrigger>
+              <TabsTrigger value="disputes" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1 text-destructive">
+                <Scale className="h-4 w-4" />
+                <span>Disputes</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Pending Stakes */}
           <TabsContent value="escrow" className="space-y-3 mt-4">
