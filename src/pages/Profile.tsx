@@ -21,7 +21,7 @@ export default function Profile() {
   const { user, isAdmin, isSeller, sellerStatus, username, loading, verificationStatus, verificationNote, sellerTier } = useAuth();
   const navigate = useNavigate();
   const [mySessions, setMySessions] = useState<any[]>([]);
-  const [stats, setStats] = useState({ wins: 0, totalStaked: 0, roi: 0 });
+  const [stats, setStats] = useState({ wins: 0, totalStaked: 0, roi: 0, sellerSessions: 0, sellerEarnings: 0 });
 
   const fetchMySessions = async (uid: string) => {
     const { data } = await supabase
