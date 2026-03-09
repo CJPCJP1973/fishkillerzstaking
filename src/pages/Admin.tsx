@@ -1140,6 +1140,16 @@ export default function Admin() {
                           disabled={loadingId === s.id || !s.deposit_proof_url}
                           title={!s.deposit_proof_url ? "Deposit proof required" : "Start session"}
                           onClick={async () => {
+                            if (!s.deposit_proof_url) {
+                              await supabase.from("notifications").insert({
+                                user_id: s.shooter_id,
+                                title: "⚠️ Deposit Proof Missing",
+                                message: `Your session "${s.shooter_name} — ${s.platform}" cannot be started. Please upload deposit proof documentation.`,
+                                type: "warning",
+                              } as any);
+                              toast.error("Deposit proof missing — seller notified");
+                              return;
+                            }
                             setLoadingId(s.id);
                             try {
                               await supabase.from("sessions").update({ status: "live" } as any).eq("id", s.id);
