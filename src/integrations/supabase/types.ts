@@ -306,6 +306,7 @@ export type Database = {
           agent_daily_limit: string | null
           agent_room: string
           created_at: string | null
+          deposit_proof_url: string | null
           end_screenshot_url: string | null
           end_time: string
           id: string
@@ -313,6 +314,7 @@ export type Database = {
           ocr_confidence: number | null
           ocr_end_amount: number | null
           ocr_start_amount: number | null
+          payout_proof_url: string | null
           platform: string
           platform_fee: number | null
           proof_url: string | null
@@ -336,6 +338,7 @@ export type Database = {
           agent_daily_limit?: string | null
           agent_room: string
           created_at?: string | null
+          deposit_proof_url?: string | null
           end_screenshot_url?: string | null
           end_time: string
           id?: string
@@ -343,6 +346,7 @@ export type Database = {
           ocr_confidence?: number | null
           ocr_end_amount?: number | null
           ocr_start_amount?: number | null
+          payout_proof_url?: string | null
           platform: string
           platform_fee?: number | null
           proof_url?: string | null
@@ -366,6 +370,7 @@ export type Database = {
           agent_daily_limit?: string | null
           agent_room?: string
           created_at?: string | null
+          deposit_proof_url?: string | null
           end_screenshot_url?: string | null
           end_time?: string
           id?: string
@@ -373,6 +378,7 @@ export type Database = {
           ocr_confidence?: number | null
           ocr_end_amount?: number | null
           ocr_start_amount?: number | null
+          payout_proof_url?: string | null
           platform?: string
           platform_fee?: number | null
           proof_url?: string | null
