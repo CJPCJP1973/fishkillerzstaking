@@ -126,12 +126,6 @@ export default function Profile() {
               </>
             )}
           </div>
-            <div className="bg-secondary rounded-md p-3">
-              <TrendingUp className="h-4 w-4 text-accent mx-auto mb-1" />
-              <p className={`text-lg font-display font-bold ${stats.roi >= 0 ? "text-success" : "text-destructive"}`}>{stats.roi}%</p>
-              <p className="text-xs text-muted-foreground">ROI</p>
-            </div>
-          </div>
         </div>
 
         {/* Tabs */}
