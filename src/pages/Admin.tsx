@@ -1130,9 +1130,8 @@ export default function Admin() {
                       </div>
                     </div>
                     <Badge variant="outline" className={statusColor[s.status] || "bg-secondary text-muted-foreground"}>
-                        {(s.status || "pending").toUpperCase()}
-                      </Badge>
-                    </div>
+                      {(s.status || "pending").toUpperCase()}
+                    </Badge>
                   </div>
 
                   {/* Action Buttons - organized grid */}
