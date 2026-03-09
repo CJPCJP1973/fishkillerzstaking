@@ -772,6 +772,8 @@ export default function Admin() {
       toast.error(err.message || "Failed to remove user");
     }
     setLoadingId(null);
+  };
+
   // God Mode: Toggle verified
   const handleToggleVerified = async (userRow: UserRow) => {
     if (loadingId) return;
