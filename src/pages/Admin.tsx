@@ -1129,84 +1129,82 @@ export default function Admin() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0 flex-wrap">
-                      <Badge variant="outline" className={statusColor[s.status] || "bg-secondary text-muted-foreground"}>
+                    <Badge variant="outline" className={statusColor[s.status] || "bg-secondary text-muted-foreground"}>
                         {(s.status || "pending").toUpperCase()}
                       </Badge>
-                      {s.status === "funding" && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={loadingId === s.id || !s.deposit_proof_url}
-                          title={!s.deposit_proof_url ? "Deposit proof required" : "Start session"}
-                          onClick={async () => {
-                            if (!s.deposit_proof_url) {
-                              await supabase.from("notifications").insert({
-                                user_id: s.shooter_id,
-                                title: "⚠️ Deposit Proof Missing",
-                                message: `Your session "${s.shooter_name} — ${s.platform}" cannot be started. Please upload deposit proof documentation.`,
-                                type: "warning",
-                              } as any);
-                              toast.error("Deposit proof missing — seller notified");
-                              return;
-                            }
-                            setLoadingId(s.id);
-                            try {
-                              await supabase.from("sessions").update({ status: "live" } as any).eq("id", s.id);
-                              toast.success("Session started (Live)");
-                              fetchSessions();
-                            } catch (err: any) { toast.error(err.message); }
-                            setLoadingId(null);
-                          }}
-                          className="text-live border-live/30 text-xs"
-                        >
-                          <Crosshair className="h-3 w-3 mr-1" /> Start
-                        </Button>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={loadingId === s.id}
-                        onClick={() => setScreenshotSessionId(screenshotSessionId === s.id ? null : s.id)}
-                        className="text-primary border-primary/30 text-xs"
-                      >
-                        <Eye className="h-3 w-3 mr-1" /> Verify
-                      </Button>
-                      {s.status !== "completed" && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={loadingId === s.id || (s.status === "live" && !s.payout_proof_url)}
-                          title={s.status === "live" && !s.payout_proof_url ? "Payout proof required" : "Settle"}
-                          onClick={async () => {
-                            if (s.status === "live" && !s.payout_proof_url) {
-                              await supabase.from("notifications").insert({
-                                user_id: s.shooter_id,
-                                title: "⚠️ Payout Proof Missing",
-                                message: `Your session "${s.shooter_name} — ${s.platform}" cannot be settled. Please upload payout proof documentation.`,
-                                type: "warning",
-                              } as any);
-                              toast.error("Payout proof missing — seller notified");
-                              return;
-                            }
-                            setSettleSessionId(settleSessionId === s.id ? null : s.id);
-                            setCashOutAmount("");
-                          }}
-                          className="text-success border-success/30 text-xs"
-                        >
-                          <Banknote className="h-3 w-3 mr-1" /> Settle
-                        </Button>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={loadingId === s.id}
-                        onClick={() => handleDeleteSession(s)}
-                        className="text-destructive border-destructive/30 text-xs"
-                      >
-                        <Trash2 className="h-3 w-3 mr-1" /> Delete
-                      </Button>
                     </div>
+                  </div>
+
+                  {/* Action Buttons - organized grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {s.status === "funding" && (
+                      <Button
+                        disabled={loadingId === s.id || !s.deposit_proof_url}
+                        title={!s.deposit_proof_url ? "Deposit proof required" : "Start session"}
+                        onClick={async () => {
+                          if (!s.deposit_proof_url) {
+                            await supabase.from("notifications").insert({
+                              user_id: s.shooter_id,
+                              title: "⚠️ Deposit Proof Missing",
+                              message: `Your session "${s.shooter_name} — ${s.platform}" cannot be started. Please upload deposit proof documentation.`,
+                              type: "warning",
+                            } as any);
+                            toast.error("Deposit proof missing — seller notified");
+                            return;
+                          }
+                          setLoadingId(s.id);
+                          try {
+                            await supabase.from("sessions").update({ status: "live" } as any).eq("id", s.id);
+                            toast.success("Session started (Live)");
+                            fetchSessions();
+                          } catch (err: any) { toast.error(err.message); }
+                          setLoadingId(null);
+                        }}
+                        className="bg-live/20 text-live border border-live/30 hover:bg-live/30 font-display font-bold text-sm h-10"
+                      >
+                        <Crosshair className="h-4 w-4 mr-1.5" /> Start
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      disabled={loadingId === s.id}
+                      onClick={() => setScreenshotSessionId(screenshotSessionId === s.id ? null : s.id)}
+                      className="text-primary border-primary/30 hover:bg-primary/10 font-display font-bold text-sm h-10"
+                    >
+                      <Eye className="h-4 w-4 mr-1.5" /> Verify
+                    </Button>
+                    {s.status !== "completed" && (
+                      <Button
+                        disabled={loadingId === s.id || (s.status === "live" && !s.payout_proof_url)}
+                        title={s.status === "live" && !s.payout_proof_url ? "Payout proof required" : "Settle"}
+                        onClick={async () => {
+                          if (s.status === "live" && !s.payout_proof_url) {
+                            await supabase.from("notifications").insert({
+                              user_id: s.shooter_id,
+                              title: "⚠️ Payout Proof Missing",
+                              message: `Your session "${s.shooter_name} — ${s.platform}" cannot be settled. Please upload payout proof documentation.`,
+                              type: "warning",
+                            } as any);
+                            toast.error("Payout proof missing — seller notified");
+                            return;
+                          }
+                          setSettleSessionId(settleSessionId === s.id ? null : s.id);
+                          setCashOutAmount("");
+                        }}
+                        className="bg-success/20 text-success border border-success/30 hover:bg-success/30 font-display font-bold text-sm h-10"
+                      >
+                        <Banknote className="h-4 w-4 mr-1.5" /> Settle
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      disabled={loadingId === s.id}
+                      onClick={() => handleDeleteSession(s)}
+                      className="text-destructive border-destructive/30 hover:bg-destructive/10 font-display font-bold text-sm h-10"
+                    >
+                      <Trash2 className="h-4 w-4 mr-1.5" /> Delete
+                    </Button>
+                  </div>
                   </div>
 
                   {/* Proof Uploads */}

@@ -240,12 +240,6 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
               <span className="text-muted-foreground">Available Stake</span>
               <span className="text-success font-display font-bold">${remaining.toLocaleString()}</span>
             </div>
-            {sharePrice > 0 && (
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Suggested Share</span>
-                <span className="text-primary font-display font-bold">${sharePrice.toLocaleString()}</span>
-              </div>
-            )}
           </div>
 
           {/* Stake Amount */}
