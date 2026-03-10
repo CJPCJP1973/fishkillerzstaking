@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Camera, Loader2, CheckCircle, AlertTriangle } from "lucide-react";
+import { computeFileHash } from "@/lib/fileHash";
 
 interface Props {
   sessionId: string;
