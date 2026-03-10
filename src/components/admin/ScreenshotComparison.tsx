@@ -184,10 +184,16 @@ export default function ScreenshotComparison({
 
     setBanning(true);
     try {
-      // 1. Ban the user (set seller_status to banned)
+      // 1. Ban the user and increment fraud_flags
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("fraud_flags")
+        .eq("user_id", shooterId)
+        .single();
+      const currentFlags = Number((prof as any)?.fraud_flags ?? 0);
       await supabase
         .from("profiles")
-        .update({ seller_status: "banned" } as any)
+        .update({ seller_status: "banned", fraud_flags: currentFlags + 1 } as any)
         .eq("user_id", shooterId);
 
       // 2. Remove seller role

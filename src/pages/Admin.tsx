@@ -1375,6 +1375,7 @@ export default function Admin() {
                       <TableHead>User</TableHead>
                       <TableHead>Roles</TableHead>
                       <TableHead>Seller</TableHead>
+                      <TableHead>Flags</TableHead>
                       <TableHead>Verified</TableHead>
                       <TableHead>Joined</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
