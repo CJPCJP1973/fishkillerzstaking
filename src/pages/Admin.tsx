@@ -97,6 +97,7 @@ interface UserRow {
   verified: boolean | null;
   created_at: string | null;
   roles: string[];
+  fraud_flags: number;
 }
 
 interface ConfirmedAgent {
