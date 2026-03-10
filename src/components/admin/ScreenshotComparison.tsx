@@ -103,15 +103,12 @@ export default function ScreenshotComparison({
     else setEndSignedUrl(null);
   }, [startScreenshotUrl, endScreenshotUrl]);
 
-  const runOcr = async () => {
-    if (!startScreenshotUrl && !endScreenshotUrl) {
-      toast.error("Upload at least one screenshot first");
-      return;
-    }
+  const runOcrWithPaths = async (startPath: string | null, endPath: string | null) => {
+    if (!startPath && !endPath) return;
     setAnalyzing(true);
     try {
-      const startUrl = startScreenshotUrl ? await getSignedUrl(startScreenshotUrl) : null;
-      const endUrl = endScreenshotUrl ? await getSignedUrl(endScreenshotUrl) : null;
+      const startUrl = startPath ? await getSignedUrl(startPath) : null;
+      const endUrl = endPath ? await getSignedUrl(endPath) : null;
 
       const { data, error } = await supabase.functions.invoke("analyze-screenshot", {
         body: {
@@ -121,19 +118,49 @@ export default function ScreenshotComparison({
       });
       if (error) throw error;
 
-      await supabase.from("sessions").update({
+      const updateData: any = {
         ocr_start_amount: data.start_amount,
         ocr_end_amount: data.end_amount,
         ocr_confidence: data.confidence,
-      } as any).eq("id", sessionId);
+      };
 
-      toast.success(`OCR complete — Confidence: ${data.confidence}%`);
+      // Auto-flag as disputed if confidence is critically low
+      if (data.confidence != null && data.confidence < 30) {
+        updateData.status = "disputed";
+        // Log auto-flag to journal
+        const adminUser = (await supabase.auth.getUser()).data.user;
+        await supabase.from("session_journal").insert({
+          session_id: sessionId,
+          user_id: adminUser?.id || null,
+          author_name: "System",
+          message: `⚠️ AUTO-FLAGGED: AI screenshot analysis returned ${data.confidence}% confidence. Session automatically flagged as DISPUTED for manual review.`,
+          entry_type: "system",
+        } as any);
+        
+        // Notify shooter
+        if (shooterId) {
+          await supabase.from("notifications").insert({
+            user_id: shooterId,
+            title: "Session Flagged ⚠️",
+            message: `Your session has been automatically flagged for review due to low screenshot verification confidence (${data.confidence}%).`,
+            type: "warning",
+          } as any);
+        }
+
+        toast.warning(`OCR: ${data.confidence}% confidence — Session auto-flagged as DISPUTED`);
+      } else {
+        toast.success(`OCR complete — Confidence: ${data.confidence}%`);
+      }
+
+      await supabase.from("sessions").update(updateData).eq("id", sessionId);
       onUpdate();
     } catch (err: any) {
       toast.error(err.message || "OCR analysis failed");
     }
     setAnalyzing(false);
   };
+
+  const runOcr = () => runOcrWithPaths(startScreenshotUrl || null, endScreenshotUrl || null);
 
   const handleBlacklistShooter = async () => {
     if (!shooterId) {
