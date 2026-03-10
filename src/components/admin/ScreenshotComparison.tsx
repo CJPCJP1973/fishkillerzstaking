@@ -70,8 +70,15 @@ export default function ScreenshotComparison({
         uploaded_by: (await supabase.auth.getUser()).data.user?.id,
       } as any);
 
-      toast.success(`${type === "start" ? "Start" : "End"} screenshot uploaded`);
+      toast.success(`${type === "start" ? "Start" : "End"} screenshot uploaded — running AI scan...`);
       onUpdate();
+
+      // Auto-trigger OCR analysis after upload
+      const currentStart = type === "start" ? path : startScreenshotUrl;
+      const currentEnd = type === "end" ? path : endScreenshotUrl;
+      if (currentStart || currentEnd) {
+        await runOcrWithPaths(currentStart || null, currentEnd || null);
+      }
     } catch (err: any) {
       toast.error(err.message || "Upload failed");
     }
