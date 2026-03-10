@@ -246,8 +246,9 @@ export default function Admin() {
       .select("user_id, role")
       .in("user_id", userIds);
 
-    setUsers(profiles.map((p) => ({
+    setUsers((profiles as any[]).map((p: any) => ({
       ...p,
+      fraud_flags: p.fraud_flags ?? 0,
       roles: roles?.filter((r) => r.user_id === p.user_id).map((r) => r.role) || [],
     })));
   };
