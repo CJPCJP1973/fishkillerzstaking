@@ -52,6 +52,7 @@ export default function PublicProfile() {
 
       setProfile({
         ...data,
+        fraud_flags: (data as any).fraud_flags ?? 0,
         seller_tier: lbEntry?.seller_tier ?? 1,
         is_vip: lbEntry?.is_vip ?? false,
         completed_sessions: lbEntry?.completed_sessions ?? 0,
