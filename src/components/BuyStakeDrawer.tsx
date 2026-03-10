@@ -335,7 +335,7 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
                 <ul className="text-sm text-foreground space-y-1.5">
                   <li className="flex justify-between">
                     <span className="text-muted-foreground">CashApp</span>
-                    <span className="text-primary font-medium">$fishkllerzstaking</span>
+                    <span className="text-primary font-medium">$fishkillerzstaking</span>
                   </li>
                   <li className="flex justify-between">
                     <span className="text-muted-foreground">Chime</span>

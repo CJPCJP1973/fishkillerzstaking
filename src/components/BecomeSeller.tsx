@@ -79,7 +79,7 @@ export default function BecomeSeller() {
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            After sending $10 to <span className="text-primary font-medium">$fishkllerzstaking</span> on CashApp, click below. An admin will verify and activate your account within 24 hours.
+            After sending $10 to <span className="text-primary font-medium">$fishkillerzstaking</span> on CashApp, click below. An admin will verify and activate your account within 24 hours.
           </p>
           <Button
             onClick={handleSubmit}

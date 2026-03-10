@@ -1328,7 +1328,7 @@ export default function Admin() {
                         Pending P2P Manual Rake
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Seller must pay the 8% P2P fee via CashApp ($fishkllerzstaking). Confirm receipt below.
+                        Seller must pay the 8% P2P fee via CashApp ($fishkillerzstaking). Confirm receipt below.
                       </p>
                       <div className="flex gap-2">
                         <Button
