@@ -187,6 +187,19 @@ export default function ScreenshotComparison({
       }
 
       await supabase.from("sessions").update(updateData).eq("id", sessionId);
+
+      // Log to scan history
+      const adminUser = data.confidence != null ? (await supabase.auth.getUser()).data.user : null;
+      await supabase.from("ocr_scan_history" as any).insert({
+        session_id: sessionId,
+        scanned_by: adminUser?.id || "00000000-0000-0000-0000-000000000000",
+        start_amount: data.start_amount ?? null,
+        end_amount: data.end_amount ?? null,
+        confidence: data.confidence ?? null,
+        auto_flagged: data.confidence != null && data.confidence < 30,
+      } as any);
+
+      fetchScanHistory();
       onUpdate();
     } catch (err: any) {
       toast.error(err.message || "OCR analysis failed");
