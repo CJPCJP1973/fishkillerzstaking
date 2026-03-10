@@ -54,6 +54,14 @@ export default function ProofUpload({ sessionId, type, currentUrl, onUploaded }:
         .eq("id", sessionId);
       if (updateErr) throw updateErr;
 
+      // Record hash to prevent reuse
+      await supabase.from("screenshot_hashes" as any).insert({
+        file_hash: hash,
+        session_id: sessionId,
+        upload_type: `${type}_proof`,
+        uploaded_by: user.id,
+      } as any);
+
       // Log to session journal
       await supabase.from("session_journal" as any).insert({
         session_id: sessionId,

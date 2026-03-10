@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Camera, Loader2, Eye } from "lucide-react";
+import { computeFileHash } from "@/lib/fileHash";
 
 interface Props {
   sessionId: string;
