@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Camera, Loader2, Eye } from "lucide-react";
+import { Camera, Loader2, Eye, Ban, ShieldAlert } from "lucide-react";
 import { computeFileHash } from "@/lib/fileHash";
+import { Badge } from "@/components/ui/badge";
 
 interface Props {
   sessionId: string;
@@ -13,7 +14,10 @@ interface Props {
   ocrStartAmount?: number | null;
   ocrEndAmount?: number | null;
   ocrConfidence?: number | null;
+  shooterId?: string;
+  shooterName?: string;
   onUpdate: () => void;
+  onBanned?: () => void;
 }
 
 export default function ScreenshotComparison({
@@ -23,10 +27,14 @@ export default function ScreenshotComparison({
   ocrStartAmount,
   ocrEndAmount,
   ocrConfidence,
+  shooterId,
+  shooterName,
   onUpdate,
+  onBanned,
 }: Props) {
   const [uploading, setUploading] = useState<"start" | "end" | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
+  const [banning, setBanning] = useState(false);
 
   const handleUpload = async (type: "start" | "end", file: File) => {
     setUploading(type);
@@ -50,7 +58,6 @@ export default function ScreenshotComparison({
         .upload(path, file, { upsert: true });
       if (uploadErr) throw uploadErr;
 
-      // Store the storage path (not a public URL) since bucket is now private
       const col = type === "start" ? "start_screenshot_url" : "end_screenshot_url";
       await supabase.from("sessions").update({ [col]: path } as any).eq("id", sessionId);
 
@@ -73,7 +80,7 @@ export default function ScreenshotComparison({
   const getSignedUrl = async (storagePath: string): Promise<string | null> => {
     const { data, error } = await supabase.storage
       .from("session-screenshots")
-      .createSignedUrl(storagePath, 300); // 5-minute expiry
+      .createSignedUrl(storagePath, 300);
     if (error) return null;
     return data.signedUrl;
   };
@@ -81,7 +88,6 @@ export default function ScreenshotComparison({
   const [startSignedUrl, setStartSignedUrl] = useState<string | null>(null);
   const [endSignedUrl, setEndSignedUrl] = useState<string | null>(null);
 
-  // Generate signed URLs when screenshot paths change
   useEffect(() => {
     if (startScreenshotUrl) getSignedUrl(startScreenshotUrl).then(setStartSignedUrl);
     else setStartSignedUrl(null);
@@ -96,7 +102,6 @@ export default function ScreenshotComparison({
     }
     setAnalyzing(true);
     try {
-      // Generate fresh signed URLs for the AI to access private screenshots
       const startUrl = startScreenshotUrl ? await getSignedUrl(startScreenshotUrl) : null;
       const endUrl = endScreenshotUrl ? await getSignedUrl(endScreenshotUrl) : null;
 
@@ -120,6 +125,64 @@ export default function ScreenshotComparison({
       toast.error(err.message || "OCR analysis failed");
     }
     setAnalyzing(false);
+  };
+
+  const handleBlacklistShooter = async () => {
+    if (!shooterId) {
+      toast.error("Shooter info not available");
+      return;
+    }
+    const confirmed = window.confirm(
+      `⚠️ BLACKLIST "${shooterName || "this shooter"}"?\n\nThis will:\n• Ban them from the platform\n• Revoke seller access\n• Flag session as DISPUTED\n\nThis action is immediate.`
+    );
+    if (!confirmed) return;
+
+    setBanning(true);
+    try {
+      // 1. Ban the user (set seller_status to banned)
+      await supabase
+        .from("profiles")
+        .update({ seller_status: "banned" } as any)
+        .eq("user_id", shooterId);
+
+      // 2. Remove seller role
+      await supabase
+        .from("user_roles")
+        .delete()
+        .eq("user_id", shooterId)
+        .eq("role", "seller" as any);
+
+      // 3. Flag this session as disputed
+      await supabase
+        .from("sessions")
+        .update({ status: "disputed" } as any)
+        .eq("id", sessionId);
+
+      // 4. Log to session journal
+      const adminUser = (await supabase.auth.getUser()).data.user;
+      await supabase.from("session_journal").insert({
+        session_id: sessionId,
+        user_id: adminUser?.id || null,
+        author_name: "Admin",
+        message: `🚫 BLACKLISTED: ${shooterName || "Shooter"} banned for uploading doctored/fraudulent screenshots. Session flagged as DISPUTED.`,
+        entry_type: "system",
+      } as any);
+
+      // 5. Notify the user
+      await supabase.from("notifications").insert({
+        user_id: shooterId,
+        title: "Account Banned 🚫",
+        message: "Your account has been banned for uploading doctored or fraudulent screenshots. If you believe this is an error, contact support.",
+        type: "error",
+      } as any);
+
+      toast.success(`${shooterName || "Shooter"} has been blacklisted and session flagged as disputed`);
+      onUpdate();
+      onBanned?.();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to blacklist shooter");
+    }
+    setBanning(false);
   };
 
   const confidenceColor =
@@ -241,21 +304,59 @@ export default function ScreenshotComparison({
         </div>
       </div>
 
-      {/* Run OCR button */}
-      <Button
-        size="sm"
-        onClick={runOcr}
-        disabled={analyzing || (!startScreenshotUrl && !endScreenshotUrl)}
-        className="w-full gradient-primary text-primary-foreground font-display font-bold text-xs"
-      >
-        {analyzing ? (
-          <>
-            <Loader2 className="h-3 w-3 mr-1 animate-spin" /> Analyzing...
-          </>
-        ) : (
-          "🤖 Run AI Screenshot Analysis"
+      {/* Action buttons row */}
+      <div className="grid grid-cols-2 gap-2">
+        {/* Run OCR button */}
+        <Button
+          size="sm"
+          onClick={runOcr}
+          disabled={analyzing || (!startScreenshotUrl && !endScreenshotUrl)}
+          className="w-full gradient-primary text-primary-foreground font-display font-bold text-xs"
+        >
+          {analyzing ? (
+            <>
+              <Loader2 className="h-3 w-3 mr-1 animate-spin" /> Analyzing...
+            </>
+          ) : (
+            "🤖 Run AI Analysis"
+          )}
+        </Button>
+
+        {/* Blacklist / Ban Shooter button */}
+        {shooterId && (
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={handleBlacklistShooter}
+            disabled={banning}
+            className="w-full font-display font-bold text-xs"
+          >
+            {banning ? (
+              <>
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" /> Banning...
+              </>
+            ) : (
+              <>
+                <Ban className="h-3 w-3 mr-1" /> Blacklist Shooter
+              </>
+            )}
+          </Button>
         )}
-      </Button>
+      </div>
+
+      {/* Low confidence warning */}
+      {ocrConfidence != null && ocrConfidence < 50 && (
+        <div className="flex items-start gap-2 bg-destructive/10 border border-destructive/20 rounded-md p-2.5">
+          <ShieldAlert className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+          <div>
+            <p className="text-xs font-display font-bold text-destructive">Low Confidence — Possible Tampering</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              AI confidence is below 50%. This may indicate doctored or unreadable screenshots. 
+              Review manually and consider blacklisting if evidence of fraud is found.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
