@@ -27,6 +27,19 @@ export default function ProofUpload({ sessionId, type, currentUrl, onUploaded }:
     if (!user) return;
     setUploading(true);
     try {
+      // Hash check — prevent recycled screenshots
+      const hash = await computeFileHash(file);
+      const { data: existing } = await supabase
+        .from("screenshot_hashes" as any)
+        .select("session_id, upload_type")
+        .eq("file_hash", hash)
+        .maybeSingle();
+      if (existing) {
+        toast.error("This screenshot has already been used. Please upload a unique screenshot.");
+        setUploading(false);
+        return;
+      }
+
       const ext = file.name.split(".").pop();
       const path = `${sessionId}/${type}-proof-${Date.now()}.${ext}`;
       const { error: uploadErr } = await supabase.storage
