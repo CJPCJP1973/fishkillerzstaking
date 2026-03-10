@@ -31,6 +31,19 @@ export default function ScreenshotComparison({
   const handleUpload = async (type: "start" | "end", file: File) => {
     setUploading(type);
     try {
+      // Hash check — prevent recycled screenshots
+      const hash = await computeFileHash(file);
+      const { data: existing } = await supabase
+        .from("screenshot_hashes" as any)
+        .select("session_id, upload_type")
+        .eq("file_hash", hash)
+        .maybeSingle();
+      if (existing) {
+        toast.error("This screenshot has already been used on the platform. Duplicate uploads are blocked.");
+        setUploading(null);
+        return;
+      }
+
       const path = `${sessionId}/${type}-${Date.now()}.${file.name.split(".").pop()}`;
       const { error: uploadErr } = await supabase.storage
         .from("session-screenshots")
@@ -40,6 +53,14 @@ export default function ScreenshotComparison({
       // Store the storage path (not a public URL) since bucket is now private
       const col = type === "start" ? "start_screenshot_url" : "end_screenshot_url";
       await supabase.from("sessions").update({ [col]: path } as any).eq("id", sessionId);
+
+      // Record hash to prevent reuse
+      await supabase.from("screenshot_hashes" as any).insert({
+        file_hash: hash,
+        session_id: sessionId,
+        upload_type: `${type}_screenshot`,
+        uploaded_by: (await supabase.auth.getUser()).data.user?.id,
+      } as any);
 
       toast.success(`${type === "start" ? "Start" : "End"} screenshot uploaded`);
       onUpdate();
