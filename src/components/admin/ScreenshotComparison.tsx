@@ -1,11 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Camera, Loader2, Eye, Ban, ShieldAlert } from "lucide-react";
+import { Camera, Loader2, Eye, Ban, ShieldAlert, History } from "lucide-react";
 import { computeFileHash } from "@/lib/fileHash";
 import { Badge } from "@/components/ui/badge";
+
+interface ScanRecord {
+  id: string;
+  start_amount: number | null;
+  end_amount: number | null;
+  confidence: number | null;
+  auto_flagged: boolean;
+  created_at: string;
+}
 
 interface Props {
   sessionId: string;
