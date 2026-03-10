@@ -105,7 +105,7 @@ export default function PublicProfile() {
             </Card>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <Card>
                 <CardContent className="p-4 text-center">
                   <Trophy className="h-4 w-4 text-primary mx-auto mb-1" />
@@ -133,7 +133,36 @@ export default function PublicProfile() {
                   <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Sessions</div>
                 </CardContent>
               </Card>
+              <Card className={profile.fraud_flags >= 3 ? "border-destructive/40" : profile.fraud_flags > 0 ? "border-accent/40" : "border-success/40"}>
+                <CardContent className="p-4 text-center">
+                  {profile.fraud_flags > 0 ? (
+                    <ShieldAlert className={`h-4 w-4 mx-auto mb-1 ${profile.fraud_flags >= 3 ? "text-destructive" : "text-accent"}`} />
+                  ) : (
+                    <ShieldCheck className="h-4 w-4 text-success mx-auto mb-1" />
+                  )}
+                  <div className={`font-display font-bold text-lg ${
+                    profile.fraud_flags >= 3 ? "text-destructive" : profile.fraud_flags > 0 ? "text-accent" : "text-success"
+                  }`}>
+                    {profile.fraud_flags === 0 ? "Clean" : `${profile.fraud_flags} 🚩`}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Trust</div>
+                </CardContent>
+              </Card>
             </div>
+
+            {/* Trust warning banner */}
+            {profile.fraud_flags >= 2 && (
+              <Card className="border-destructive/30 bg-destructive/5">
+                <CardContent className="p-3 flex items-center gap-2">
+                  <ShieldAlert className="h-4 w-4 text-destructive shrink-0" />
+                  <p className="text-xs text-destructive font-display font-bold">
+                    {profile.fraud_flags >= 3
+                      ? "This user has been banned for fraudulent activity."
+                      : "Caution: This user has multiple fraud flags. Stake at your own risk."}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </>
         ) : null}
       </div>
