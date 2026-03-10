@@ -68,6 +68,47 @@ export type Database = {
         }
         Relationships: []
       }
+      ocr_scan_history: {
+        Row: {
+          auto_flagged: boolean
+          confidence: number | null
+          created_at: string
+          end_amount: number | null
+          id: string
+          scanned_by: string
+          session_id: string
+          start_amount: number | null
+        }
+        Insert: {
+          auto_flagged?: boolean
+          confidence?: number | null
+          created_at?: string
+          end_amount?: number | null
+          id?: string
+          scanned_by: string
+          session_id: string
+          start_amount?: number | null
+        }
+        Update: {
+          auto_flagged?: boolean
+          confidence?: number | null
+          created_at?: string
+          end_amount?: number | null
+          id?: string
+          scanned_by?: string
+          session_id?: string
+          start_amount?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ocr_scan_history_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_profiles: {
         Row: {
           btc_address: string | null
