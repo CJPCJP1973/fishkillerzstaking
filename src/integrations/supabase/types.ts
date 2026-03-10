@@ -170,6 +170,7 @@ export type Database = {
           created_at: string | null
           display_name: string
           email: string | null
+          fraud_flags: number
           id: string
           is_vip: boolean
           reliability_score: number
@@ -193,6 +194,7 @@ export type Database = {
           created_at?: string | null
           display_name: string
           email?: string | null
+          fraud_flags?: number
           id?: string
           is_vip?: boolean
           reliability_score?: number
@@ -216,6 +218,7 @@ export type Database = {
           created_at?: string | null
           display_name?: string
           email?: string | null
+          fraud_flags?: number
           id?: string
           is_vip?: boolean
           reliability_score?: number
