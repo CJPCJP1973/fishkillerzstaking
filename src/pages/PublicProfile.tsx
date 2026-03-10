@@ -35,7 +35,7 @@ export default function PublicProfile() {
       // Use profiles_public for safe public data
       const { data, error } = await supabase
         .from("profiles_public")
-        .select("display_name, username, bio, avatar_url, seller_status, total_wins, total_staked, win_rate, verified, user_id")
+        .select("display_name, username, bio, avatar_url, seller_status, total_wins, total_staked, win_rate, verified, user_id, fraud_flags")
         .eq("username", username)
         .single();
 
