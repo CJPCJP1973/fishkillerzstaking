@@ -44,6 +44,21 @@ export default function ScreenshotComparison({
   const [uploading, setUploading] = useState<"start" | "end" | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [banning, setBanning] = useState(false);
+  const [scanHistory, setScanHistory] = useState<ScanRecord[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+
+  const fetchScanHistory = useCallback(async () => {
+    const { data } = await supabase
+      .from("ocr_scan_history" as any)
+      .select("id, start_amount, end_amount, confidence, auto_flagged, created_at")
+      .eq("session_id", sessionId)
+      .order("created_at", { ascending: false });
+    if (data) setScanHistory(data as any);
+  }, [sessionId]);
+
+  useEffect(() => {
+    fetchScanHistory();
+  }, [fetchScanHistory]);
 
   const handleUpload = async (type: "start" | "end", file: File) => {
     setUploading(type);
