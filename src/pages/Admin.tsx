@@ -1409,6 +1409,15 @@ export default function Admin() {
                           </Badge>
                         </TableCell>
                         <TableCell>
+                          {u.fraud_flags > 0 ? (
+                            <Badge variant="outline" className="bg-destructive/20 text-destructive border-destructive/30 text-[10px]">
+                              🚩 {u.fraud_flags}
+                            </Badge>
+                          ) : (
+                            <span className="text-[10px] text-muted-foreground">0</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           <Switch
                             checked={!!u.verified}
                             onCheckedChange={() => handleToggleVerified(u)}
