@@ -4,7 +4,7 @@ import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import TierBadge from "@/components/TierBadge";
-import { User, Trophy, TrendingUp, Target } from "lucide-react";
+import { User, Trophy, TrendingUp, Target, ShieldAlert, ShieldCheck } from "lucide-react";
 
 interface PublicProfileData {
   display_name: string;
@@ -19,6 +19,7 @@ interface PublicProfileData {
   seller_tier: number;
   is_vip: boolean;
   completed_sessions: number;
+  fraud_flags: number;
 }
 
 export default function PublicProfile() {
