@@ -1282,7 +1282,10 @@ export default function Admin() {
                       ocrStartAmount={s.ocr_start_amount}
                       ocrEndAmount={s.ocr_end_amount}
                       ocrConfidence={s.ocr_confidence}
+                      shooterId={s.shooter_id}
+                      shooterName={s.shooter_name}
                       onUpdate={fetchSessions}
+                      onBanned={() => { fetchSessions(); fetchUsers(); }}
                     />
                   )}
 
