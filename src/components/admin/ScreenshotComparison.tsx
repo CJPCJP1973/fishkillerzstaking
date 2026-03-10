@@ -35,6 +35,7 @@ export default function ScreenshotComparison({
   const [uploading, setUploading] = useState<"start" | "end" | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [banning, setBanning] = useState(false);
+  const [autoAnalyzeQueued, setAutoAnalyzeQueued] = useState(false);
 
   const handleUpload = async (type: "start" | "end", file: File) => {
     setUploading(type);
