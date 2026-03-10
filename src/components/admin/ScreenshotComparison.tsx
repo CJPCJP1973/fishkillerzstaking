@@ -136,12 +136,23 @@ export default function ScreenshotComparison({
           entry_type: "system",
         } as any);
         
-        // Notify shooter
+        // Increment fraud_flags on shooter's profile and notify
         if (shooterId) {
+          const { data: prof } = await supabase
+            .from("profiles")
+            .select("fraud_flags")
+            .eq("user_id", shooterId)
+            .single();
+          const currentFlags = Number((prof as any)?.fraud_flags ?? 0);
+          await supabase
+            .from("profiles")
+            .update({ fraud_flags: currentFlags + 1 } as any)
+            .eq("user_id", shooterId);
+
           await supabase.from("notifications").insert({
             user_id: shooterId,
             title: "Session Flagged ⚠️",
-            message: `Your session has been automatically flagged for review due to low screenshot verification confidence (${data.confidence}%).`,
+            message: `Your session has been automatically flagged for review due to low screenshot verification confidence (${data.confidence}%). Fraud flag #${currentFlags + 1} recorded.`,
             type: "warning",
           } as any);
         }
@@ -173,10 +184,16 @@ export default function ScreenshotComparison({
 
     setBanning(true);
     try {
-      // 1. Ban the user (set seller_status to banned)
+      // 1. Ban the user and increment fraud_flags
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("fraud_flags")
+        .eq("user_id", shooterId)
+        .single();
+      const currentFlags = Number((prof as any)?.fraud_flags ?? 0);
       await supabase
         .from("profiles")
-        .update({ seller_status: "banned" } as any)
+        .update({ seller_status: "banned", fraud_flags: currentFlags + 1 } as any)
         .eq("user_id", shooterId);
 
       // 2. Remove seller role

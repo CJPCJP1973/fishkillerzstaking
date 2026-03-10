@@ -97,6 +97,7 @@ interface UserRow {
   verified: boolean | null;
   created_at: string | null;
   roles: string[];
+  fraud_flags: number;
 }
 
 interface ConfirmedAgent {
@@ -234,7 +235,7 @@ export default function Admin() {
   const fetchUsers = async () => {
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("user_id, display_name, username, email, seller_status, verified, created_at")
+      .select("user_id, display_name, username, email, seller_status, verified, created_at, fraud_flags")
       .order("created_at", { ascending: false });
 
     if (!profiles) return;
@@ -245,8 +246,9 @@ export default function Admin() {
       .select("user_id, role")
       .in("user_id", userIds);
 
-    setUsers(profiles.map((p) => ({
+    setUsers((profiles as any[]).map((p: any) => ({
       ...p,
+      fraud_flags: p.fraud_flags ?? 0,
       roles: roles?.filter((r) => r.user_id === p.user_id).map((r) => r.role) || [],
     })));
   };
@@ -1374,6 +1376,7 @@ export default function Admin() {
                       <TableHead>User</TableHead>
                       <TableHead>Roles</TableHead>
                       <TableHead>Seller</TableHead>
+                      <TableHead>Flags</TableHead>
                       <TableHead>Verified</TableHead>
                       <TableHead>Joined</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -1405,6 +1408,15 @@ export default function Admin() {
                           }>
                             {u.seller_status}
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {u.fraud_flags > 0 ? (
+                            <Badge variant="outline" className="bg-destructive/20 text-destructive border-destructive/30 text-[10px]">
+                              🚩 {u.fraud_flags}
+                            </Badge>
+                          ) : (
+                            <span className="text-[10px] text-muted-foreground">0</span>
+                          )}
                         </TableCell>
                         <TableCell>
                           <Switch
