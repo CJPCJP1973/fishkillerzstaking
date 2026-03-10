@@ -191,9 +191,16 @@ export default function WalletTab() {
                   </SelectContent>
                 </Select>
               </div>
-              <p className="text-[10px] text-muted-foreground">
-                Send payment to admin, then submit this form. Admin will confirm receipt and credit your balance.
-              </p>
+              <div className="rounded-md border border-primary/20 bg-primary/5 p-3 space-y-1.5">
+                <p className="text-xs font-medium text-foreground">Send payment to:</p>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">CashApp</span>
+                  <span className="text-primary font-bold">$fishkillerzstaking</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  After sending, submit this form. Admin will confirm receipt and credit your balance.
+                </p>
+              </div>
               <Button
                 onClick={handleDeposit}
                 disabled={submitting}
