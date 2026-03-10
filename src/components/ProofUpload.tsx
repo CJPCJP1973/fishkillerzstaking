@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Camera, Loader2, CheckCircle, AlertTriangle } from "lucide-react";
+import { computeFileHash } from "@/lib/fileHash";
 
 interface Props {
   sessionId: string;
@@ -26,6 +27,19 @@ export default function ProofUpload({ sessionId, type, currentUrl, onUploaded }:
     if (!user) return;
     setUploading(true);
     try {
+      // Hash check — prevent recycled screenshots
+      const hash = await computeFileHash(file);
+      const { data: existing } = await supabase
+        .from("screenshot_hashes" as any)
+        .select("session_id, upload_type")
+        .eq("file_hash", hash)
+        .maybeSingle();
+      if (existing) {
+        toast.error("This screenshot has already been used. Please upload a unique screenshot.");
+        setUploading(false);
+        return;
+      }
+
       const ext = file.name.split(".").pop();
       const path = `${sessionId}/${type}-proof-${Date.now()}.${ext}`;
       const { error: uploadErr } = await supabase.storage
@@ -39,6 +53,14 @@ export default function ProofUpload({ sessionId, type, currentUrl, onUploaded }:
         .update({ [col]: path } as any)
         .eq("id", sessionId);
       if (updateErr) throw updateErr;
+
+      // Record hash to prevent reuse
+      await supabase.from("screenshot_hashes" as any).insert({
+        file_hash: hash,
+        session_id: sessionId,
+        upload_type: `${type}_proof`,
+        uploaded_by: user.id,
+      } as any);
 
       // Log to session journal
       await supabase.from("session_journal" as any).insert({
