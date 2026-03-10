@@ -444,6 +444,70 @@ export default function ScreenshotComparison({
             </p>
           </div>
         </div>
+       )}
+
+      {/* Scan History */}
+      {scanHistory.length > 0 && (
+        <div className="space-y-2">
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className="flex items-center gap-1.5 text-xs font-display font-bold text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <History className="h-3.5 w-3.5" />
+            Scan History ({scanHistory.length})
+            <span className="text-[10px]">{showHistory ? "▲" : "▼"}</span>
+          </button>
+
+          {showHistory && (
+            <div className="space-y-1.5 max-h-48 overflow-y-auto">
+              {scanHistory.map((scan) => {
+                const confColor =
+                  scan.confidence == null ? "text-muted-foreground"
+                  : scan.confidence >= 80 ? "text-success"
+                  : scan.confidence >= 50 ? "text-accent"
+                  : "text-destructive";
+                return (
+                  <div
+                    key={scan.id}
+                    className={`rounded border p-2 text-[11px] space-y-0.5 ${
+                      scan.auto_flagged
+                        ? "border-destructive/30 bg-destructive/5"
+                        : "border-border bg-background/50"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">
+                        {new Date(scan.created_at).toLocaleString()}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className={`font-display font-bold ${confColor}`}>
+                          {scan.confidence != null ? `${scan.confidence}%` : "N/A"}
+                        </span>
+                        {scan.auto_flagged && (
+                          <Badge variant="outline" className="text-[9px] bg-destructive/20 text-destructive border-destructive/30 py-0">
+                            FLAGGED
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-3 text-muted-foreground">
+                      <span>
+                        Start: <span className="text-foreground font-medium">
+                          {scan.start_amount != null ? `$${Number(scan.start_amount).toLocaleString()}` : "—"}
+                        </span>
+                      </span>
+                      <span>
+                        End: <span className="text-foreground font-medium">
+                          {scan.end_amount != null ? `$${Number(scan.end_amount).toLocaleString()}` : "—"}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
