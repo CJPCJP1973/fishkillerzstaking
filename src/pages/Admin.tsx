@@ -235,7 +235,7 @@ export default function Admin() {
   const fetchUsers = async () => {
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("user_id, display_name, username, email, seller_status, verified, created_at")
+      .select("user_id, display_name, username, email, seller_status, verified, created_at, fraud_flags")
       .order("created_at", { ascending: false });
 
     if (!profiles) return;
