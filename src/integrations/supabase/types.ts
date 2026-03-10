@@ -233,6 +233,41 @@ export type Database = {
         }
         Relationships: []
       }
+      screenshot_hashes: {
+        Row: {
+          created_at: string
+          file_hash: string
+          id: string
+          session_id: string
+          upload_type: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          file_hash: string
+          id?: string
+          session_id: string
+          upload_type: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          file_hash?: string
+          id?: string
+          session_id?: string
+          upload_type?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "screenshot_hashes_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seller_requests: {
         Row: {
           admin_notes: string | null
