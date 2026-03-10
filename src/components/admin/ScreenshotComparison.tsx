@@ -1,11 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Camera, Loader2, Eye, Ban, ShieldAlert } from "lucide-react";
+import { Camera, Loader2, Eye, Ban, ShieldAlert, History } from "lucide-react";
 import { computeFileHash } from "@/lib/fileHash";
 import { Badge } from "@/components/ui/badge";
+
+interface ScanRecord {
+  id: string;
+  start_amount: number | null;
+  end_amount: number | null;
+  confidence: number | null;
+  auto_flagged: boolean;
+  created_at: string;
+}
 
 interface Props {
   sessionId: string;
@@ -35,6 +44,21 @@ export default function ScreenshotComparison({
   const [uploading, setUploading] = useState<"start" | "end" | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [banning, setBanning] = useState(false);
+  const [scanHistory, setScanHistory] = useState<ScanRecord[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+
+  const fetchScanHistory = useCallback(async () => {
+    const { data } = await supabase
+      .from("ocr_scan_history" as any)
+      .select("id, start_amount, end_amount, confidence, auto_flagged, created_at")
+      .eq("session_id", sessionId)
+      .order("created_at", { ascending: false });
+    if (data) setScanHistory(data as any);
+  }, [sessionId]);
+
+  useEffect(() => {
+    fetchScanHistory();
+  }, [fetchScanHistory]);
 
   const handleUpload = async (type: "start" | "end", file: File) => {
     setUploading(type);
@@ -163,6 +187,19 @@ export default function ScreenshotComparison({
       }
 
       await supabase.from("sessions").update(updateData).eq("id", sessionId);
+
+      // Log to scan history
+      const adminUser = data.confidence != null ? (await supabase.auth.getUser()).data.user : null;
+      await supabase.from("ocr_scan_history" as any).insert({
+        session_id: sessionId,
+        scanned_by: adminUser?.id || "00000000-0000-0000-0000-000000000000",
+        start_amount: data.start_amount ?? null,
+        end_amount: data.end_amount ?? null,
+        confidence: data.confidence ?? null,
+        auto_flagged: data.confidence != null && data.confidence < 30,
+      } as any);
+
+      fetchScanHistory();
       onUpdate();
     } catch (err: any) {
       toast.error(err.message || "OCR analysis failed");
@@ -406,6 +443,70 @@ export default function ScreenshotComparison({
               Review manually and consider blacklisting if evidence of fraud is found.
             </p>
           </div>
+        </div>
+       )}
+
+      {/* Scan History */}
+      {scanHistory.length > 0 && (
+        <div className="space-y-2">
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className="flex items-center gap-1.5 text-xs font-display font-bold text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <History className="h-3.5 w-3.5" />
+            Scan History ({scanHistory.length})
+            <span className="text-[10px]">{showHistory ? "▲" : "▼"}</span>
+          </button>
+
+          {showHistory && (
+            <div className="space-y-1.5 max-h-48 overflow-y-auto">
+              {scanHistory.map((scan) => {
+                const confColor =
+                  scan.confidence == null ? "text-muted-foreground"
+                  : scan.confidence >= 80 ? "text-success"
+                  : scan.confidence >= 50 ? "text-accent"
+                  : "text-destructive";
+                return (
+                  <div
+                    key={scan.id}
+                    className={`rounded border p-2 text-[11px] space-y-0.5 ${
+                      scan.auto_flagged
+                        ? "border-destructive/30 bg-destructive/5"
+                        : "border-border bg-background/50"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">
+                        {new Date(scan.created_at).toLocaleString()}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className={`font-display font-bold ${confColor}`}>
+                          {scan.confidence != null ? `${scan.confidence}%` : "N/A"}
+                        </span>
+                        {scan.auto_flagged && (
+                          <Badge variant="outline" className="text-[9px] bg-destructive/20 text-destructive border-destructive/30 py-0">
+                            FLAGGED
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-3 text-muted-foreground">
+                      <span>
+                        Start: <span className="text-foreground font-medium">
+                          {scan.start_amount != null ? `$${Number(scan.start_amount).toLocaleString()}` : "—"}
+                        </span>
+                      </span>
+                      <span>
+                        End: <span className="text-foreground font-medium">
+                          {scan.end_amount != null ? `$${Number(scan.end_amount).toLocaleString()}` : "—"}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>
