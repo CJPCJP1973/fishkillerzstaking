@@ -21,6 +21,7 @@ export interface SessionData {
   status: "live" | "funding" | "completed" | "pending";
   streamUrl?: string;
   shooterTier?: number;
+  shooterFraudFlags?: number;
 }
 
 const statusStyles: Record<string, string> = {
