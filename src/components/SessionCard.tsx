@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Clock, Crosshair, DollarSign, ChevronDown, ChevronUp } from "lucide-react";
+import { Clock, Crosshair, DollarSign, ChevronDown, ChevronUp, ShieldCheck, ShieldAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import StakePieChart from "./StakePieChart";
 import BuyStakeDrawer from "./BuyStakeDrawer";
