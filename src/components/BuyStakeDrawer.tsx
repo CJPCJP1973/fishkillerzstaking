@@ -84,11 +84,14 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
           if (data) {
             supabase
               .from("profiles")
-              .select("seller_tier")
+              .select("seller_tier, fraud_flags")
               .eq("user_id", (data as any).shooter_id)
               .single()
               .then(({ data: profile }) => {
-                if (profile) setShooterTier((profile as any).seller_tier ?? 1);
+                if (profile) {
+                  setShooterTier((profile as any).seller_tier ?? 1);
+                  setShooterFraudFlags((profile as any).fraud_flags ?? 0);
+                }
               });
           }
         });
