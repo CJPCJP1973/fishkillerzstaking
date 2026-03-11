@@ -44,6 +44,7 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
   const sharePrice = Math.min(remaining, 50);
 
   const [shooterTier, setShooterTier] = useState(1);
+  const [shooterFraudFlags, setShooterFraudFlags] = useState(0);
 
   // Rake is determined by the shooter's tier
   const tierRakeMap: Record<number, number> = { 1: 8, 2: 6, 3: 4, 4: 2 };
