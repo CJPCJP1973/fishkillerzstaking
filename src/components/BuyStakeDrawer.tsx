@@ -246,6 +246,30 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
             </div>
           </div>
 
+          {/* Fraud Flag Warning */}
+          {shooterFraudFlags >= 2 && (
+            <div className={`rounded-lg border p-3 flex items-start gap-2 ${
+              shooterFraudFlags >= 3
+                ? "border-destructive/40 bg-destructive/10"
+                : "border-accent/40 bg-accent/10"
+            }`}>
+              <AlertTriangle className={`h-4 w-4 shrink-0 mt-0.5 ${
+                shooterFraudFlags >= 3 ? "text-destructive" : "text-accent"
+              }`} />
+              <div className={`text-xs ${shooterFraudFlags >= 3 ? "text-destructive" : "text-accent"}`}>
+                <p className="font-display font-bold">
+                  {shooterFraudFlags >= 3 ? "⚠️ High Risk Shooter" : "⚠️ Caution"}
+                </p>
+                <p className="mt-0.5">
+                  This shooter has {shooterFraudFlags} fraud flag{shooterFraudFlags !== 1 ? "s" : ""}.
+                  {shooterFraudFlags >= 3
+                    ? " Staking is strongly discouraged — this account may be banned."
+                    : " Proceed with caution and verify session details."}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Stake Amount */}
           <div>
             <Label className="text-sm text-muted-foreground">Your Stake Amount ($)</Label>
