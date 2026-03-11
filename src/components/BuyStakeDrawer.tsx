@@ -44,6 +44,7 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
   const sharePrice = Math.min(remaining, 50);
 
   const [shooterTier, setShooterTier] = useState(1);
+  const [shooterFraudFlags, setShooterFraudFlags] = useState(0);
 
   // Rake is determined by the shooter's tier
   const tierRakeMap: Record<number, number> = { 1: 8, 2: 6, 3: 4, 4: 2 };
@@ -83,11 +84,14 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
           if (data) {
             supabase
               .from("profiles")
-              .select("seller_tier")
+              .select("seller_tier, fraud_flags")
               .eq("user_id", (data as any).shooter_id)
               .single()
               .then(({ data: profile }) => {
-                if (profile) setShooterTier((profile as any).seller_tier ?? 1);
+                if (profile) {
+                  setShooterTier((profile as any).seller_tier ?? 1);
+                  setShooterFraudFlags((profile as any).fraud_flags ?? 0);
+                }
               });
           }
         });
@@ -241,6 +245,30 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
               <span className="text-success font-display font-bold">${remaining.toLocaleString()}</span>
             </div>
           </div>
+
+          {/* Fraud Flag Warning */}
+          {shooterFraudFlags >= 2 && (
+            <div className={`rounded-lg border p-3 flex items-start gap-2 ${
+              shooterFraudFlags >= 3
+                ? "border-destructive/40 bg-destructive/10"
+                : "border-accent/40 bg-accent/10"
+            }`}>
+              <AlertTriangle className={`h-4 w-4 shrink-0 mt-0.5 ${
+                shooterFraudFlags >= 3 ? "text-destructive" : "text-accent"
+              }`} />
+              <div className={`text-xs ${shooterFraudFlags >= 3 ? "text-destructive" : "text-accent"}`}>
+                <p className="font-display font-bold">
+                  {shooterFraudFlags >= 3 ? "⚠️ High Risk Shooter" : "⚠️ Caution"}
+                </p>
+                <p className="mt-0.5">
+                  This shooter has {shooterFraudFlags} fraud flag{shooterFraudFlags !== 1 ? "s" : ""}.
+                  {shooterFraudFlags >= 3
+                    ? " Staking is strongly discouraged — this account may be banned."
+                    : " Proceed with caution and verify session details."}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Stake Amount */}
           <div>
