@@ -692,6 +692,7 @@ export type Database = {
           id: string
           platform: string
           share_price: number
+          shooter_fraud_flags: number
           shooter_name: string
           shooter_tier: number
           stake_available: number
