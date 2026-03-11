@@ -445,22 +445,30 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
           )}
 
           {/* Submit */}
-          <Button
-            onClick={handleSubmit}
-            disabled={
-              submitting ||
-              !amount ||
-              !termsAccepted ||
-              (paymentMode === "p2p" && !confirmationRef.trim())
-            }
-            className="w-full gradient-primary text-primary-foreground font-display font-bold text-base py-5"
-          >
-            {submitting
-              ? "Submitting..."
-              : paymentMode === "fishdollarz"
-              ? `PAY WITH FISHDOLLARZ (${FISHDOLLARZ_FEE}% FEE)`
-              : `CONFIRM P2P PAYMENT (${P2P_FEE}% FEE)`}
-          </Button>
+          {shooterFraudFlags >= 3 ? (
+            <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-center space-y-1">
+              <AlertTriangle className="h-5 w-5 text-destructive mx-auto" />
+              <p className="font-display font-bold text-sm text-destructive">Staking Blocked</p>
+              <p className="text-xs text-destructive/80">This shooter has been flagged for fraud and is banned. You cannot stake on this session.</p>
+            </div>
+          ) : (
+            <Button
+              onClick={handleSubmit}
+              disabled={
+                submitting ||
+                !amount ||
+                !termsAccepted ||
+                (paymentMode === "p2p" && !confirmationRef.trim())
+              }
+              className="w-full gradient-primary text-primary-foreground font-display font-bold text-base py-5"
+            >
+              {submitting
+                ? "Submitting..."
+                : paymentMode === "fishdollarz"
+                ? `PAY WITH FISHDOLLARZ (${FISHDOLLARZ_FEE}% FEE)`
+                : `CONFIRM P2P PAYMENT (${P2P_FEE}% FEE)`}
+            </Button>
+          )}
 
           <p className="text-[10px] text-muted-foreground text-center">
             {paymentMode === "fishdollarz"
