@@ -626,6 +626,24 @@ export type Database = {
       }
     }
     Views: {
+      confirmed_agents_public: {
+        Row: {
+          agent_name: string | null
+          created_at: string | null
+          id: string | null
+        }
+        Insert: {
+          agent_name?: string | null
+          created_at?: string | null
+          id?: string | null
+        }
+        Update: {
+          agent_name?: string | null
+          created_at?: string | null
+          id?: string | null
+        }
+        Relationships: []
+      }
       profiles_public: {
         Row: {
           avatar_url: string | null
