@@ -27,6 +27,7 @@ export default function Sessions() {
             status: (s.status ?? "pending") as SessionData["status"],
             streamUrl: s.stream_url ?? undefined,
             shooterTier: (s as any).shooter_tier ?? 1,
+            shooterFraudFlags: (s as any).shooter_fraud_flags ?? 0,
           }))
         );
       }
