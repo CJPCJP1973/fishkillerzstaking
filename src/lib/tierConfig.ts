@@ -28,7 +28,7 @@ export const TIERS: Record<number, TierConfig> = {
     name: "Killer Whale",
     label: "KILLER WHALE",
     maxStakePercent: 75,
-    rakePercent: 4,
+    rakePercent: 10,
     colorClass: "text-accent",
     bgClass: "bg-accent/20 border-accent/30",
   },

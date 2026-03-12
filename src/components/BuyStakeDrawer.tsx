@@ -46,12 +46,11 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
   const [shooterTier, setShooterTier] = useState(1);
   const [shooterFraudFlags, setShooterFraudFlags] = useState(0);
 
-  // Rake is determined by the shooter's tier
-  const tierRakeMap: Record<number, number> = { 1: 8, 2: 6, 3: 4, 4: 2 };
-  const sessionRake = tierRakeMap[shooterTier] ?? 8;
-  // FishDollarz gets a 2% discount on rake (min 2%)
-  const FISHDOLLARZ_FEE = Math.max(2, sessionRake - 2);
-  const P2P_FEE = sessionRake;
+  // Rake is determined by the shooter's tier and payment method
+  const p2pRakeMap: Record<number, number> = { 1: 10, 2: 10, 3: 10, 4: 2 };
+  const fishDollarzRakeMap: Record<number, number> = { 1: 8, 2: 6, 3: 4, 4: 2 };
+  const P2P_FEE = p2pRakeMap[shooterTier] ?? 10;
+  const FISHDOLLARZ_FEE = fishDollarzRakeMap[shooterTier] ?? 8;
 
   useEffect(() => {
     if (open && user) {
