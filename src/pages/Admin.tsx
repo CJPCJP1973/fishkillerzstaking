@@ -1472,7 +1472,7 @@ export default function Admin() {
                             >
                               <Eye className="h-3 w-3 mr-1" />
                               {u.is_shadow_banned ? "Unshadow" : "Shadow Ban"}
-                            <Button
+                            </Button>
                               size="sm"
                               variant="destructive"
                               disabled={loadingId === u.user_id}
