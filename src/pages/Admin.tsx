@@ -714,6 +714,21 @@ export default function Admin() {
     setLoadingId(null);
   };
 
+  // God Mode: Toggle shadow ban
+  const handleShadowBan = async (userRow: UserRow) => {
+    if (loadingId) return;
+    setLoadingId(userRow.user_id);
+    try {
+      const newVal = !userRow.is_shadow_banned;
+      await supabase.from("profiles").update({ is_shadow_banned: newVal } as any).eq("user_id", userRow.user_id);
+      toast.success(newVal ? "User has been neutralized." : "Shadow ban removed.");
+      fetchUsers();
+    } catch (err: any) {
+      toast.error(err.message || "Action failed");
+    }
+    setLoadingId(null);
+  };
+
   // God Mode: Toggle user ban (remove/add seller role + set status)
   const handleBanUser = async (userRow: UserRow) => {
     if (loadingId) return;
