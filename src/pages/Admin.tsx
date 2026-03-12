@@ -1474,6 +1474,7 @@ export default function Admin() {
                               {u.is_shadow_banned ? "Unshadow" : "Shadow Ban"}
                             </Button>
                             <Button
+                              size="sm"
                               variant="destructive"
                               disabled={loadingId === u.user_id}
                               onClick={() => handleRemoveUser(u)}
