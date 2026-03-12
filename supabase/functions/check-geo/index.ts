@@ -12,9 +12,10 @@ const BLOCKED_STATES = [
   "Utah",
   "Idaho",
   "Louisiana",
+  "New Jersey",
 ];
 
-const BLOCKED_REGION_CODES = ["WA", "UT", "ID", "LA"];
+const BLOCKED_REGION_CODES = ["WA", "UT", "ID", "LA", "NJ"];
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
