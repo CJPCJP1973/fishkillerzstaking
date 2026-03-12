@@ -31,29 +31,29 @@ export default function SiteRules() {
               <tbody className="text-foreground">
                 <tr className="border-b border-border/50">
                   <td className="py-2 pr-4">🐟 Minnow (Tier 1)</td>
-                  <td className="py-2 pr-4 font-semibold">8%</td>
-                  <td className="py-2 font-semibold text-primary">6%</td>
+                  <td className="py-2 pr-4 font-semibold">10%</td>
+                  <td className="py-2 font-semibold text-primary">8%</td>
                 </tr>
                 <tr className="border-b border-border/50">
                   <td className="py-2 pr-4">🦈 Shark (Tier 2)</td>
-                  <td className="py-2 pr-4 font-semibold">6%</td>
-                  <td className="py-2 font-semibold text-primary">4%</td>
+                  <td className="py-2 pr-4 font-semibold">10%</td>
+                  <td className="py-2 font-semibold text-primary">6%</td>
                 </tr>
                 <tr className="border-b border-border/50">
                   <td className="py-2 pr-4">🐋 Killer Whale (Tier 3)</td>
-                  <td className="py-2 pr-4 font-semibold">4%</td>
-                  <td className="py-2 font-semibold text-primary">2%</td>
+                  <td className="py-2 pr-4 font-semibold">10%</td>
+                  <td className="py-2 font-semibold text-primary">4%</td>
                 </tr>
                 <tr>
                   <td className="py-2 pr-4">👑 Apex Predator (VIP)</td>
                   <td className="py-2 pr-4 font-semibold">2%</td>
-                  <td className="py-2 font-semibold text-primary">0%</td>
+                  <td className="py-2 font-semibold text-primary">2%</td>
                 </tr>
               </tbody>
             </table>
           </div>
           <p className="text-xs text-muted-foreground">
-            FishDollarz payments receive a <span className="text-primary font-semibold">2% discount</span> off the base P2P rake rate.
+            P2P rake is a flat <span className="font-semibold">10%</span> for all non-VIP tiers. FishDollarz payments offer <span className="text-primary font-semibold">reduced tier-based rates</span> (8% → 6% → 4% → 2%).
           </p>
         </section>
 
