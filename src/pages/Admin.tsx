@@ -98,6 +98,7 @@ interface UserRow {
   created_at: string | null;
   roles: string[];
   fraud_flags: number;
+  is_shadow_banned: boolean;
 }
 
 interface ConfirmedAgent {
