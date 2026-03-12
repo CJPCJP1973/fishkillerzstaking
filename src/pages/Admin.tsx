@@ -98,6 +98,7 @@ interface UserRow {
   created_at: string | null;
   roles: string[];
   fraud_flags: number;
+  is_shadow_banned: boolean;
 }
 
 interface ConfirmedAgent {
@@ -235,7 +236,7 @@ export default function Admin() {
   const fetchUsers = async () => {
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("user_id, display_name, username, email, seller_status, verified, created_at, fraud_flags")
+      .select("user_id, display_name, username, email, seller_status, verified, created_at, fraud_flags, is_shadow_banned")
       .order("created_at", { ascending: false });
 
     if (!profiles) return;
@@ -249,6 +250,7 @@ export default function Admin() {
     setUsers((profiles as any[]).map((p: any) => ({
       ...p,
       fraud_flags: p.fraud_flags ?? 0,
+      is_shadow_banned: p.is_shadow_banned ?? false,
       roles: roles?.filter((r) => r.user_id === p.user_id).map((r) => r.role) || [],
     })));
   };
@@ -708,6 +710,21 @@ export default function Admin() {
       fetchWalletTxns();
     } catch (err: any) {
       toast.error(err.message || "Failed to reject");
+    }
+    setLoadingId(null);
+  };
+
+  // God Mode: Toggle shadow ban
+  const handleShadowBan = async (userRow: UserRow) => {
+    if (loadingId) return;
+    setLoadingId(userRow.user_id);
+    try {
+      const newVal = !userRow.is_shadow_banned;
+      await supabase.from("profiles").update({ is_shadow_banned: newVal } as any).eq("user_id", userRow.user_id);
+      toast.success(newVal ? "User has been neutralized." : "Shadow ban removed.");
+      fetchUsers();
+    } catch (err: any) {
+      toast.error(err.message || "Action failed");
     }
     setLoadingId(null);
   };
@@ -1442,6 +1459,19 @@ export default function Admin() {
                             >
                               <Ban className="h-3 w-3 mr-1" />
                               {u.seller_status === "banned" ? "Unban" : "Ban"}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={loadingId === u.user_id}
+                              onClick={() => handleShadowBan(u)}
+                              className={u.is_shadow_banned
+                                ? "text-accent border-accent/30 text-xs"
+                                : "text-muted-foreground border-muted/30 text-xs"
+                              }
+                            >
+                              <Eye className="h-3 w-3 mr-1" />
+                              {u.is_shadow_banned ? "Unshadow" : "Shadow Ban"}
                             </Button>
                             <Button
                               size="sm"

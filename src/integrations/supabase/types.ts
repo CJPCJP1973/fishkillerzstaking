@@ -213,6 +213,7 @@ export type Database = {
           email: string | null
           fraud_flags: number
           id: string
+          is_shadow_banned: boolean
           is_vip: boolean
           reliability_score: number
           seller_status: string
@@ -237,6 +238,7 @@ export type Database = {
           email?: string | null
           fraud_flags?: number
           id?: string
+          is_shadow_banned?: boolean
           is_vip?: boolean
           reliability_score?: number
           seller_status?: string
@@ -261,6 +263,7 @@ export type Database = {
           email?: string | null
           fraud_flags?: number
           id?: string
+          is_shadow_banned?: boolean
           is_vip?: boolean
           reliability_score?: number
           seller_status?: string
