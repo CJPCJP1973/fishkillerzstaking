@@ -250,6 +250,7 @@ export default function Admin() {
     setUsers((profiles as any[]).map((p: any) => ({
       ...p,
       fraud_flags: p.fraud_flags ?? 0,
+      is_shadow_banned: p.is_shadow_banned ?? false,
       roles: roles?.filter((r) => r.user_id === p.user_id).map((r) => r.role) || [],
     })));
   };
