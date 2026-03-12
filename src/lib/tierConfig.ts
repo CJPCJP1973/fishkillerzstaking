@@ -12,7 +12,7 @@ export const TIERS: Record<number, TierConfig> = {
     name: "Minnow",
     label: "MINNOW",
     maxStakePercent: 25,
-    rakePercent: 10,
+    rakePercent: 8,
     colorClass: "text-muted-foreground",
     bgClass: "bg-muted/20 border-muted-foreground/30",
   },
