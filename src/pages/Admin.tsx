@@ -1879,8 +1879,8 @@ export default function Admin() {
               </div>
               <div className="bg-secondary rounded-md p-3 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Current Commission Rate</span>
-                  <span className="text-accent font-display font-bold">10%</span>
+                  <span className="text-muted-foreground">Commission Rate (Tier-Based)</span>
+                  <span className="text-accent font-display font-bold">2–7%</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Seller Registration Fee</span>
