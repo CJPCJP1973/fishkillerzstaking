@@ -53,7 +53,7 @@ export default function SiteRules() {
             </table>
           </div>
           <p className="text-xs text-muted-foreground">
-            FishDollarz payments receive a <span className="text-primary font-semibold">2% discount</span> off the base P2P rake rate.
+            P2P rake is a flat <span className="font-semibold">10%</span> for all non-VIP tiers. FishDollarz payments offer <span className="text-primary font-semibold">reduced tier-based rates</span> (8% → 6% → 4% → 2%).
           </p>
         </section>
 
