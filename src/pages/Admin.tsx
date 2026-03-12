@@ -1404,7 +1404,14 @@ export default function Admin() {
                       <TableRow key={u.user_id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium text-foreground text-sm">{u.display_name}</p>
+                            <div className="flex items-center gap-1.5">
+                              <p className="font-medium text-foreground text-sm">{u.display_name}</p>
+                              {u.is_shadow_banned && (
+                                <Badge variant="outline" className="bg-muted/30 text-muted-foreground border-muted-foreground/30 text-[10px] gap-0.5 px-1.5 py-0">
+                                  👻 Ghost
+                                </Badge>
+                              )}
+                            </div>
                             <p className="text-xs text-primary">@{u.username}</p>
                             <p className="text-[10px] text-muted-foreground">{u.user_id.slice(0, 8)}...</p>
                           </div>
