@@ -20,7 +20,7 @@ export const TIERS: Record<number, TierConfig> = {
     name: "Shark",
     label: "SHARK",
     maxStakePercent: 50,
-    rakePercent: 6,
+    rakePercent: 10,
     colorClass: "text-primary",
     bgClass: "bg-primary/20 border-primary/30",
   },
