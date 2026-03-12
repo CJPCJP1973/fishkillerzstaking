@@ -1462,6 +1462,18 @@ export default function Admin() {
                             </Button>
                             <Button
                               size="sm"
+                              variant="outline"
+                              disabled={loadingId === u.user_id}
+                              onClick={() => handleShadowBan(u)}
+                              className={u.is_shadow_banned
+                                ? "text-accent border-accent/30 text-xs"
+                                : "text-muted-foreground border-muted/30 text-xs"
+                              }
+                            >
+                              <Eye className="h-3 w-3 mr-1" />
+                              {u.is_shadow_banned ? "Unshadow" : "Shadow Ban"}
+                            <Button
+                              size="sm"
                               variant="destructive"
                               disabled={loadingId === u.user_id}
                               onClick={() => handleRemoveUser(u)}
