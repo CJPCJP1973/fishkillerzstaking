@@ -16,6 +16,7 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ProofUpload from "@/components/ProofUpload";
+import SellerScreenshotUpload from "@/components/SellerScreenshotUpload";
 
 export default function Profile() {
   const { user, isAdmin, isSeller, sellerStatus, username, loading, verificationStatus, verificationNote, sellerTier } = useAuth();
