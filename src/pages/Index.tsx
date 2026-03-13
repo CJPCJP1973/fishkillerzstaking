@@ -102,6 +102,9 @@ export default function Index() {
         {/* Stats */}
         <StatsBar />
 
+        {/* OCR Scan Monitor — Admin only */}
+        <OcrDashboardWidget />
+
         {/* Featured Platforms */}
         <div>
           <h2 className="font-display text-lg font-bold text-foreground mb-3">Featured Platforms</h2>
