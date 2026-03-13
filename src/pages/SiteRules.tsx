@@ -1,5 +1,6 @@
 import Layout from "@/components/Layout";
-import { ShieldCheck, DollarSign, AlertTriangle, Crosshair } from "lucide-react";
+import { ShieldCheck, DollarSign, AlertTriangle, Crosshair, HelpCircle } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 export default function SiteRules() {
   return (
@@ -119,6 +120,52 @@ export default function SiteRules() {
           <p className="text-sm text-foreground">
             Access is restricted in: <strong>Washington, Utah, Idaho, Louisiana, and New Jersey</strong>. Users from these states will be blocked from the platform.
           </p>
+        </section>
+
+        {/* FAQ */}
+        <section className="gradient-card rounded-lg p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <HelpCircle className="h-5 w-5 text-primary" />
+            <h2 className="font-display text-lg font-bold text-foreground">FAQ</h2>
+          </div>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="q1" className="border-border/50">
+              <AccordionTrigger className="text-sm text-foreground hover:no-underline">What are FishDollarz?</AccordionTrigger>
+              <AccordionContent className="text-sm text-muted-foreground">
+                FishDollarz are virtual credits used on the FishKillerz platform. 1 FishDollar = $1. They can be used to buy stakes in sessions and receive payouts. FishDollarz have no real-world value outside of FishKillerz.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="q2" className="border-border/50">
+              <AccordionTrigger className="text-sm text-foreground hover:no-underline">How do I become a seller?</AccordionTrigger>
+              <AccordionContent className="text-sm text-muted-foreground">
+                Go to your Profile page and click "Become a Seller." Your request will be reviewed by an admin. Once approved, you can create sessions and sell stakes to backers.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="q3" className="border-border/50">
+              <AccordionTrigger className="text-sm text-foreground hover:no-underline">How do payouts work?</AccordionTrigger>
+              <AccordionContent className="text-sm text-muted-foreground">
+                After a session ends, the seller uploads an end-balance screenshot. Backers receive their pro-rata share of winnings minus the platform rake. FishDollarz payouts are instant; P2P payouts must be sent within 60 minutes and the rake sent to $fishkillerzstaking on CashApp.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="q4" className="border-border/50">
+              <AccordionTrigger className="text-sm text-foreground hover:no-underline">What happens if a session loses?</AccordionTrigger>
+              <AccordionContent className="text-sm text-muted-foreground">
+                If the end balance is lower than the buy-in, all backers share in the loss proportionally. No rake is charged on losing sessions. Your stake amount is the maximum you can lose.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="q5" className="border-border/50">
+              <AccordionTrigger className="text-sm text-foreground hover:no-underline">How do I report a dispute?</AccordionTrigger>
+              <AccordionContent className="text-sm text-muted-foreground">
+                If you believe a session result is incorrect or a seller hasn't paid out, contact support at <a href="mailto:fishkillerzstaking@gmail.com" className="text-primary hover:underline">fishkillerzstaking@gmail.com</a>. Admins will review screenshots and transaction records to resolve the dispute.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="q6" className="border-border/50">
+              <AccordionTrigger className="text-sm text-foreground hover:no-underline">Can I get banned?</AccordionTrigger>
+              <AccordionContent className="text-sm text-muted-foreground">
+                Yes. Accumulating 3 fraud flags results in an automatic ban. Fraud flags are issued for manipulated screenshots, duplicate images, or failure to pay out backers. Banned users lose all seller privileges.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </section>
       </div>
     </Layout>
