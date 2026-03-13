@@ -98,7 +98,7 @@ export default function Index() {
       <LiveFeed />
 
       {/* Main Content */}
-      <div className="container py-8 space-y-8 pb-24 md:pb-8">
+      <div className="container py-8 space-y-8 pb-24 md:pb-8 min-h-[400px]">
         {/* Stats */}
         <StatsBar />
 
