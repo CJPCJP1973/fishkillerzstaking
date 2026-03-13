@@ -22,38 +22,50 @@ export default function OcrDashboardWidget() {
   const [scans, setScans] = useState<ScanEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const enrichScans = async (rawScans: any[]): Promise<ScanEntry[]> => {
+    const sessionIds = [...new Set(rawScans.map((s) => s.session_id))];
+    if (sessionIds.length === 0) return [];
+    const { data: sessions } = await supabase
+      .from("sessions")
+      .select("id, shooter_name, status")
+      .in("id", sessionIds);
+    const sessionMap = new Map(
+      (sessions || []).map((s: any) => [s.id, { name: s.shooter_name, status: s.status }])
+    );
+    return rawScans.map((scan) => ({
+      ...scan,
+      session_shooter: sessionMap.get(scan.session_id)?.name || "Unknown",
+      session_status: sessionMap.get(scan.session_id)?.status || "unknown",
+    }));
+  };
+
   useEffect(() => {
     if (!isAdmin) return;
-    const fetch = async () => {
+
+    const fetchInitial = async () => {
       const { data } = await supabase
         .from("ocr_scan_history" as any)
         .select("id, session_id, start_amount, end_amount, confidence, auto_flagged, created_at")
         .order("created_at", { ascending: false })
         .limit(10);
-
-      if (data) {
-        // Enrich with session info
-        const sessionIds = [...new Set((data as any[]).map((s) => s.session_id))];
-        const { data: sessions } = await supabase
-          .from("sessions")
-          .select("id, shooter_name, status")
-          .in("id", sessionIds);
-
-        const sessionMap = new Map(
-          (sessions || []).map((s: any) => [s.id, { name: s.shooter_name, status: s.status }])
-        );
-
-        setScans(
-          (data as any[]).map((scan) => ({
-            ...scan,
-            session_shooter: sessionMap.get(scan.session_id)?.name || "Unknown",
-            session_status: sessionMap.get(scan.session_id)?.status || "unknown",
-          }))
-        );
-      }
+      if (data) setScans(await enrichScans(data as any[]));
       setLoading(false);
     };
-    fetch();
+    fetchInitial();
+
+    const channel = supabase
+      .channel("ocr-realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "ocr_scan_history" },
+        async (payload) => {
+          const enriched = await enrichScans([payload.new]);
+          setScans((prev) => [...enriched, ...prev].slice(0, 10));
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [isAdmin]);
 
   if (!isAdmin) return null;
