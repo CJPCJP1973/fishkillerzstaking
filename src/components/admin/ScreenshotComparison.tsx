@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Camera, Loader2, Eye, Ban, ShieldAlert, History } from "lucide-react";
+import { Camera, Loader2, Eye, Ban, ShieldAlert, History, Clock, AlertTriangle } from "lucide-react";
 import { computeFileHash } from "@/lib/fileHash";
+import { validateScreenshotTimestamp } from "@/lib/exifDate";
 import { Badge } from "@/components/ui/badge";
 
 interface ScanRecord {
@@ -14,6 +15,13 @@ interface ScanRecord {
   confidence: number | null;
   auto_flagged: boolean;
   created_at: string;
+}
+
+interface MetadataResult {
+  valid: boolean;
+  exifDate: Date | null;
+  stripped: boolean;
+  message: string;
 }
 
 interface Props {
@@ -46,6 +54,8 @@ export default function ScreenshotComparison({
   const [banning, setBanning] = useState(false);
   const [scanHistory, setScanHistory] = useState<ScanRecord[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [startMeta, setStartMeta] = useState<MetadataResult | null>(null);
+  const [endMeta, setEndMeta] = useState<MetadataResult | null>(null);
 
   const fetchScanHistory = useCallback(async () => {
     const { data } = await supabase
@@ -60,10 +70,75 @@ export default function ScreenshotComparison({
     fetchScanHistory();
   }, [fetchScanHistory]);
 
+  // Fetch session times for metadata validation
+  const getSessionTimes = async (): Promise<{ created_at: string; end_time: string } | null> => {
+    const { data } = await supabase
+      .from("sessions")
+      .select("created_at, end_time")
+      .eq("id", sessionId)
+      .single();
+    return data as any;
+  };
+
   const handleUpload = async (type: "start" | "end", file: File) => {
     setUploading(type);
     try {
-      // Hash check — prevent recycled screenshots
+      // 1. EXIF metadata timestamp validation
+      const sessionTimes = await getSessionTimes();
+      if (sessionTimes) {
+        const metaResult = await validateScreenshotTimestamp(
+          file,
+          sessionTimes.created_at,
+          sessionTimes.end_time
+        );
+        if (type === "start") setStartMeta(metaResult);
+        else setEndMeta(metaResult);
+
+        if (!metaResult.valid) {
+          // Log the metadata issue to session journal
+          const adminUser = (await supabase.auth.getUser()).data.user;
+          await supabase.from("session_journal").insert({
+            session_id: sessionId,
+            user_id: adminUser?.id || null,
+            author_name: "System",
+            message: metaResult.stripped
+              ? `⚠️ METADATA STRIPPED: ${type} screenshot has no EXIF timestamp data. Possible evidence of tampering.`
+              : `⚠️ TIMESTAMP MISMATCH: ${type} screenshot — ${metaResult.message}`,
+            entry_type: "system",
+          } as any);
+
+          // Auto-flag + increment fraud if timestamp is outside window (not just stripped)
+          if (!metaResult.stripped && shooterId) {
+            const { data: prof } = await supabase
+              .from("profiles")
+              .select("fraud_flags")
+              .eq("user_id", shooterId)
+              .single();
+            const currentFlags = Number((prof as any)?.fraud_flags ?? 0);
+            await supabase
+              .from("profiles")
+              .update({ fraud_flags: currentFlags + 1 } as any)
+              .eq("user_id", shooterId);
+
+            await supabase.from("sessions").update({ status: "disputed" } as any).eq("id", sessionId);
+
+            await supabase.from("notifications").insert({
+              user_id: shooterId,
+              title: "Screenshot Flagged ⚠️",
+              message: `Your ${type} screenshot has a timestamp outside the session window. Fraud flag #${currentFlags + 1} recorded. Session marked as DISPUTED.`,
+              type: "warning",
+            } as any);
+
+            toast.warning(`Timestamp mismatch detected! Session auto-flagged as DISPUTED.`);
+          } else if (metaResult.stripped) {
+            toast.warning("EXIF metadata stripped — screenshot has no timestamp. Proceeding with caution.");
+          }
+        } else {
+          toast.success(`Metadata check passed: ${metaResult.exifDate?.toLocaleString()}`);
+        }
+      }
+
+      // 2. Hash check — prevent recycled screenshots
       const hash = await computeFileHash(file);
       const { data: existing } = await supabase
         .from("screenshot_hashes" as any)
@@ -150,7 +225,6 @@ export default function ScreenshotComparison({
       // Auto-flag as disputed if confidence is critically low
       if (data.confidence != null && data.confidence < 30) {
         updateData.status = "disputed";
-        // Log auto-flag to journal
         const adminUser = (await supabase.auth.getUser()).data.user;
         await supabase.from("session_journal").insert({
           session_id: sessionId,
@@ -160,7 +234,6 @@ export default function ScreenshotComparison({
           entry_type: "system",
         } as any);
         
-        // Increment fraud_flags on shooter's profile and notify
         if (shooterId) {
           const { data: prof } = await supabase
             .from("profiles")
@@ -188,7 +261,6 @@ export default function ScreenshotComparison({
 
       await supabase.from("sessions").update(updateData).eq("id", sessionId);
 
-      // Log to scan history
       const adminUser = data.confidence != null ? (await supabase.auth.getUser()).data.user : null;
       await supabase.from("ocr_scan_history" as any).insert({
         session_id: sessionId,
@@ -221,7 +293,6 @@ export default function ScreenshotComparison({
 
     setBanning(true);
     try {
-      // 1. Ban the user and increment fraud_flags
       const { data: prof } = await supabase
         .from("profiles")
         .select("fraud_flags")
@@ -233,20 +304,17 @@ export default function ScreenshotComparison({
         .update({ seller_status: "banned", fraud_flags: currentFlags + 1 } as any)
         .eq("user_id", shooterId);
 
-      // 2. Remove seller role
       await supabase
         .from("user_roles")
         .delete()
         .eq("user_id", shooterId)
         .eq("role", "seller" as any);
 
-      // 3. Flag this session as disputed
       await supabase
         .from("sessions")
         .update({ status: "disputed" } as any)
         .eq("id", sessionId);
 
-      // 4. Log to session journal
       const adminUser = (await supabase.auth.getUser()).data.user;
       await supabase.from("session_journal").insert({
         session_id: sessionId,
@@ -256,7 +324,6 @@ export default function ScreenshotComparison({
         entry_type: "system",
       } as any);
 
-      // 5. Notify the user
       await supabase.from("notifications").insert({
         user_id: shooterId,
         title: "Account Banned 🚫",
@@ -281,6 +348,24 @@ export default function ScreenshotComparison({
       : ocrConfidence >= 50
       ? "text-accent"
       : "text-destructive";
+
+  const MetadataBadge = ({ meta }: { meta: MetadataResult | null }) => {
+    if (!meta) return null;
+    if (meta.valid) {
+      return (
+        <div className="flex items-center gap-1 text-[10px] text-success">
+          <Clock className="h-3 w-3" />
+          <span>EXIF: {meta.exifDate?.toLocaleTimeString()}</span>
+        </div>
+      );
+    }
+    return (
+      <div className="flex items-center gap-1 text-[10px] text-destructive">
+        <AlertTriangle className="h-3 w-3" />
+        <span>{meta.stripped ? "No EXIF data" : "Timestamp mismatch"}</span>
+      </div>
+    );
+  };
 
   return (
     <div className="bg-secondary rounded-md p-3 space-y-3">
@@ -317,6 +402,7 @@ export default function ScreenshotComparison({
               OCR Read: <span className="text-accent font-display font-bold">${ocrStartAmount.toLocaleString()}</span>
             </p>
           )}
+          <MetadataBadge meta={startMeta} />
           <label className="cursor-pointer">
             <input
               type="file"
@@ -364,6 +450,7 @@ export default function ScreenshotComparison({
               OCR Read: <span className="text-accent font-display font-bold">${ocrEndAmount.toLocaleString()}</span>
             </p>
           )}
+          <MetadataBadge meta={endMeta} />
           <label className="cursor-pointer">
             <input
               type="file"
@@ -392,9 +479,24 @@ export default function ScreenshotComparison({
         </div>
       </div>
 
+      {/* Metadata warning banner */}
+      {(startMeta && !startMeta.valid) || (endMeta && !endMeta.valid) ? (
+        <div className="flex items-start gap-2 bg-accent/10 border border-accent/20 rounded-md p-2.5">
+          <Clock className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+          <div>
+            <p className="text-xs font-display font-bold text-accent">Metadata Scrub Detected</p>
+            {startMeta && !startMeta.valid && (
+              <p className="text-[10px] text-muted-foreground mt-0.5">Start: {startMeta.message}</p>
+            )}
+            {endMeta && !endMeta.valid && (
+              <p className="text-[10px] text-muted-foreground mt-0.5">End: {endMeta.message}</p>
+            )}
+          </div>
+        </div>
+      ) : null}
+
       {/* Action buttons row */}
       <div className="grid grid-cols-2 gap-2">
-        {/* Run OCR button */}
         <Button
           size="sm"
           onClick={runOcr}
@@ -410,7 +512,6 @@ export default function ScreenshotComparison({
           )}
         </Button>
 
-        {/* Blacklist / Ban Shooter button */}
         {shooterId && (
           <Button
             size="sm"
