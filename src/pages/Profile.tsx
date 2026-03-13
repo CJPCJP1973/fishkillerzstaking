@@ -13,7 +13,7 @@ import WalletTab from "@/components/WalletTab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle, Camera } from "lucide-react";
+import { AlertTriangle, Camera, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ProofUpload from "@/components/ProofUpload";
 import SellerScreenshotUpload from "@/components/SellerScreenshotUpload";
