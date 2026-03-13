@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle, Plus, UserCog, Wallet, ShieldCheck, Image, TrendingUp, Scale } from "lucide-react";
+import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle, Plus, UserCog, Wallet, ShieldCheck, Image, TrendingUp, Scale, ScrollText } from "lucide-react";
 import ScreenshotComparison from "@/components/admin/ScreenshotComparison";
 import ProofUpload from "@/components/ProofUpload";
 import DisputeReview from "@/components/admin/DisputeReview";
+import TransactionLogs from "@/components/admin/TransactionLogs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1001,7 +1002,7 @@ export default function Admin() {
                 <span>Users <span className="text-primary">({users.length})</span></span>
               </TabsTrigger>
             </TabsList>
-            <TabsList className="bg-secondary grid grid-cols-2 md:grid-cols-5 gap-1 h-auto p-2">
+            <TabsList className="bg-secondary grid grid-cols-3 md:grid-cols-6 gap-1 h-auto p-2">
               <TabsTrigger value="confirmed-sellers" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
                 <CheckCircle className="h-4 w-4" />
                 <span>Confirmed <span className="text-primary">({confirmedSellers.length})</span></span>
@@ -1021,6 +1022,10 @@ export default function Admin() {
               <TabsTrigger value="disputes" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1 text-destructive">
                 <Scale className="h-4 w-4" />
                 <span>Disputes</span>
+              </TabsTrigger>
+              <TabsTrigger value="txn-logs" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
+                <ScrollText className="h-4 w-4" />
+                <span>Txn Logs</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -1754,6 +1759,17 @@ export default function Admin() {
               Sessions flagged as disputed. Review deposit &amp; payout proofs side-by-side.
             </p>
             <DisputeReview />
+          </TabsContent>
+
+          {/* Transaction Logs Tab */}
+          <TabsContent value="txn-logs" className="space-y-3 mt-4">
+            <h2 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
+              <ScrollText className="h-5 w-5 text-primary" /> Transaction Logs
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Searchable history of all deposits, withdrawals, stakes, and payouts.
+            </p>
+            <TransactionLogs />
           </TabsContent>
 
           {/* God Mode Tab */}
