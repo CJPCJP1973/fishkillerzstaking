@@ -146,7 +146,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-lg">
         <div className="flex justify-around py-2">
-          {navItems.slice(0, 4).map((item) => {
+          {navItems.slice(0, 5).map((item) => {
             const active = location.pathname === item.to;
             return (
               <Link
