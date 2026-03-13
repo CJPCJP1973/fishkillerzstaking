@@ -212,6 +212,44 @@ export default function Profile() {
                           )}
                         </div>
                       )}
+
+                      {/* Start/End balance screenshots with auto-OCR */}
+                      {(s.status === "pending" || s.status === "funding" || s.status === "live" || s.status === "completed") && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-display font-bold text-muted-foreground flex items-center gap-1">
+                            <Eye className="h-3.5 w-3.5" /> Balance Screenshots (AI-Verified)
+                          </p>
+                          <div className="grid grid-cols-2 gap-2">
+                            <SellerScreenshotUpload
+                              sessionId={s.id}
+                              type="start"
+                              currentUrl={s.start_screenshot_url}
+                              sessionCreatedAt={s.created_at}
+                              sessionEndTime={s.end_time}
+                              onUploaded={() => fetchMySessions(user.id)}
+                            />
+                            <SellerScreenshotUpload
+                              sessionId={s.id}
+                              type="end"
+                              currentUrl={s.end_screenshot_url}
+                              sessionCreatedAt={s.created_at}
+                              sessionEndTime={s.end_time}
+                              onUploaded={() => fetchMySessions(user.id)}
+                            />
+                          </div>
+                          {(s.ocr_start_amount != null || s.ocr_end_amount != null) && (
+                            <div className="flex items-center justify-between text-[10px] text-muted-foreground bg-background/50 rounded px-2 py-1">
+                              <span>Start: <span className="text-accent font-bold">{s.ocr_start_amount != null ? `$${Number(s.ocr_start_amount).toLocaleString()}` : "—"}</span></span>
+                              <span>End: <span className="text-accent font-bold">{s.ocr_end_amount != null ? `$${Number(s.ocr_end_amount).toLocaleString()}` : "—"}</span></span>
+                              {s.ocr_confidence != null && (
+                                <span className={`font-bold ${s.ocr_confidence >= 80 ? "text-success" : s.ocr_confidence >= 50 ? "text-accent" : "text-destructive"}`}>
+                                  AI: {s.ocr_confidence}%
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })
