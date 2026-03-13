@@ -68,7 +68,7 @@ export default function SiteRules() {
             <li className="flex gap-2"><span>🐟</span><span><strong>Minnow (Tier 1):</strong> 0–4 completed sessions · Max 25% stake</span></li>
             <li className="flex gap-2"><span>🦈</span><span><strong>Shark (Tier 2):</strong> 5–9 completed sessions · Max 50% stake</span></li>
             <li className="flex gap-2"><span>🐋</span><span><strong>Killer Whale (Tier 3):</strong> 10+ completed sessions · Max 75% stake</span></li>
-            <li className="flex gap-2"><span>👑</span><span><strong>Apex Predator (VIP):</strong> Invite-only · Max 75% stake · Exclusive VIP sessions</span></li>
+            <li className="flex gap-2"><span>👑</span><span><strong>VIP Invite Only (VIP):</strong> Invite-only · Max 75% stake · Exclusive VIP sessions</span></li>
           </ul>
           <p className="text-xs text-muted-foreground">Tiers upgrade automatically on session completion. VIP is admin-granted only.</p>
         </section>
@@ -139,6 +139,31 @@ export default function SiteRules() {
               <AccordionTrigger className="text-sm text-foreground hover:no-underline">How do I become a seller?</AccordionTrigger>
               <AccordionContent className="text-sm text-muted-foreground">
                 Go to your Profile page and click "Become a Seller." Your request will be reviewed by an admin. Once approved, you can create sessions and sell stakes to backers.
+                FishKillerz Community Guidelines & Platform Rules
+​Welcome to FishKillerz. To ensure a fair, secure, and competitive environment, all users must adhere to these community standards. By participating in any session, you agree to these rules.
+​1. The Golden Rule: Integrity First
+• ​"Skin in the Game": Every Seller must retain at least 25% of their own stake in every session. Any attempt to bypass this via secondary accounts will result in an immediate and permanent ban.
+• ​The Evidence Protocol: All sessions require a Proof of Deposit (PoD) and Proof of Payout (PoP). If you cannot provide a clear, original screenshot of your deposit and final withdrawal, you are responsible for the full stake amount plus a 10% penalty fee.
+• ​Zero Tolerance for Scams: Any confirmed attempt to defraud backers, manipulate screenshots, or misrepresent gaming agent activity will result in a permanent ban and a public 'Scammer' flag on our partner network.
+​2. Respectful Conduct
+• ​The Session Journal is for Business: Please keep all communication in the Session Journal strictly related to the staking session.
+• ​Professionalism: Harassment, threats, or aggressive behavior toward other Users or the Admin will not be tolerated. This is a business marketplace; treat your partners with professional courtesy.
+• ​No Solicitation: Do not use the platform to promote outside services, alternative platforms, or direct-message users for off-platform transactions.
+​3. Admin Authority & Disputes
+• ​Finality of Decisions: The Admin has final authority in all disputes. Once a settlement is verified and released from escrow, the transaction is closed and final.
+• ​Escrow Security: All FishDollarz in escrow are held to ensure payout accuracy. Any attempt to pressure the Admin to release funds prematurely will be ignored.
+• ​Platform Neutrality: FishKillerz is a marketplace, not a gaming provider. We are not responsible for the server stability of the gaming agents (Golden Dragon, Vblink, etc.). If an agent platform goes down, our dispute resolution process will prioritize fairness based on the evidence provided.
+​4. Account Security
+• ​Your Responsibility: You are 100% responsible for your account security. Never share your login credentials. We will never ask for your password.
+• ​One Account Per Person: Multiple account creation to farm bonuses or bypass tier limits is strictly prohibited and will result in the forfeiture of all balances.
+​5. Financial Hygiene
+• ​No Real-World Value: FishDollarz are virtual points for use within this system only. They are not an investment, and they carry no cash value outside of our official redemption process.
+• ​AML Compliance: All redemption requests are subject to review. We reserve the right to verify account history to prevent money laundering and fraud.
+​🛡️ Violation Consequences
+• ​Warning: For minor infractions (misunderstandings, missed screenshots without malicious intent).
+• ​Shadow Ban: For suspicious behavior (hidden from public view, no communication capability).
+• ​Hard Ban: For intentional fraud, underage usage, or malicious behavior.
+​If you see something, say something. Flag suspicious sessions via the 'Report' button in the Session Journal.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="q3" className="border-border/50">
