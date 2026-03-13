@@ -16,6 +16,7 @@ export default function Layout({ children }: { children: ReactNode }) {
     { to: "/create", label: "Create", icon: Plus, show: isSeller },
     { to: "/vip-sessions", label: "VIP", icon: Crown, show: isVip },
     { to: "/leaderboard", label: "Ranks", icon: Trophy, show: true },
+    { to: "/settings", label: "Settings", icon: Settings, show: !!user },
     { to: "/profile", label: "Profile", icon: User, show: !!user },
     { to: "/admin", label: "Admin", icon: Shield, show: isAdmin },
   ].filter((i) => i.show);
