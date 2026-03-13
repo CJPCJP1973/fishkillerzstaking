@@ -11,7 +11,7 @@ const mockFeed = [
 
 export default function LiveFeed() {
   return (
-    <div className="w-full overflow-hidden bg-surface/50 border-y border-border">
+    <div className="w-full overflow-hidden bg-surface/50 border-y border-border min-h-[40px]">
       <div className="flex items-center">
         <div className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 bg-live/20 border-r border-border">
           <span className="relative flex h-2 w-2">
