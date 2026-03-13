@@ -13,9 +13,10 @@ import WalletTab from "@/components/WalletTab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle, Camera } from "lucide-react";
+import { AlertTriangle, Camera, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ProofUpload from "@/components/ProofUpload";
+import SellerScreenshotUpload from "@/components/SellerScreenshotUpload";
 
 export default function Profile() {
   const { user, isAdmin, isSeller, sellerStatus, username, loading, verificationStatus, verificationNote, sellerTier } = useAuth();
@@ -26,7 +27,7 @@ export default function Profile() {
   const fetchMySessions = async (uid: string) => {
     const { data } = await supabase
       .from("sessions")
-      .select("id, shooter_name, platform, agent_room, status, deposit_proof_url, payout_proof_url, total_buy_in")
+      .select("id, shooter_name, platform, agent_room, status, deposit_proof_url, payout_proof_url, total_buy_in, start_screenshot_url, end_screenshot_url, created_at, end_time, ocr_start_amount, ocr_end_amount, ocr_confidence")
       .eq("shooter_id", uid)
       .order("created_at", { ascending: false });
     setMySessions(data || []);
@@ -208,6 +209,44 @@ export default function Profile() {
                               currentUrl={s.payout_proof_url}
                               onUploaded={() => fetchMySessions(user.id)}
                             />
+                          )}
+                        </div>
+                      )}
+
+                      {/* Start/End balance screenshots with auto-OCR */}
+                      {(s.status === "pending" || s.status === "funding" || s.status === "live" || s.status === "completed") && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-display font-bold text-muted-foreground flex items-center gap-1">
+                            <Eye className="h-3.5 w-3.5" /> Balance Screenshots (AI-Verified)
+                          </p>
+                          <div className="grid grid-cols-2 gap-2">
+                            <SellerScreenshotUpload
+                              sessionId={s.id}
+                              type="start"
+                              currentUrl={s.start_screenshot_url}
+                              sessionCreatedAt={s.created_at}
+                              sessionEndTime={s.end_time}
+                              onUploaded={() => fetchMySessions(user.id)}
+                            />
+                            <SellerScreenshotUpload
+                              sessionId={s.id}
+                              type="end"
+                              currentUrl={s.end_screenshot_url}
+                              sessionCreatedAt={s.created_at}
+                              sessionEndTime={s.end_time}
+                              onUploaded={() => fetchMySessions(user.id)}
+                            />
+                          </div>
+                          {(s.ocr_start_amount != null || s.ocr_end_amount != null) && (
+                            <div className="flex items-center justify-between text-[10px] text-muted-foreground bg-background/50 rounded px-2 py-1">
+                              <span>Start: <span className="text-accent font-bold">{s.ocr_start_amount != null ? `$${Number(s.ocr_start_amount).toLocaleString()}` : "—"}</span></span>
+                              <span>End: <span className="text-accent font-bold">{s.ocr_end_amount != null ? `$${Number(s.ocr_end_amount).toLocaleString()}` : "—"}</span></span>
+                              {s.ocr_confidence != null && (
+                                <span className={`font-bold ${s.ocr_confidence >= 80 ? "text-success" : s.ocr_confidence >= 50 ? "text-accent" : "text-destructive"}`}>
+                                  AI: {s.ocr_confidence}%
+                                </span>
+                              )}
+                            </div>
                           )}
                         </div>
                       )}

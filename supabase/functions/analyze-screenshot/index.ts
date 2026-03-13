@@ -10,7 +10,6 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    // Authenticate the request
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -25,7 +24,6 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    // Use getUser() for server-side token validation (rejects expired/revoked tokens)
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -34,24 +32,37 @@ serve(async (req) => {
       });
     }
 
-    // Verify admin role
+    const { start_screenshot_url, end_screenshot_url, session_id } = await req.json();
+
+    // Verify caller is admin OR the session's shooter
     const adminClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+
     const { data: roles } = await adminClient
       .from("user_roles")
       .select("role")
       .eq("user_id", user.id);
     const isAdmin = roles?.some((r: any) => r.role === "admin");
-    if (!isAdmin) {
-      return new Response(JSON.stringify({ error: "Forbidden" }), {
+
+    let isShooter = false;
+    if (session_id) {
+      const { data: session } = await adminClient
+        .from("sessions")
+        .select("shooter_id")
+        .eq("id", session_id)
+        .single();
+      isShooter = session?.shooter_id === user.id;
+    }
+
+    if (!isAdmin && !isShooter) {
+      return new Response(JSON.stringify({ error: "Forbidden: must be admin or session owner" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const { start_screenshot_url, end_screenshot_url } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -68,7 +79,6 @@ If you cannot read the amount, return {"amount": null, "confidence": 0, "raw_tex
 
     const results: any = {};
 
-    // Analyze start screenshot
     if (start_screenshot_url) {
       const startResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
@@ -100,10 +110,22 @@ If you cannot read the amount, return {"amount": null, "confidence": 0, "raw_tex
         } catch {
           results.start = { amount: null, confidence: 0, raw_text: content };
         }
+      } else {
+        const errorText = await startResp.text();
+        console.error("AI gateway error (start):", startResp.status, errorText);
+        if (startResp.status === 429) {
+          return new Response(JSON.stringify({ error: "Rate limit exceeded, please try again later." }), {
+            status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        if (startResp.status === 402) {
+          return new Response(JSON.stringify({ error: "Payment required, please add funds." }), {
+            status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
       }
     }
 
-    // Analyze end screenshot
     if (end_screenshot_url) {
       const endResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
@@ -135,10 +157,22 @@ If you cannot read the amount, return {"amount": null, "confidence": 0, "raw_tex
         } catch {
           results.end = { amount: null, confidence: 0, raw_text: content };
         }
+      } else {
+        const errorText = await endResp.text();
+        console.error("AI gateway error (end):", endResp.status, errorText);
+        if (endResp.status === 429) {
+          return new Response(JSON.stringify({ error: "Rate limit exceeded, please try again later." }), {
+            status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        if (endResp.status === 402) {
+          return new Response(JSON.stringify({ error: "Payment required, please add funds." }), {
+            status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
       }
     }
 
-    // Calculate overall confidence
     const startConf = results.start?.confidence || 0;
     const endConf = results.end?.confidence || 0;
     const avgConfidence = start_screenshot_url && end_screenshot_url
@@ -155,7 +189,7 @@ If you cannot read the amount, return {"amount": null, "confidence": 0, "raw_tex
     });
   } catch (e) {
     console.error("analyze-screenshot error:", e);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
+    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
