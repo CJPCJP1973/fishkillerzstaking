@@ -1761,6 +1761,17 @@ export default function Admin() {
             <DisputeReview />
           </TabsContent>
 
+          {/* Transaction Logs Tab */}
+          <TabsContent value="txn-logs" className="space-y-3 mt-4">
+            <h2 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
+              <ScrollText className="h-5 w-5 text-primary" /> Transaction Logs
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Searchable history of all deposits, withdrawals, stakes, and payouts.
+            </p>
+            <TransactionLogs />
+          </TabsContent>
+
           {/* God Mode Tab */}
           <TabsContent value="godmode" className="space-y-6 mt-4">
             <div className="flex items-center gap-2 mb-2">
