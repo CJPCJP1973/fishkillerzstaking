@@ -7,6 +7,7 @@ import LiveFeed from "@/components/LiveFeed";
 import StatsBar from "@/components/StatsBar";
 import SessionCard, { SessionData } from "@/components/SessionCard";
 import PlatformBadge from "@/components/PlatformBadge";
+import OcrDashboardWidget from "@/components/OcrDashboardWidget";
 import heroBg from "@/assets/hero-bg.png";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -100,6 +101,9 @@ export default function Index() {
       <div className="container py-8 space-y-8 pb-24 md:pb-8">
         {/* Stats */}
         <StatsBar />
+
+        {/* OCR Scan Monitor — Admin only */}
+        <OcrDashboardWidget />
 
         {/* Featured Platforms */}
         <div>
