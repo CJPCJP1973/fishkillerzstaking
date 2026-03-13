@@ -7,6 +7,7 @@ import LiveFeed from "@/components/LiveFeed";
 import StatsBar from "@/components/StatsBar";
 import SessionCard, { SessionData } from "@/components/SessionCard";
 import PlatformBadge from "@/components/PlatformBadge";
+import OcrDashboardWidget from "@/components/OcrDashboardWidget";
 import heroBg from "@/assets/hero-bg.png";
 import { supabase } from "@/integrations/supabase/client";
 
