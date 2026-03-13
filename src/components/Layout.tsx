@@ -118,6 +118,31 @@ export default function Layout({ children }: { children: ReactNode }) {
 
       <main className="flex-1">{children}</main>
 
+      {/* Footer */}
+      <footer className="border-t border-border bg-background/80 py-4 pb-20 md:pb-4">
+        <div className="container flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
+          <a
+            href="mailto:fishkillerzstaking@gmail.com"
+            className="hover:text-primary transition-colors flex items-center gap-1"
+          >
+            <Mail className="h-3.5 w-3.5" />
+            Contact Support
+          </a>
+          <Link to="/site-rules" className="hover:text-primary transition-colors">
+            Site Rules
+          </Link>
+          <Link to="/terms" className="hover:text-primary transition-colors">
+            Terms
+          </Link>
+          {isAdmin && (
+            <Link to="/admin" className="hover:text-primary transition-colors flex items-center gap-1">
+              <Shield className="h-3.5 w-3.5" />
+              Admin Panel
+            </Link>
+          )}
+        </div>
+      </footer>
+
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-lg">
         <div className="flex justify-around py-2">
           {navItems.slice(0, 4).map((item) => {
