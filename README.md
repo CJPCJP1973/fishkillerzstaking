@@ -1,5 +1,5 @@
 FishKillerz
-​This README serves as the technical and operational manual for the FishKillerz platform. It aligns with the "Apex Rise" branding and the automated reputation economy established for the ecosystem.
+​README serves as the technical and operational manual for the FishKillerz platform. It aligns with the "Apex Rise" branding and the automated reputation economy established for the ecosystem.
 ​🌊 Project Overview
 ​FishKillerz is a high-integrity, peer-to-peer (P2P) staking marketplace for online gaming. The platform utilizes a "Trust-by-Evidence" model to eliminate fraud, leveraging a tiered user progression system and mandatory transaction documentation.
 ​🔱 Core Architecture
