@@ -36,6 +36,11 @@ export default function CreateSessionForm() {
   const [showAgentRequest, setShowAgentRequest] = useState(false);
   const [newAgentName, setNewAgentName] = useState("");
   const [requestingAgent, setRequestingAgent] = useState(false);
+  const [showPlatformRequest, setShowPlatformRequest] = useState(false);
+  const [newPlatformName, setNewPlatformName] = useState("");
+  const [requestingPlatform, setRequestingPlatform] = useState(false);
+
+  const knownPlatforms = ["Golden Dragon", "Diamond Dragon", "Fire Phoenix", "Vblink", "Riversweeps", "Magic City"];
 
   useEffect(() => {
     const fetchAgents = async () => {
@@ -143,12 +148,84 @@ export default function CreateSessionForm() {
 
         <div>
           <Label className="text-sm text-muted-foreground">Game Platform</Label>
-          <Input
-            value={platform}
-            onChange={(e) => setPlatform(e.target.value)}
-            placeholder="e.g. Golden Dragon"
-            className="bg-secondary border-border text-foreground"
-          />
+          <Select value={platform} onValueChange={(val) => {
+            if (val === "__request_new_platform__") {
+              setShowPlatformRequest(true);
+              return;
+            }
+            setPlatform(val);
+          }}>
+            <SelectTrigger className="bg-secondary border-border text-foreground">
+              <SelectValue placeholder="Select a platform" />
+            </SelectTrigger>
+            <SelectContent className="bg-background border-border">
+              {knownPlatforms.map((p) => (
+                <SelectItem key={p} value={p}>{p}</SelectItem>
+              ))}
+              <div className="border-t border-border mt-1 pt-1">
+                <SelectItem value="__request_new_platform__" className="text-primary">
+                  <span className="flex items-center gap-1.5"><Plus className="h-3 w-3" /> Request New Platform</span>
+                </SelectItem>
+              </div>
+            </SelectContent>
+          </Select>
+
+          {showPlatformRequest && (
+            <div className="mt-2 rounded-md border border-primary/20 bg-primary/5 p-3 space-y-2">
+              <p className="text-xs font-medium text-foreground">Request a new platform for admin approval</p>
+              <Input
+                value={newPlatformName}
+                onChange={(e) => setNewPlatformName(e.target.value)}
+                placeholder="Platform name"
+                className="bg-secondary border-border text-foreground text-sm"
+              />
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={!newPlatformName.trim() || requestingPlatform}
+                  className="gradient-primary text-primary-foreground text-xs"
+                  onClick={async () => {
+                    if (!user || !newPlatformName.trim()) return;
+                    setRequestingPlatform(true);
+                    try {
+                      const { data: admins } = await supabase
+                        .from("user_roles")
+                        .select("user_id")
+                        .eq("role", "admin");
+                      if (admins) {
+                        for (const admin of admins) {
+                          await supabase.from("notifications").insert({
+                            user_id: admin.user_id,
+                            title: "New Platform Request 🎮",
+                            message: `${username || "A user"} requested platform: "${newPlatformName.trim()}"`,
+                            type: "platform_request",
+                          } as any);
+                        }
+                      }
+                      toast.success("Platform request submitted! An admin will review it.");
+                      setNewPlatformName("");
+                      setShowPlatformRequest(false);
+                    } catch {
+                      toast.error("Failed to submit request");
+                    }
+                    setRequestingPlatform(false);
+                  }}
+                >
+                  {requestingPlatform ? "Sending..." : "Submit Request"}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="text-xs text-muted-foreground"
+                  onClick={() => { setShowPlatformRequest(false); setNewPlatformName(""); }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         <div>
