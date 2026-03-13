@@ -27,7 +27,7 @@ export default function Profile() {
   const fetchMySessions = async (uid: string) => {
     const { data } = await supabase
       .from("sessions")
-      .select("id, shooter_name, platform, agent_room, status, deposit_proof_url, payout_proof_url, total_buy_in")
+      .select("id, shooter_name, platform, agent_room, status, deposit_proof_url, payout_proof_url, total_buy_in, start_screenshot_url, end_screenshot_url, created_at, end_time, ocr_start_amount, ocr_end_amount, ocr_confidence")
       .eq("shooter_id", uid)
       .order("created_at", { ascending: false });
     setMySessions(data || []);
