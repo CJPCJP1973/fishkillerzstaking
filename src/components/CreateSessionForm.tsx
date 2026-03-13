@@ -36,6 +36,11 @@ export default function CreateSessionForm() {
   const [showAgentRequest, setShowAgentRequest] = useState(false);
   const [newAgentName, setNewAgentName] = useState("");
   const [requestingAgent, setRequestingAgent] = useState(false);
+  const [showPlatformRequest, setShowPlatformRequest] = useState(false);
+  const [newPlatformName, setNewPlatformName] = useState("");
+  const [requestingPlatform, setRequestingPlatform] = useState(false);
+
+  const knownPlatforms = ["Golden Dragon", "Diamond Dragon", "Fire Phoenix", "Vblink", "Riversweeps", "Magic City"];
 
   useEffect(() => {
     const fetchAgents = async () => {
