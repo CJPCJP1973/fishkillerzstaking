@@ -1,6 +1,6 @@
 import { ReactNode, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Crosshair, Home, Plus, User, Shield, Menu, X, LogOut, LogIn, Crown, Trophy, Mail } from "lucide-react";
+import { Crosshair, Home, Plus, User, Shield, Menu, X, LogOut, LogIn, Crown, Trophy, Mail, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import NotificationBell from "@/components/NotificationBell";
 
@@ -16,6 +16,7 @@ export default function Layout({ children }: { children: ReactNode }) {
     { to: "/create", label: "Create", icon: Plus, show: isSeller },
     { to: "/vip-sessions", label: "VIP", icon: Crown, show: isVip },
     { to: "/leaderboard", label: "Ranks", icon: Trophy, show: true },
+    { to: "/settings", label: "Settings", icon: Settings, show: !!user },
     { to: "/profile", label: "Profile", icon: User, show: !!user },
     { to: "/admin", label: "Admin", icon: Shield, show: isAdmin },
   ].filter((i) => i.show);
@@ -145,7 +146,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-lg">
         <div className="flex justify-around py-2">
-          {navItems.slice(0, 4).map((item) => {
+          {navItems.slice(0, 5).map((item) => {
             const active = location.pathname === item.to;
             return (
               <Link
