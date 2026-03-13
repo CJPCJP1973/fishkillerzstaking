@@ -1,5 +1,6 @@
 import Layout from "@/components/Layout";
-import { ShieldCheck, DollarSign, AlertTriangle, Crosshair } from "lucide-react";
+import { ShieldCheck, DollarSign, AlertTriangle, Crosshair, HelpCircle } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 export default function SiteRules() {
   return (
