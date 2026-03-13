@@ -1,6 +1,6 @@
 import { ReactNode, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Crosshair, Home, Plus, User, Shield, Menu, X, LogOut, LogIn, Crown, Trophy } from "lucide-react";
+import { Crosshair, Home, Plus, User, Shield, Menu, X, LogOut, LogIn, Crown, Trophy, Mail } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import NotificationBell from "@/components/NotificationBell";
 
