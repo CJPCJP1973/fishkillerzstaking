@@ -1023,6 +1023,10 @@ export default function Admin() {
                 <Scale className="h-4 w-4" />
                 <span>Disputes</span>
               </TabsTrigger>
+              <TabsTrigger value="txn-logs" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
+                <ScrollText className="h-4 w-4" />
+                <span>Txn Logs</span>
+              </TabsTrigger>
             </TabsList>
           </div>
 
