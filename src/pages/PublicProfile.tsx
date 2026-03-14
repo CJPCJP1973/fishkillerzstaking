@@ -144,6 +144,7 @@ export default function PublicProfile() {
                   <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Trust</div>
                 </CardContent>
               </Card>
+            </div>
           </>
         ) : null}
       </div>
