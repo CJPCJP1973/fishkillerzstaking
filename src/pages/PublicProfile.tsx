@@ -19,7 +19,6 @@ interface PublicProfileData {
   seller_tier: number;
   is_vip: boolean;
   completed_sessions: number;
-  fraud_flags: number;
 }
 
 export default function PublicProfile() {
