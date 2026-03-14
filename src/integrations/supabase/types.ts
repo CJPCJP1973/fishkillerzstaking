@@ -653,7 +653,6 @@ export type Database = {
           bio: string | null
           created_at: string | null
           display_name: string | null
-          fraud_flags: number | null
           id: string | null
           seller_status: string | null
           total_staked: number | null
@@ -669,7 +668,6 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           display_name?: string | null
-          fraud_flags?: number | null
           id?: string | null
           seller_status?: string | null
           total_staked?: number | null
@@ -685,7 +683,6 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           display_name?: string | null
-          fraud_flags?: number | null
           id?: string | null
           seller_status?: string | null
           total_staked?: number | null
