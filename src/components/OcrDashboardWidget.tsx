@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Eye, AlertTriangle, CheckCircle, Clock, ArrowRight } from "lucide-react";
+import { Eye, AlertTriangle, CheckCircle, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
+
 
 interface ScanEntry {
   id: string;
@@ -83,12 +83,6 @@ export default function OcrDashboardWidget() {
           <Eye className="h-4 w-4 text-primary" />
           OCR Scan Monitor
         </h3>
-        <Link
-          to="/admin"
-          className="text-[10px] text-primary hover:underline flex items-center gap-0.5"
-        >
-          Admin Panel <ArrowRight className="h-3 w-3" />
-        </Link>
       </div>
 
       {/* Summary stats */}
