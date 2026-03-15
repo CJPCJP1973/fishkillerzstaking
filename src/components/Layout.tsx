@@ -135,12 +135,6 @@ export default function Layout({ children }: { children: ReactNode }) {
           <Link to="/terms" className="hover:text-primary transition-colors">
             Terms
           </Link>
-          {isAdmin && (
-            <Link to="/admin" className="hover:text-primary transition-colors flex items-center gap-1">
-              <Shield className="h-3.5 w-3.5" />
-              Admin Panel
-            </Link>
-          )}
         </div>
       </footer>
 
