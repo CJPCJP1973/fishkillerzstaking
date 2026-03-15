@@ -1765,6 +1765,17 @@ export default function Admin() {
             <DisputeReview />
           </TabsContent>
 
+          {/* OCR Monitor Tab */}
+          <TabsContent value="ocr-monitor" className="space-y-3 mt-4">
+            <h2 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
+              <Eye className="h-5 w-5 text-primary" /> OCR Scan Monitor
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Real-time AI screenshot analysis results and flagged sessions.
+            </p>
+            <OcrDashboardWidget />
+          </TabsContent>
+
           {/* Transaction Logs Tab */}
           <TabsContent value="txn-logs" className="space-y-3 mt-4">
             <h2 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
