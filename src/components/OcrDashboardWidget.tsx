@@ -83,12 +83,6 @@ export default function OcrDashboardWidget() {
           <Eye className="h-4 w-4 text-primary" />
           OCR Scan Monitor
         </h3>
-        <Link
-          to="/admin"
-          className="text-[10px] text-primary hover:underline flex items-center gap-0.5"
-        >
-          Admin Panel <ArrowRight className="h-3 w-3" />
-        </Link>
       </div>
 
       {/* Summary stats */}
