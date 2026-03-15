@@ -1,18 +1,22 @@
 import { ReactNode, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Crosshair, Home, Plus, User, Shield, Menu, X, LogOut, LogIn } from "lucide-react";
+import { Crosshair, Home, Plus, User, Shield, Menu, X, LogOut, LogIn, Crown, Trophy, Mail, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import NotificationBell from "@/components/NotificationBell";
 
 export default function Layout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, isAdmin, isSeller, signOut } = useAuth();
+  const { user, isAdmin, isSeller, isVip, signOut } = useAuth();
 
   const navItems = [
     { to: "/", label: "Dashboard", icon: Home, show: true },
     { to: "/sessions", label: "Sessions", icon: Crosshair, show: true },
     { to: "/create", label: "Create", icon: Plus, show: isSeller },
+    { to: "/vip-sessions", label: "VIP", icon: Crown, show: isVip },
+    { to: "/leaderboard", label: "Ranks", icon: Trophy, show: true },
+    { to: "/settings", label: "Settings", icon: Settings, show: !!user },
     { to: "/profile", label: "Profile", icon: User, show: !!user },
     { to: "/admin", label: "Admin", icon: Shield, show: isAdmin },
   ].filter((i) => i.show);
@@ -51,6 +55,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                 </Link>
               );
             })}
+            <NotificationBell />
             {user ? (
               <button
                 onClick={handleSignOut}
@@ -114,9 +119,28 @@ export default function Layout({ children }: { children: ReactNode }) {
 
       <main className="flex-1">{children}</main>
 
+      {/* Footer */}
+      <footer className="border-t border-border bg-background/80 py-4 pb-20 md:pb-4">
+        <div className="container flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
+          <a
+            href="mailto:fishkillerzstaking@gmail.com"
+            className="hover:text-primary transition-colors flex items-center gap-1"
+          >
+            <Mail className="h-3.5 w-3.5" />
+            Contact Support
+          </a>
+          <Link to="/site-rules" className="hover:text-primary transition-colors">
+            Site Rules
+          </Link>
+          <Link to="/terms" className="hover:text-primary transition-colors">
+            Terms
+          </Link>
+        </div>
+      </footer>
+
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-lg">
         <div className="flex justify-around py-2">
-          {navItems.slice(0, 4).map((item) => {
+          {navItems.slice(0, 5).map((item) => {
             const active = location.pathname === item.to;
             return (
               <Link

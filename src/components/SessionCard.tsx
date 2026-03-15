@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
-import { Clock, Crosshair, DollarSign } from "lucide-react";
+import { Clock, Crosshair, DollarSign, ChevronDown, ChevronUp, ShieldCheck, ShieldAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import StakePieChart from "./StakePieChart";
 import BuyStakeDrawer from "./BuyStakeDrawer";
+import TierBadge from "./TierBadge";
+import SessionJournal from "./SessionJournal";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export interface SessionData {
   id: string;
@@ -17,6 +20,8 @@ export interface SessionData {
   endTime: string;
   status: "live" | "funding" | "completed" | "pending";
   streamUrl?: string;
+  shooterTier?: number;
+  shooterFraudFlags?: number;
 }
 
 const statusStyles: Record<string, string> = {
@@ -28,6 +33,8 @@ const statusStyles: Record<string, string> = {
 
 export default function SessionCard({ session }: { session: SessionData }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [journalOpen, setJournalOpen] = useState(false);
+  const { user } = useAuth();
   const [pendingAmount, setPendingAmount] = useState(0);
   const [confirmedAmount, setConfirmedAmount] = useState(0);
 
@@ -69,6 +76,17 @@ export default function SessionCard({ session }: { session: SessionData }) {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <TierBadge tier={session.shooterTier ?? 1} />
+            {(session.shooterFraudFlags ?? 0) >= 2 ? (
+              <span className="flex items-center gap-0.5 text-[10px] font-bold text-destructive bg-destructive/10 rounded px-1.5 py-0.5">
+                <ShieldAlert className="h-3 w-3" />
+                {session.shooterFraudFlags}🚩
+              </span>
+            ) : (session.shooterFraudFlags ?? 0) === 0 ? (
+              <span className="flex items-center gap-0.5 text-[10px] font-bold text-success bg-success/10 rounded px-1.5 py-0.5">
+                <ShieldCheck className="h-3 w-3" />
+              </span>
+            ) : null}
             {session.streamUrl && (
               <span className="flex items-center gap-1 text-xs text-live animate-pulse-glow rounded px-1.5 py-0.5 bg-live/10">
                 <span className="h-1.5 w-1.5 rounded-full bg-live"></span>
@@ -115,15 +133,29 @@ export default function SessionCard({ session }: { session: SessionData }) {
             <Clock className="h-3.5 w-3.5" />
             <span>Ends: {session.endTime}</span>
           </div>
-          {available > 0 && (
-            <button
-              onClick={() => setDrawerOpen(true)}
-              className="text-xs font-display font-bold text-primary hover:text-primary/80 transition-colors"
-            >
-              TAP GREEN TO BUY →
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {user && (
+              <button
+                onClick={() => setJournalOpen(!journalOpen)}
+                className="text-xs font-display font-bold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5"
+              >
+                Journal
+                {journalOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+              </button>
+            )}
+            {available > 0 && (
+              <button
+                onClick={() => setDrawerOpen(true)}
+                className="text-xs font-display font-bold text-primary hover:text-primary/80 transition-colors"
+              >
+                TAP GREEN TO BUY →
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Session Journal */}
+        {journalOpen && <SessionJournal sessionId={session.id} />}
       </div>
 
       <BuyStakeDrawer

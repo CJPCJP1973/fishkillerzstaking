@@ -1,22 +1,74 @@
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/hooks/useAuth";
-import { User, Trophy, DollarSign, TrendingUp, Plus } from "lucide-react";
+import { User, Trophy, DollarSign, TrendingUp, Plus, Crosshair } from "lucide-react";
+import TierBadge from "@/components/TierBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import BecomeSeller from "@/components/BecomeSeller";
+import IDVerification from "@/components/IDVerification";
 import PaymentSettings from "@/components/PaymentSettings";
 import WalletTab from "@/components/WalletTab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle, Camera, Eye } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import ProofUpload from "@/components/ProofUpload";
+import SellerScreenshotUpload from "@/components/SellerScreenshotUpload";
 
 export default function Profile() {
-  const { user, isAdmin, isSeller, sellerStatus, username, loading } = useAuth();
+  const { user, isAdmin, isSeller, sellerStatus, username, loading, verificationStatus, verificationNote, sellerTier } = useAuth();
   const navigate = useNavigate();
+  const [mySessions, setMySessions] = useState<any[]>([]);
+  const [stats, setStats] = useState({ wins: 0, totalStaked: 0, roi: 0, sellerSessions: 0, sellerEarnings: 0 });
+
+  const fetchMySessions = async (uid: string) => {
+    const { data } = await supabase
+      .from("sessions")
+      .select("id, shooter_name, platform, agent_room, status, deposit_proof_url, payout_proof_url, total_buy_in, start_screenshot_url, end_screenshot_url, created_at, end_time, ocr_start_amount, ocr_end_amount, ocr_confidence")
+      .eq("shooter_id", uid)
+      .order("created_at", { ascending: false });
+    setMySessions(data || []);
+  };
+
+  const fetchStats = async (uid: string) => {
+    const { data: winStakes } = await supabase
+      .from("stakes")
+      .select("amount, winnings_amount, winnings_released")
+      .eq("backer_id", uid)
+      .eq("winnings_released", true);
+
+    const { data: allStakes } = await supabase
+      .from("stakes")
+      .select("amount, deposit_confirmed")
+      .eq("backer_id", uid)
+      .eq("deposit_confirmed", true);
+
+    // Seller stats: completed sessions & total earnings
+    const { data: completedSessions } = await supabase
+      .from("sessions")
+      .select("id, winnings, total_buy_in, platform_fee")
+      .eq("shooter_id", uid)
+      .eq("status", "completed");
+
+    const wins = winStakes?.filter((s) => Number(s.winnings_amount) > Number(s.amount)).length || 0;
+    const totalStaked = allStakes?.reduce((sum, s) => sum + Number(s.amount), 0) || 0;
+    const totalReturned = winStakes?.reduce((sum, s) => sum + Number(s.winnings_amount || 0), 0) || 0;
+    const roi = totalStaked > 0 ? Math.round(((totalReturned - totalStaked) / totalStaked) * 100) : 0;
+    const sellerSessions = completedSessions?.length || 0;
+    const sellerEarnings = completedSessions?.reduce((sum, s) => sum + Number(s.platform_fee || 0), 0) || 0;
+
+    setStats({ wins, totalStaked, roi, sellerSessions, sellerEarnings });
+  };
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
+    if (user) {
+      fetchMySessions(user.id);
+      fetchStats(user.id);
+    }
   }, [user, loading, navigate]);
 
   if (loading || !user) return null;
@@ -35,27 +87,45 @@ export default function Profile() {
           {username && <p className="text-primary text-sm font-medium mb-1">@{username}</p>}
           <p className="text-muted-foreground text-xs mb-3">{user.email}</p>
 
-          <div className="flex justify-center gap-2 mb-4">
-            {isAdmin && <Badge className="bg-accent/20 text-accent border-accent/30">Admin</Badge>}
-            <BecomeSeller />
+          <div className="flex flex-col items-center gap-2 mb-4">
+            <div className="flex justify-center gap-2">
+              {isAdmin && <Badge className="bg-accent/20 text-accent border-accent/30">Admin</Badge>}
+              {isSeller && <TierBadge tier={sellerTier} />}
+              <BecomeSeller />
+            </div>
+            <IDVerification verificationStatus={verificationStatus} verificationNote={verificationNote} />
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className={`grid ${isSeller ? 'grid-cols-5' : 'grid-cols-3'} gap-3`}>
             <div className="bg-secondary rounded-md p-3">
               <Trophy className="h-4 w-4 text-accent mx-auto mb-1" />
-              <p className="text-lg font-display font-bold text-foreground">0</p>
+              <p className="text-lg font-display font-bold text-foreground">{stats.wins}</p>
               <p className="text-xs text-muted-foreground">Wins</p>
             </div>
             <div className="bg-secondary rounded-md p-3">
               <DollarSign className="h-4 w-4 text-primary mx-auto mb-1" />
-              <p className="text-lg font-display font-bold text-foreground">$0</p>
+              <p className="text-lg font-display font-bold text-foreground">${stats.totalStaked.toLocaleString()}</p>
               <p className="text-xs text-muted-foreground">Staked</p>
             </div>
             <div className="bg-secondary rounded-md p-3">
               <TrendingUp className="h-4 w-4 text-accent mx-auto mb-1" />
-              <p className="text-lg font-display font-bold text-foreground">0%</p>
+              <p className={`text-lg font-display font-bold ${stats.roi >= 0 ? "text-success" : "text-destructive"}`}>{stats.roi}%</p>
               <p className="text-xs text-muted-foreground">ROI</p>
             </div>
+            {isSeller && (
+              <>
+                <div className="bg-secondary rounded-md p-3">
+                  <Crosshair className="h-4 w-4 text-primary mx-auto mb-1" />
+                  <p className="text-lg font-display font-bold text-foreground">{stats.sellerSessions}</p>
+                  <p className="text-xs text-muted-foreground">Sessions</p>
+                </div>
+                <div className="bg-secondary rounded-md p-3">
+                  <DollarSign className="h-4 w-4 text-accent mx-auto mb-1" />
+                  <p className="text-lg font-display font-bold text-foreground">${stats.sellerEarnings.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">Earnings</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -82,9 +152,108 @@ export default function Profile() {
                   </Button>
                 </Link>
               </div>
-              <div className="gradient-card rounded-lg p-6 text-center">
-                <p className="text-muted-foreground text-sm">No sessions yet. Create your first one!</p>
-              </div>
+
+              {mySessions.length === 0 ? (
+                <div className="gradient-card rounded-lg p-6 text-center">
+                  <p className="text-muted-foreground text-sm">No sessions yet. Create your first one!</p>
+                </div>
+              ) : (
+                mySessions.map((s) => {
+                  const needsDeposit = (s.status === "pending" || s.status === "funding") && !s.deposit_proof_url;
+                  const needsPayout = s.status === "live" && !s.payout_proof_url;
+
+                  return (
+                    <div key={s.id} className="gradient-card rounded-lg p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-display font-bold text-foreground">{s.shooter_name}</p>
+                          <p className="text-xs text-muted-foreground">{s.platform} · {s.agent_room}</p>
+                        </div>
+                        <Badge variant="outline" className="text-xs capitalize">{s.status}</Badge>
+                      </div>
+
+                      {needsDeposit && (
+                        <Alert variant="destructive" className="border-destructive/40 bg-destructive/10">
+                          <AlertTriangle className="h-4 w-4" />
+                          <AlertTitle className="text-sm font-display">Deposit Proof Missing</AlertTitle>
+                          <AlertDescription className="text-xs">
+                            Upload your deposit screenshot before this session can go live. Must show Transaction ID, Payment Status &amp; Timestamp.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+
+                      {needsPayout && (
+                        <Alert variant="destructive" className="border-destructive/40 bg-destructive/10">
+                          <AlertTriangle className="h-4 w-4" />
+                          <AlertTitle className="text-sm font-display">Payout Proof Missing</AlertTitle>
+                          <AlertDescription className="text-xs">
+                            Upload your payout screenshot to settle this session. Must show final withdrawn amount &amp; payout confirmation.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+
+                      {(needsDeposit || needsPayout) && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {needsDeposit && (
+                            <ProofUpload
+                              sessionId={s.id}
+                              type="deposit"
+                              currentUrl={s.deposit_proof_url}
+                              onUploaded={() => fetchMySessions(user.id)}
+                            />
+                          )}
+                          {needsPayout && (
+                            <ProofUpload
+                              sessionId={s.id}
+                              type="payout"
+                              currentUrl={s.payout_proof_url}
+                              onUploaded={() => fetchMySessions(user.id)}
+                            />
+                          )}
+                        </div>
+                      )}
+
+                      {/* Start/End balance screenshots with auto-OCR */}
+                      {(s.status === "pending" || s.status === "funding" || s.status === "live" || s.status === "completed") && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-display font-bold text-muted-foreground flex items-center gap-1">
+                            <Eye className="h-3.5 w-3.5" /> Balance Screenshots (AI-Verified)
+                          </p>
+                          <div className="grid grid-cols-2 gap-2">
+                            <SellerScreenshotUpload
+                              sessionId={s.id}
+                              type="start"
+                              currentUrl={s.start_screenshot_url}
+                              sessionCreatedAt={s.created_at}
+                              sessionEndTime={s.end_time}
+                              onUploaded={() => fetchMySessions(user.id)}
+                            />
+                            <SellerScreenshotUpload
+                              sessionId={s.id}
+                              type="end"
+                              currentUrl={s.end_screenshot_url}
+                              sessionCreatedAt={s.created_at}
+                              sessionEndTime={s.end_time}
+                              onUploaded={() => fetchMySessions(user.id)}
+                            />
+                          </div>
+                          {(s.ocr_start_amount != null || s.ocr_end_amount != null) && (
+                            <div className="flex items-center justify-between text-[10px] text-muted-foreground bg-background/50 rounded px-2 py-1">
+                              <span>Start: <span className="text-accent font-bold">{s.ocr_start_amount != null ? `$${Number(s.ocr_start_amount).toLocaleString()}` : "—"}</span></span>
+                              <span>End: <span className="text-accent font-bold">{s.ocr_end_amount != null ? `$${Number(s.ocr_end_amount).toLocaleString()}` : "—"}</span></span>
+                              {s.ocr_confidence != null && (
+                                <span className={`font-bold ${s.ocr_confidence >= 80 ? "text-success" : s.ocr_confidence >= 50 ? "text-accent" : "text-destructive"}`}>
+                                  AI: {s.ocr_confidence}%
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
             </TabsContent>
           )}
 

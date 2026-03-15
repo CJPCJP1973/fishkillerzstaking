@@ -2,3 +2,6 @@ project_id = "rbeqkvkesknvpspoxnxc"
 
 [functions.analyze-screenshot]
 verify_jwt = false
+
+[functions.check-geo]
+verify_jwt = false

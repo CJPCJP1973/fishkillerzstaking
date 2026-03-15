@@ -38,6 +38,77 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ocr_scan_history: {
+        Row: {
+          auto_flagged: boolean
+          confidence: number | null
+          created_at: string
+          end_amount: number | null
+          id: string
+          scanned_by: string
+          session_id: string
+          start_amount: number | null
+        }
+        Insert: {
+          auto_flagged?: boolean
+          confidence?: number | null
+          created_at?: string
+          end_amount?: number | null
+          id?: string
+          scanned_by: string
+          session_id: string
+          start_amount?: number | null
+        }
+        Update: {
+          auto_flagged?: boolean
+          confidence?: number | null
+          created_at?: string
+          end_amount?: number | null
+          id?: string
+          scanned_by?: string
+          session_id?: string
+          start_amount?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ocr_scan_history_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_profiles: {
         Row: {
           btc_address: string | null
@@ -136,16 +207,24 @@ export type Database = {
           avatar_url: string | null
           balance: number
           bio: string | null
+          completed_sessions: number
           created_at: string | null
           display_name: string
           email: string | null
+          fraud_flags: number
           id: string
+          is_shadow_banned: boolean
+          is_vip: boolean
+          reliability_score: number
           seller_status: string
+          seller_tier: number
           total_staked: number | null
           total_wins: number | null
           updated_at: string | null
           user_id: string
           username: string
+          verification_note: string | null
+          verification_status: string
           verified: boolean | null
           win_rate: number | null
         }
@@ -153,16 +232,24 @@ export type Database = {
           avatar_url?: string | null
           balance?: number
           bio?: string | null
+          completed_sessions?: number
           created_at?: string | null
           display_name: string
           email?: string | null
+          fraud_flags?: number
           id?: string
+          is_shadow_banned?: boolean
+          is_vip?: boolean
+          reliability_score?: number
           seller_status?: string
+          seller_tier?: number
           total_staked?: number | null
           total_wins?: number | null
           updated_at?: string | null
           user_id: string
           username: string
+          verification_note?: string | null
+          verification_status?: string
           verified?: boolean | null
           win_rate?: number | null
         }
@@ -170,20 +257,63 @@ export type Database = {
           avatar_url?: string | null
           balance?: number
           bio?: string | null
+          completed_sessions?: number
           created_at?: string | null
           display_name?: string
           email?: string | null
+          fraud_flags?: number
           id?: string
+          is_shadow_banned?: boolean
+          is_vip?: boolean
+          reliability_score?: number
           seller_status?: string
+          seller_tier?: number
           total_staked?: number | null
           total_wins?: number | null
           updated_at?: string | null
           user_id?: string
           username?: string
+          verification_note?: string | null
+          verification_status?: string
           verified?: boolean | null
           win_rate?: number | null
         }
         Relationships: []
+      }
+      screenshot_hashes: {
+        Row: {
+          created_at: string
+          file_hash: string
+          id: string
+          session_id: string
+          upload_type: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          file_hash: string
+          id?: string
+          session_id: string
+          upload_type: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          file_hash?: string
+          id?: string
+          session_id?: string
+          upload_type?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "screenshot_hashes_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       seller_requests: {
         Row: {
@@ -212,21 +342,65 @@ export type Database = {
         }
         Relationships: []
       }
+      session_journal: {
+        Row: {
+          author_name: string
+          created_at: string
+          entry_type: string
+          id: string
+          message: string
+          session_id: string
+          user_id: string | null
+        }
+        Insert: {
+          author_name?: string
+          created_at?: string
+          entry_type?: string
+          id?: string
+          message: string
+          session_id: string
+          user_id?: string | null
+        }
+        Update: {
+          author_name?: string
+          created_at?: string
+          entry_type?: string
+          id?: string
+          message?: string
+          session_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_journal_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sessions: {
         Row: {
           admin_confirmed_deposit: boolean | null
           admin_released_winnings: boolean | null
+          agent_cashout_window: string | null
+          agent_daily_limit: string | null
           agent_room: string
           created_at: string | null
+          deposit_proof_url: string | null
           end_screenshot_url: string | null
           end_time: string
           id: string
+          manual_rake_status: string | null
           ocr_confidence: number | null
           ocr_end_amount: number | null
           ocr_start_amount: number | null
+          payout_proof_url: string | null
           platform: string
           platform_fee: number | null
           proof_url: string | null
+          seller_payout_agreement: boolean
           share_price: number
           shooter_id: string
           shooter_name: string
@@ -242,17 +416,23 @@ export type Database = {
         Insert: {
           admin_confirmed_deposit?: boolean | null
           admin_released_winnings?: boolean | null
+          agent_cashout_window?: string | null
+          agent_daily_limit?: string | null
           agent_room: string
           created_at?: string | null
+          deposit_proof_url?: string | null
           end_screenshot_url?: string | null
           end_time: string
           id?: string
+          manual_rake_status?: string | null
           ocr_confidence?: number | null
           ocr_end_amount?: number | null
           ocr_start_amount?: number | null
+          payout_proof_url?: string | null
           platform: string
           platform_fee?: number | null
           proof_url?: string | null
+          seller_payout_agreement?: boolean
           share_price?: number
           shooter_id: string
           shooter_name: string
@@ -268,17 +448,23 @@ export type Database = {
         Update: {
           admin_confirmed_deposit?: boolean | null
           admin_released_winnings?: boolean | null
+          agent_cashout_window?: string | null
+          agent_daily_limit?: string | null
           agent_room?: string
           created_at?: string | null
+          deposit_proof_url?: string | null
           end_screenshot_url?: string | null
           end_time?: string
           id?: string
+          manual_rake_status?: string | null
           ocr_confidence?: number | null
           ocr_end_amount?: number | null
           ocr_start_amount?: number | null
+          payout_proof_url?: string | null
           platform?: string
           platform_fee?: number | null
           proof_url?: string | null
+          seller_payout_agreement?: boolean
           share_price?: number
           shooter_id?: string
           shooter_name?: string
@@ -296,11 +482,15 @@ export type Database = {
       stakes: {
         Row: {
           amount: number
+          backer_confirmed: boolean | null
           backer_id: string
           created_at: string | null
           deposit_confirmed: boolean | null
           id: string
           payment_method: string | null
+          payment_mode: string
+          rake_rate: number
+          seller_confirmed: boolean | null
           session_id: string
           updated_at: string | null
           winnings_amount: number | null
@@ -308,11 +498,15 @@ export type Database = {
         }
         Insert: {
           amount: number
+          backer_confirmed?: boolean | null
           backer_id: string
           created_at?: string | null
           deposit_confirmed?: boolean | null
           id?: string
           payment_method?: string | null
+          payment_mode?: string
+          rake_rate?: number
+          seller_confirmed?: boolean | null
           session_id: string
           updated_at?: string | null
           winnings_amount?: number | null
@@ -320,11 +514,15 @@ export type Database = {
         }
         Update: {
           amount?: number
+          backer_confirmed?: boolean | null
           backer_id?: string
           created_at?: string | null
           deposit_confirmed?: boolean | null
           id?: string
           payment_method?: string | null
+          payment_mode?: string
+          rake_rate?: number
+          seller_confirmed?: boolean | null
           session_id?: string
           updated_at?: string | null
           winnings_amount?: number | null
@@ -431,6 +629,24 @@ export type Database = {
       }
     }
     Views: {
+      confirmed_agents_public: {
+        Row: {
+          agent_name: string | null
+          created_at: string | null
+          id: string | null
+        }
+        Insert: {
+          agent_name?: string | null
+          created_at?: string | null
+          id?: string | null
+        }
+        Update: {
+          agent_name?: string | null
+          created_at?: string | null
+          id?: string | null
+        }
+        Relationships: []
+      }
       profiles_public: {
         Row: {
           avatar_url: string | null
@@ -481,11 +697,54 @@ export type Database = {
       }
     }
     Functions: {
+      adjust_balance: {
+        Args: { delta: number; target_uid: string }
+        Returns: undefined
+      }
+      get_public_sessions: {
+        Args: never
+        Returns: {
+          agent_room: string
+          created_at: string
+          end_time: string
+          id: string
+          platform: string
+          share_price: number
+          shooter_fraud_flags: number
+          shooter_name: string
+          shooter_tier: number
+          stake_available: number
+          stake_sold: number
+          status: Database["public"]["Enums"]["session_status"]
+          stream_url: string
+          total_buy_in: number
+        }[]
+      }
+      get_seller_leaderboard: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          completed_sessions: number
+          display_name: string
+          is_vip: boolean
+          seller_tier: number
+          total_earnings: number
+          username: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_session_backer: {
+        Args: { _session_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_session_shooter: {
+        Args: { _session_id: string; _user_id: string }
         Returns: boolean
       }
     }

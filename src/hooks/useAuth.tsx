@@ -11,6 +11,11 @@ interface AuthContextType {
   isSeller: boolean;
   sellerStatus: string;
   username: string | null;
+  verificationStatus: string;
+  verificationNote: string | null;
+  sellerTier: number;
+  isVip: boolean;
+  completedSessions: number;
   signOut: () => Promise<void>;
 }
 
@@ -23,6 +28,11 @@ const AuthContext = createContext<AuthContextType>({
   isSeller: false,
   sellerStatus: "none",
   username: null,
+  verificationStatus: "none",
+  verificationNote: null,
+  sellerTier: 1,
+  isVip: false,
+  completedSessions: 0,
   signOut: async () => {},
 });
 
@@ -35,6 +45,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userRoles, setUserRoles] = useState<string[]>([]);
   const [sellerStatus, setSellerStatus] = useState("none");
   const [username, setUsername] = useState<string | null>(null);
+  const [verificationStatus, setVerificationStatus] = useState("none");
+  const [verificationNote, setVerificationNote] = useState<string | null>(null);
+  const [sellerTier, setSellerTier] = useState(1);
+  const [isVip, setIsVip] = useState(false);
+  const [completedSessions, setCompletedSessions] = useState(0);
 
   const fetchRoles = async (userId: string) => {
     const { data } = await supabase
@@ -47,18 +62,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase
       .from("profiles")
-      .select("seller_status, username")
+      .select("seller_status, username, verification_status, verification_note, seller_tier, is_vip, completed_sessions")
       .eq("user_id", userId)
       .single();
     if (data) {
-      setSellerStatus(data.seller_status || "none");
-      setUsername(data.username || null);
+      setSellerStatus((data as any).seller_status || "none");
+      setUsername((data as any).username || null);
+      setVerificationStatus((data as any).verification_status || "none");
+      setVerificationNote((data as any).verification_note || null);
+      setSellerTier((data as any).seller_tier ?? 1);
+      setIsVip((data as any).is_vip ?? false);
+      setCompletedSessions((data as any).completed_sessions ?? 0);
     }
   };
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
+        // On password recovery, redirect to reset page instead of auto-login
+        if (event === "PASSWORD_RECOVERY") {
+          // Navigate to reset-password page — use window.location to ensure it works
+          // even before React Router is fully ready
+          if (window.location.pathname !== "/reset-password") {
+            window.location.href = "/reset-password";
+          }
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+          return;
+        }
+
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
@@ -70,6 +103,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUserRoles([]);
           setSellerStatus("none");
           setUsername(null);
+          setVerificationStatus("none");
+          setVerificationNote(null);
+          setSellerTier(1);
+          setIsVip(false);
+          setCompletedSessions(0);
         }
         setLoading(false);
       }
@@ -103,6 +141,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isSeller: userRoles.includes("seller") || sellerStatus === "active",
         sellerStatus,
         username,
+        verificationStatus,
+        verificationNote,
+        sellerTier: isVip ? 4 : sellerTier,
+        isVip,
+        completedSessions,
         signOut,
       }}
     >

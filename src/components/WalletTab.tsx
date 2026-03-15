@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Wallet, ArrowDownCircle, ArrowUpCircle, Clock } from "lucide-react";
+import { Wallet, ArrowDownCircle, ArrowUpCircle, Clock, Crosshair, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +28,7 @@ interface Transaction {
   type: string;
   status: string;
   payment_method: string | null;
+  notes: string | null;
   created_at: string;
 }
 
@@ -40,6 +41,9 @@ export default function WalletTab() {
   const [amount, setAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [filter, setFilter] = useState("all");
+
+  const filteredTxns = filter === "all" ? transactions : transactions.filter((t) => t.type === filter);
 
   const fetchBalance = async () => {
     if (!user) return;
@@ -132,11 +136,11 @@ export default function WalletTab() {
     rejected: "bg-destructive/20 text-destructive border-destructive/30",
   };
 
-  const typeIcon: Record<string, string> = {
-    deposit: "↓",
-    withdrawal: "↑",
-    stake: "🎯",
-    payout: "💰",
+  const typeConfig: Record<string, { icon: React.ReactNode; label: string; color: string }> = {
+    deposit: { icon: <ArrowDownCircle className="h-5 w-5 text-success" />, label: "Deposit", color: "text-success" },
+    withdrawal: { icon: <ArrowUpCircle className="h-5 w-5 text-destructive" />, label: "Withdrawal", color: "text-destructive" },
+    stake: { icon: <Crosshair className="h-5 w-5 text-primary" />, label: "Stake Purchase", color: "text-destructive" },
+    payout: { icon: <Gift className="h-5 w-5 text-accent" />, label: "Payout", color: "text-success" },
   };
 
   return (
@@ -187,9 +191,16 @@ export default function WalletTab() {
                   </SelectContent>
                 </Select>
               </div>
-              <p className="text-[10px] text-muted-foreground">
-                Send payment to admin, then submit this form. Admin will confirm receipt and credit your balance.
-              </p>
+              <div className="rounded-md border border-primary/20 bg-primary/5 p-3 space-y-1.5">
+                <p className="text-xs font-medium text-foreground">Send payment to:</p>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">CashApp</span>
+                  <span className="text-primary font-bold">$fishkillerzstaking</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  After sending, submit this form. Admin will confirm receipt and credit your balance.
+                </p>
+              </div>
               <Button
                 onClick={handleDeposit}
                 disabled={submitting}
@@ -255,28 +266,49 @@ export default function WalletTab() {
         </Dialog>
       </div>
 
+      {/* Disclaimer */}
+      <p className="text-[9px] text-muted-foreground/60 text-center italic">
+        FishDollarz are virtual items with no real-world value outside the FishKillerz platform.
+      </p>
+
       {/* Transaction History */}
       <div>
-        <h3 className="font-display font-bold text-foreground text-sm mb-3">Transaction History</h3>
-        {transactions.length === 0 ? (
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-display font-bold text-foreground text-sm">Transaction History</h3>
+          <div className="flex gap-1">
+            {["all", "deposit", "withdrawal", "stake", "payout"].map((f) => (
+              <Button
+                key={f}
+                size="sm"
+                variant={filter === f ? "default" : "ghost"}
+                className={`text-[10px] h-7 px-2 ${filter === f ? "gradient-primary text-primary-foreground" : "text-muted-foreground"}`}
+                onClick={() => setFilter(f)}
+              >
+                {f === "all" ? "All" : typeConfig[f]?.label || f}
+              </Button>
+            ))}
+          </div>
+        </div>
+        {filteredTxns.length === 0 ? (
           <div className="gradient-card rounded-lg p-6 text-center">
             <p className="text-muted-foreground text-sm">No transactions yet.</p>
           </div>
         ) : (
           <div className="space-y-2">
-            {transactions.map((tx) => (
+            {filteredTxns.map((tx) => (
               <div key={tx.id} className="gradient-card rounded-lg p-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="text-lg">{typeIcon[tx.type] || "•"}</span>
+                  {typeConfig[tx.type]?.icon || <Clock className="h-5 w-5 text-muted-foreground" />}
                   <div>
-                    <p className="text-sm font-medium text-foreground capitalize">{tx.type}</p>
+                    <p className="text-sm font-medium text-foreground">{typeConfig[tx.type]?.label || tx.type}</p>
+                    {tx.notes && <p className="text-[10px] text-primary/80 font-medium">{tx.notes}</p>}
                     <p className="text-[10px] text-muted-foreground">
                       {tx.payment_method || "—"} • {new Date(tx.created_at).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className={`text-sm font-display font-bold ${tx.type === "deposit" || tx.type === "payout" ? "text-success" : "text-destructive"}`}>
+                  <p className={`text-sm font-display font-bold ${typeConfig[tx.type]?.color || "text-foreground"}`}>
                     {tx.type === "deposit" || tx.type === "payout" ? "+" : "-"}${Number(tx.amount).toFixed(2)}
                   </p>
                   <Badge variant="outline" className={`text-[10px] ${statusColor[tx.status] || ""}`}>

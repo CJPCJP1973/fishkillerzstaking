@@ -7,6 +7,7 @@ import LiveFeed from "@/components/LiveFeed";
 import StatsBar from "@/components/StatsBar";
 import SessionCard, { SessionData } from "@/components/SessionCard";
 import PlatformBadge from "@/components/PlatformBadge";
+
 import heroBg from "@/assets/hero-bg.png";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -18,12 +19,10 @@ export default function Index() {
 
   useEffect(() => {
     const fetchSessions = async () => {
-      const { data } = await supabase
-        .from("sessions")
-        .select("*")
-        .in("status", ["funding", "live", "pending"])
-        .order("created_at", { ascending: false })
-        .limit(6);
+      const { data: allData } = await supabase.rpc("get_public_sessions");
+      const data = (allData || [])
+        .filter((s: any) => ["funding", "live", "pending"].includes(s.status))
+        .slice(0, 6);
 
       if (data) {
         setSessions(
@@ -35,7 +34,7 @@ export default function Index() {
             totalBuyIn: Number(s.total_buy_in),
             stakeAvailable: Number(s.stake_available),
             stakeSold: Number(s.stake_sold ?? 0),
-            sharePrice: Number((s as any).share_price ?? 50),
+            sharePrice: Number(s.share_price),
             endTime: new Date(s.end_time).toLocaleString(),
             status: (s.status ?? "pending") as SessionData["status"],
             streamUrl: s.stream_url ?? undefined,
@@ -74,11 +73,22 @@ export default function Index() {
                   Browse Sessions <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
+              <Link to="/profile">
+                <Button variant="outline" className="border-accent/30 text-accent hover:bg-accent/10 font-display font-bold px-6 py-5 text-base">
+                  💰 Buy FishDollarz
+                </Button>
+              </Link>
               <Link to="/create">
                 <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/10 font-display font-bold px-6 py-5 text-base">
                   I'm a Seller
                 </Button>
               </Link>
+            </div>
+            <div className="mt-4 space-y-1">
+              <p className="text-sm font-display font-semibold text-accent">1 FishDollar = $1</p>
+              <p className="text-[10px] text-muted-foreground/60 italic">
+                FishDollarz are virtual items with no real-world value outside the FishKillerz platform.
+              </p>
             </div>
           </div>
         </div>
@@ -88,9 +98,10 @@ export default function Index() {
       <LiveFeed />
 
       {/* Main Content */}
-      <div className="container py-8 space-y-8 pb-24 md:pb-8">
+      <div className="container py-8 space-y-8 pb-24 md:pb-8 min-h-[400px]">
         {/* Stats */}
         <StatsBar />
+
 
         {/* Featured Platforms */}
         <div>
