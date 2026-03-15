@@ -1002,7 +1002,7 @@ export default function Admin() {
                 <span>Users <span className="text-primary">({users.length})</span></span>
               </TabsTrigger>
             </TabsList>
-            <TabsList className="bg-secondary grid grid-cols-3 md:grid-cols-6 gap-1 h-auto p-2">
+            <TabsList className="bg-secondary grid grid-cols-3 md:grid-cols-7 gap-1 h-auto p-2">
               <TabsTrigger value="confirmed-sellers" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
                 <CheckCircle className="h-4 w-4" />
                 <span>Confirmed <span className="text-primary">({confirmedSellers.length})</span></span>
@@ -1018,6 +1018,10 @@ export default function Admin() {
               <TabsTrigger value="id-verification" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
                 <ShieldCheck className="h-4 w-4" />
                 <span>ID Verify <span className="text-primary">({pendingVerifications.length})</span></span>
+              </TabsTrigger>
+              <TabsTrigger value="ocr-monitor" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
+                <Eye className="h-4 w-4" />
+                <span>OCR</span>
               </TabsTrigger>
               <TabsTrigger value="disputes" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1 text-destructive">
                 <Scale className="h-4 w-4" />

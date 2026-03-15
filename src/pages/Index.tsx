@@ -102,8 +102,6 @@ export default function Index() {
         {/* Stats */}
         <StatsBar />
 
-        {/* OCR Scan Monitor — Admin only */}
-        <OcrDashboardWidget />
 
         {/* Featured Platforms */}
         <div>
