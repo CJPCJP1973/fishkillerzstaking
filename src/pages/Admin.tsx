@@ -5,6 +5,7 @@ import ScreenshotComparison from "@/components/admin/ScreenshotComparison";
 import ProofUpload from "@/components/ProofUpload";
 import DisputeReview from "@/components/admin/DisputeReview";
 import TransactionLogs from "@/components/admin/TransactionLogs";
+import OcrDashboardWidget from "@/components/OcrDashboardWidget";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1002,7 +1003,7 @@ export default function Admin() {
                 <span>Users <span className="text-primary">({users.length})</span></span>
               </TabsTrigger>
             </TabsList>
-            <TabsList className="bg-secondary grid grid-cols-3 md:grid-cols-6 gap-1 h-auto p-2">
+            <TabsList className="bg-secondary grid grid-cols-3 md:grid-cols-7 gap-1 h-auto p-2">
               <TabsTrigger value="confirmed-sellers" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
                 <CheckCircle className="h-4 w-4" />
                 <span>Confirmed <span className="text-primary">({confirmedSellers.length})</span></span>
@@ -1018,6 +1019,10 @@ export default function Admin() {
               <TabsTrigger value="id-verification" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
                 <ShieldCheck className="h-4 w-4" />
                 <span>ID Verify <span className="text-primary">({pendingVerifications.length})</span></span>
+              </TabsTrigger>
+              <TabsTrigger value="ocr-monitor" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
+                <Eye className="h-4 w-4" />
+                <span>OCR</span>
               </TabsTrigger>
               <TabsTrigger value="disputes" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1 text-destructive">
                 <Scale className="h-4 w-4" />
@@ -1759,6 +1764,17 @@ export default function Admin() {
               Sessions flagged as disputed. Review deposit &amp; payout proofs side-by-side.
             </p>
             <DisputeReview />
+          </TabsContent>
+
+          {/* OCR Monitor Tab */}
+          <TabsContent value="ocr-monitor" className="space-y-3 mt-4">
+            <h2 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
+              <Eye className="h-5 w-5 text-primary" /> OCR Scan Monitor
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Real-time AI screenshot analysis results and flagged sessions.
+            </p>
+            <OcrDashboardWidget />
           </TabsContent>
 
           {/* Transaction Logs Tab */}
