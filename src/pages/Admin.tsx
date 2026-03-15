@@ -5,6 +5,7 @@ import ScreenshotComparison from "@/components/admin/ScreenshotComparison";
 import ProofUpload from "@/components/ProofUpload";
 import DisputeReview from "@/components/admin/DisputeReview";
 import TransactionLogs from "@/components/admin/TransactionLogs";
+import OcrDashboardWidget from "@/components/OcrDashboardWidget";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
