@@ -79,14 +79,14 @@ export default function BecomeSeller() {
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            After sending $10 to <span className="text-primary font-medium">$fishkillerzstaking</span> on CashApp, click below. An admin will verify and activate your account within 24 hours.
+            After sending <span className="text-primary font-medium">$1</span> to <span className="text-primary font-medium">$fishkillerzstaking</span> on CashApp, click below. An admin will verify and activate your account within 24 hours. <span className="font-semibold">Limited promo: first 50 sellers only!</span>
           </p>
           <Button
             onClick={handleSubmit}
             disabled={submitting}
             className="w-full gradient-primary text-primary-foreground font-display font-bold"
           >
-            {submitting ? "Submitting..." : "I've Paid $10 — Submit Request"}
+            {submitting ? "Submitting..." : "I've Paid $1 — Submit Request"}
           </Button>
         </div>
       </DialogContent>
