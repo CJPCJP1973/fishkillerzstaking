@@ -1923,7 +1923,7 @@ export default function Admin() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Seller Registration Fee</span>
-                  <span className="text-primary font-display font-bold">$10</span>
+                  <span className="text-primary font-display font-bold">$1 (promo) / $10</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Seller Skin-in-the-Game Min</span>

@@ -70,7 +70,7 @@ export default function BecomeSeller() {
           <div className="gradient-card rounded-lg p-4 space-y-2">
             <div className="flex items-center gap-2">
               <DollarSign className="h-5 w-5 text-primary" />
-              <span className="font-display font-bold text-foreground">Registration Fee: $10</span>
+              <span className="font-display font-bold text-foreground">Registration Fee: <span className="text-primary">$1</span> <span className="text-xs text-muted-foreground">(first 50 sign-ups — normally $10)</span></span>
             </div>
             <p className="text-xs text-muted-foreground">Send payment to:</p>
             <div className="text-sm text-foreground">
@@ -79,14 +79,14 @@ export default function BecomeSeller() {
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            After sending $10 to <span className="text-primary font-medium">$fishkillerzstaking</span> on CashApp, click below. An admin will verify and activate your account within 24 hours.
+            After sending <span className="text-primary font-medium">$1</span> to <span className="text-primary font-medium">$fishkillerzstaking</span> on CashApp, click below. An admin will verify and activate your account within 24 hours. <span className="font-semibold">Limited promo: first 50 sellers only!</span>
           </p>
           <Button
             onClick={handleSubmit}
             disabled={submitting}
             className="w-full gradient-primary text-primary-foreground font-display font-bold"
           >
-            {submitting ? "Submitting..." : "I've Paid $10 — Submit Request"}
+            {submitting ? "Submitting..." : "I've Paid $1 — Submit Request"}
           </Button>
         </div>
       </DialogContent>
