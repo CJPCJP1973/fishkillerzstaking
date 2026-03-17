@@ -88,11 +88,11 @@ export default function PaymentSettings() {
   if (loading) return null;
 
   const fields = [
-    { key: "cashapp_tag", label: "CashApp ($Tag)", placeholder: "$YourTag" },
-    { key: "venmo_username", label: "Venmo (@Username)", placeholder: "@YourVenmo" },
-    { key: "chime_handle", label: "Chime Handle", placeholder: "YourChimeHandle" },
-    { key: "btc_address", label: "Bitcoin Wallet", placeholder: "bc1q..." },
-    { key: "btc_lightning", label: "BTC Lightning", placeholder: "lnbc..." },
+    { key: "cashapp_tag", label: "CashApp ($Tag)", placeholder: "$YourTag", max: LIMITS.cashapp_tag },
+    { key: "venmo_username", label: "Venmo (@Username)", placeholder: "@YourVenmo", max: LIMITS.venmo_username },
+    { key: "chime_handle", label: "Chime Handle", placeholder: "YourChimeHandle", max: LIMITS.chime_handle },
+    { key: "btc_address", label: "Bitcoin Wallet", placeholder: "bc1q...", max: LIMITS.btc_address },
+    { key: "btc_lightning", label: "BTC Lightning", placeholder: "lnbc...", max: LIMITS.btc_lightning },
   ] as const;
 
   return (
