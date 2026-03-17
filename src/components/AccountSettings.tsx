@@ -43,12 +43,24 @@ export default function AccountSettings() {
       toast.error("Display name is required");
       return;
     }
+    if (form.display_name.trim().length > 50) {
+      toast.error("Display name must be under 50 characters");
+      return;
+    }
     if (!form.username.trim()) {
       toast.error("Username is required");
       return;
     }
-    if (form.username.length < 3) {
-      toast.error("Username must be at least 3 characters");
+    if (form.username.length < 3 || form.username.length > 30) {
+      toast.error("Username must be 3-30 characters");
+      return;
+    }
+    if (!/^[a-z0-9_]+$/.test(form.username.trim())) {
+      toast.error("Username can only contain lowercase letters, numbers, and underscores");
+      return;
+    }
+    if (form.bio && form.bio.length > 200) {
+      toast.error("Bio must be under 200 characters");
       return;
     }
 

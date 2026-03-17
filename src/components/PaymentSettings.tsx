@@ -103,7 +103,7 @@ export default function PaymentSettings() {
       </div>
       <p className="text-xs text-muted-foreground">Save your payout info so you can receive winnings.</p>
       <div className="space-y-3">
-        {fields.map(({ key, label, placeholder }) => (
+        {fields.map(({ key, label, placeholder, max }) => (
           <div key={key}>
             <Label className="text-sm text-muted-foreground">{label}</Label>
             <Input
@@ -111,6 +111,7 @@ export default function PaymentSettings() {
               onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
               placeholder={placeholder}
               className="bg-secondary border-border text-foreground"
+              maxLength={max}
             />
           </div>
         ))}
