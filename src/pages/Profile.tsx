@@ -265,8 +265,10 @@ export default function Profile() {
             </div>
           </TabsContent>
 
-          <TabsContent value="payments" className="mt-4">
+          <TabsContent value="payments" className="mt-4 space-y-4">
             <PaymentSettings />
+            <ChangePassword />
+          </TabsContent>
           </TabsContent>
         </Tabs>
       </div>
