@@ -40,8 +40,38 @@ export default function PaymentSettings() {
       });
   }, [user]);
 
+  const LIMITS = {
+    cashapp_tag: 30,
+    venmo_username: 30,
+    chime_handle: 30,
+    btc_address: 100,
+    btc_lightning: 200,
+  } as const;
+
   const handleSave = async () => {
     if (!user) return;
+
+    for (const [key, max] of Object.entries(LIMITS)) {
+      const val = form[key as keyof typeof form];
+      if (val && val.length > max) {
+        toast.error(`${key.replace(/_/g, " ")} must be under ${max} characters`);
+        return;
+      }
+    }
+
+    if (form.cashapp_tag && !/^\$?[a-zA-Z0-9_-]{1,25}$/.test(form.cashapp_tag)) {
+      toast.error("Invalid CashApp tag format");
+      return;
+    }
+    if (form.venmo_username && !/^@?[a-zA-Z0-9_-]{1,25}$/.test(form.venmo_username)) {
+      toast.error("Invalid Venmo username format");
+      return;
+    }
+    if (form.btc_address && !/^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,90}$/.test(form.btc_address)) {
+      toast.error("Invalid Bitcoin address format");
+      return;
+    }
+
     setSaving(true);
     const { error } = await supabase
       .from("payment_profiles")
