@@ -269,7 +269,6 @@ export default function Profile() {
             <PaymentSettings />
             <ChangePassword />
           </TabsContent>
-          </TabsContent>
         </Tabs>
       </div>
     </Layout>
