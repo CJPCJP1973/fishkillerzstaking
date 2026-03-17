@@ -40,8 +40,38 @@ export default function PaymentSettings() {
       });
   }, [user]);
 
+  const LIMITS = {
+    cashapp_tag: 30,
+    venmo_username: 30,
+    chime_handle: 30,
+    btc_address: 100,
+    btc_lightning: 200,
+  } as const;
+
   const handleSave = async () => {
     if (!user) return;
+
+    for (const [key, max] of Object.entries(LIMITS)) {
+      const val = form[key as keyof typeof form];
+      if (val && val.length > max) {
+        toast.error(`${key.replace(/_/g, " ")} must be under ${max} characters`);
+        return;
+      }
+    }
+
+    if (form.cashapp_tag && !/^\$?[a-zA-Z0-9_-]{1,25}$/.test(form.cashapp_tag)) {
+      toast.error("Invalid CashApp tag format");
+      return;
+    }
+    if (form.venmo_username && !/^@?[a-zA-Z0-9_-]{1,25}$/.test(form.venmo_username)) {
+      toast.error("Invalid Venmo username format");
+      return;
+    }
+    if (form.btc_address && !/^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,90}$/.test(form.btc_address)) {
+      toast.error("Invalid Bitcoin address format");
+      return;
+    }
+
     setSaving(true);
     const { error } = await supabase
       .from("payment_profiles")
@@ -58,11 +88,11 @@ export default function PaymentSettings() {
   if (loading) return null;
 
   const fields = [
-    { key: "cashapp_tag", label: "CashApp ($Tag)", placeholder: "$YourTag" },
-    { key: "venmo_username", label: "Venmo (@Username)", placeholder: "@YourVenmo" },
-    { key: "chime_handle", label: "Chime Handle", placeholder: "YourChimeHandle" },
-    { key: "btc_address", label: "Bitcoin Wallet", placeholder: "bc1q..." },
-    { key: "btc_lightning", label: "BTC Lightning", placeholder: "lnbc..." },
+    { key: "cashapp_tag", label: "CashApp ($Tag)", placeholder: "$YourTag", max: LIMITS.cashapp_tag },
+    { key: "venmo_username", label: "Venmo (@Username)", placeholder: "@YourVenmo", max: LIMITS.venmo_username },
+    { key: "chime_handle", label: "Chime Handle", placeholder: "YourChimeHandle", max: LIMITS.chime_handle },
+    { key: "btc_address", label: "Bitcoin Wallet", placeholder: "bc1q...", max: LIMITS.btc_address },
+    { key: "btc_lightning", label: "BTC Lightning", placeholder: "lnbc...", max: LIMITS.btc_lightning },
   ] as const;
 
   return (
@@ -73,7 +103,7 @@ export default function PaymentSettings() {
       </div>
       <p className="text-xs text-muted-foreground">Save your payout info so you can receive winnings.</p>
       <div className="space-y-3">
-        {fields.map(({ key, label, placeholder }) => (
+        {fields.map(({ key, label, placeholder, max }) => (
           <div key={key}>
             <Label className="text-sm text-muted-foreground">{label}</Label>
             <Input
@@ -81,6 +111,7 @@ export default function PaymentSettings() {
               onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
               placeholder={placeholder}
               className="bg-secondary border-border text-foreground"
+              maxLength={max}
             />
           </div>
         ))}
