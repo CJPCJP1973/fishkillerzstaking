@@ -10,6 +10,7 @@ import BecomeSeller from "@/components/BecomeSeller";
 import IDVerification from "@/components/IDVerification";
 import PaymentSettings from "@/components/PaymentSettings";
 import WalletTab from "@/components/WalletTab";
+import ChangePassword from "@/components/ChangePassword";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
