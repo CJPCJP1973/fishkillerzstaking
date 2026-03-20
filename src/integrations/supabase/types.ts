@@ -216,6 +216,7 @@ export type Database = {
           is_shadow_banned: boolean
           is_vip: boolean
           reliability_score: number
+          seller_paid: boolean
           seller_status: string
           seller_tier: number
           total_staked: number | null
@@ -241,6 +242,7 @@ export type Database = {
           is_shadow_banned?: boolean
           is_vip?: boolean
           reliability_score?: number
+          seller_paid?: boolean
           seller_status?: string
           seller_tier?: number
           total_staked?: number | null
@@ -266,6 +268,7 @@ export type Database = {
           is_shadow_banned?: boolean
           is_vip?: boolean
           reliability_score?: number
+          seller_paid?: boolean
           seller_status?: string
           seller_tier?: number
           total_staked?: number | null
@@ -747,6 +750,7 @@ export type Database = {
         Args: { _session_id: string; _user_id: string }
         Returns: boolean
       }
+      start_seller_trial: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "shooter" | "backer" | "seller"
