@@ -53,8 +53,17 @@ export default function CreateSessionForm() {
         .order("agent_name", { ascending: true });
       if (data) setAgents(data as any);
     };
+    const fetchSessionCount = async () => {
+      if (!user) return;
+      const { count } = await supabase
+        .from("sessions")
+        .select("id", { count: "exact", head: true })
+        .eq("shooter_id", user.id);
+      setSessionCount(count ?? 0);
+    };
     fetchAgents();
-  }, []);
+    fetchSessionCount();
+  }, [user]);
 
   const buyInNum = parseFloat(totalBuyIn) || 0;
   const percentNum = parseFloat(stakePercent) || 0;
