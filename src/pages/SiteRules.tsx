@@ -15,46 +15,23 @@ export default function SiteRules() {
         <section className="gradient-card rounded-lg p-6 space-y-4">
           <div className="flex items-center gap-2">
             <DollarSign className="h-5 w-5 text-primary" />
-            <h2 className="font-display text-lg font-bold text-foreground">Platform Fees (Rake)</h2>
+            <h2 className="font-display text-lg font-bold text-foreground">Platform Fees</h2>
           </div>
           <p className="text-sm text-muted-foreground">
-            A platform fee (rake) is applied to all winning payouts. The rate depends on the seller's tier and payment method.
+            A flat <span className="text-primary font-semibold">$1 listing fee</span> is charged per session, payable with FishDollarz. There are no percentage-based fees on winnings — backers keep 100% of their pro-rata share.
           </p>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border text-left">
-                  <th className="py-2 pr-4 text-muted-foreground font-medium">Tier</th>
-                  <th className="py-2 pr-4 text-muted-foreground font-medium">P2P Rake</th>
-                  <th className="py-2 text-muted-foreground font-medium">FishDollarz Rake</th>
-                </tr>
-              </thead>
-              <tbody className="text-foreground">
-                <tr className="border-b border-border/50">
-                  <td className="py-2 pr-4">🐟 Minnow (Tier 1)</td>
-                  <td className="py-2 pr-4 font-semibold">10%</td>
-                  <td className="py-2 font-semibold text-primary">8%</td>
-                </tr>
-                <tr className="border-b border-border/50">
-                  <td className="py-2 pr-4">🦈 Shark (Tier 2)</td>
-                  <td className="py-2 pr-4 font-semibold">10%</td>
-                  <td className="py-2 font-semibold text-primary">6%</td>
-                </tr>
-                <tr className="border-b border-border/50">
-                  <td className="py-2 pr-4">🐋 Killer Whale (Tier 3)</td>
-                  <td className="py-2 pr-4 font-semibold">10%</td>
-                  <td className="py-2 font-semibold text-primary">4%</td>
-                </tr>
-                <tr>
-                  <td className="py-2 pr-4">👑 Apex Predator (VIP)</td>
-                  <td className="py-2 pr-4 font-semibold">2%</td>
-                  <td className="py-2 font-semibold text-primary">2%</td>
-                </tr>
-              </tbody>
-            </table>
+          <div className="gradient-card rounded-lg p-3 space-y-1">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Session Listing Fee</span>
+              <span className="text-primary font-display font-bold">$1 FishDollarz</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Winnings Fee</span>
+              <span className="text-foreground font-display font-bold">0%</span>
+            </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            P2P rake is a flat <span className="font-semibold">10%</span> for all non-VIP tiers. FishDollarz payments offer <span className="text-primary font-semibold">reduced tier-based rates</span> (8% → 6% → 4% → 2%).
+            Your first session is <span className="text-accent font-semibold">FREE</span> as part of the seller trial. After that, ensure your FishDollarz balance has at least $1 before creating a session.
           </p>
         </section>
 
