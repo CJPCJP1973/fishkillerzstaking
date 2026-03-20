@@ -479,6 +479,8 @@ export default function CreateSessionForm() {
 
       {/* Payment Settings - persists across sessions */}
       <PaymentSettings />
+
+      <SellerPaywallModal open={showPaywall} onOpenChange={setShowPaywall} />
     </form>
   );
 }
