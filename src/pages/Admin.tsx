@@ -346,17 +346,17 @@ export default function Admin() {
   };
 
   const fetchPlatformStats = async () => {
-    const [{ data: allProfiles }, { data: paidPayouts }, { data: completedSessions }, { data: regFeeTxns }] = await Promise.all([
+    const [{ data: allProfiles }, { data: paidPayouts }, { data: listingFeeTxns }, { data: regFeeTxns }] = await Promise.all([
       supabase.from("profiles").select("balance"),
       supabase.from("payouts").select("amount_owed").eq("status", "paid"),
-      supabase.from("sessions").select("platform_fee").eq("status", "completed"),
+      supabase.from("transactions").select("amount").eq("type", "listing_fee").eq("status", "completed"),
       supabase.from("transactions").select("amount").eq("type", "registration_fee").eq("status", "confirmed"),
     ]);
 
     setPlatformStats({
       totalEscrow: allProfiles?.reduce((sum, p) => sum + Number(p.balance || 0), 0) || 0,
       totalPaidOut: paidPayouts?.reduce((sum, p) => sum + Number(p.amount_owed || 0), 0) || 0,
-      totalRaked: completedSessions?.reduce((sum, s) => sum + Number(s.platform_fee || 0), 0) || 0,
+      totalListingFees: listingFeeTxns?.reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0,
       totalRegFees: regFeeTxns?.reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0,
     });
   };
