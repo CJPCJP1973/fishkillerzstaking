@@ -15,46 +15,23 @@ export default function SiteRules() {
         <section className="gradient-card rounded-lg p-6 space-y-4">
           <div className="flex items-center gap-2">
             <DollarSign className="h-5 w-5 text-primary" />
-            <h2 className="font-display text-lg font-bold text-foreground">Platform Fees (Rake)</h2>
+            <h2 className="font-display text-lg font-bold text-foreground">Platform Fees</h2>
           </div>
           <p className="text-sm text-muted-foreground">
-            A platform fee (rake) is applied to all winning payouts. The rate depends on the seller's tier and payment method.
+            A flat <span className="text-primary font-semibold">$1 listing fee</span> is charged per session, payable with FishDollarz. There are no percentage-based fees on winnings — backers keep 100% of their pro-rata share.
           </p>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border text-left">
-                  <th className="py-2 pr-4 text-muted-foreground font-medium">Tier</th>
-                  <th className="py-2 pr-4 text-muted-foreground font-medium">P2P Rake</th>
-                  <th className="py-2 text-muted-foreground font-medium">FishDollarz Rake</th>
-                </tr>
-              </thead>
-              <tbody className="text-foreground">
-                <tr className="border-b border-border/50">
-                  <td className="py-2 pr-4">🐟 Minnow (Tier 1)</td>
-                  <td className="py-2 pr-4 font-semibold">10%</td>
-                  <td className="py-2 font-semibold text-primary">8%</td>
-                </tr>
-                <tr className="border-b border-border/50">
-                  <td className="py-2 pr-4">🦈 Shark (Tier 2)</td>
-                  <td className="py-2 pr-4 font-semibold">10%</td>
-                  <td className="py-2 font-semibold text-primary">6%</td>
-                </tr>
-                <tr className="border-b border-border/50">
-                  <td className="py-2 pr-4">🐋 Killer Whale (Tier 3)</td>
-                  <td className="py-2 pr-4 font-semibold">10%</td>
-                  <td className="py-2 font-semibold text-primary">4%</td>
-                </tr>
-                <tr>
-                  <td className="py-2 pr-4">👑 Apex Predator (VIP)</td>
-                  <td className="py-2 pr-4 font-semibold">2%</td>
-                  <td className="py-2 font-semibold text-primary">2%</td>
-                </tr>
-              </tbody>
-            </table>
+          <div className="gradient-card rounded-lg p-3 space-y-1">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Session Listing Fee</span>
+              <span className="text-primary font-display font-bold">$1 FishDollarz</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Winnings Fee</span>
+              <span className="text-foreground font-display font-bold">0%</span>
+            </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            P2P rake is a flat <span className="font-semibold">10%</span> for all non-VIP tiers. FishDollarz payments offer <span className="text-primary font-semibold">reduced tier-based rates</span> (8% → 6% → 4% → 2%).
+            Your first session is <span className="text-accent font-semibold">FREE</span> as part of the seller trial. After that, ensure your FishDollarz balance has at least $1 before creating a session.
           </p>
         </section>
 
@@ -92,8 +69,8 @@ export default function SiteRules() {
           </div>
           <ul className="space-y-1.5 text-sm text-foreground list-disc list-inside">
             <li>Sellers must pay backers their pro-rata share within <strong>60 minutes</strong> of any agent cashout.</li>
-            <li>P2P payouts require the seller to send the platform rake to <strong>$fishkillerzstaking</strong> on CashApp for manual confirmation.</li>
-            <li>FishDollarz payouts are processed automatically — rake is deducted and funds credited instantly.</li>
+            <li>FishDollarz payouts are processed automatically — funds are credited instantly with no fees.</li>
+            <li>P2P payouts must be sent directly to the backer within the 60-minute window.</li>
           </ul>
         </section>
 
@@ -169,13 +146,13 @@ export default function SiteRules() {
             <AccordionItem value="q3" className="border-border/50">
               <AccordionTrigger className="text-sm text-foreground hover:no-underline">How do payouts work?</AccordionTrigger>
               <AccordionContent className="text-sm text-muted-foreground">
-                After a session ends, the seller uploads an end-balance screenshot. Backers receive their pro-rata share of winnings minus the platform rake. FishDollarz payouts are instant; P2P payouts must be sent within 60 minutes and the rake sent to $fishkillerzstaking on CashApp.
+                After a session ends, the seller uploads an end-balance screenshot. Backers receive their full pro-rata share of winnings — no percentage fees. FishDollarz payouts are instant; P2P payouts must be sent within 60 minutes.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="q4" className="border-border/50">
               <AccordionTrigger className="text-sm text-foreground hover:no-underline">What happens if a session loses?</AccordionTrigger>
               <AccordionContent className="text-sm text-muted-foreground">
-                If the end balance is lower than the buy-in, all backers share in the loss proportionally. No rake is charged on losing sessions. Your stake amount is the maximum you can lose.
+                If the end balance is lower than the buy-in, all backers share in the loss proportionally. Your stake amount is the maximum you can lose.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="q5" className="border-border/50">

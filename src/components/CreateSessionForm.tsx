@@ -101,6 +101,13 @@ export default function CreateSessionForm() {
 
     setSubmitting(true);
     try {
+      // Deduct $1 listing fee from FishDollarz (free for first session on trial)
+      const { error: feeError } = await supabase.rpc("deduct_listing_fee" as any, {
+        _user_id: user.id,
+        _fee: tierConfig.listingFee,
+      });
+      if (feeError) throw feeError;
+
       const { error } = await supabase.from("sessions").insert({
         shooter_id: user.id,
         shooter_name: shooterName,
@@ -119,7 +126,7 @@ export default function CreateSessionForm() {
 
       if (error) throw error;
 
-      toast.success("Session created! Waiting for backers...");
+      toast.success("Session created! $1 listing fee deducted. Waiting for backers...");
       setShooterName(username || "");
       setPlatform("");
       setAgentRoom("");
@@ -154,7 +161,7 @@ export default function CreateSessionForm() {
             )}
           </div>
           <p className="text-xs text-muted-foreground">
-            Max stake: {tierConfig.maxStakePercent}% · Rake: {tierConfig.rakePercent}%
+            Max stake: {tierConfig.maxStakePercent}% · Listing fee: ${tierConfig.listingFee} FishDollarz
             {!sellerPaid && sessionCount === 0 && " · 1 free session"}
           </p>
         </div>

@@ -46,11 +46,8 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
   const [shooterTier, setShooterTier] = useState(1);
   const [shooterFraudFlags, setShooterFraudFlags] = useState(0);
 
-  // Rake is determined by the shooter's tier and payment method
-  const p2pRakeMap: Record<number, number> = { 1: 10, 2: 10, 3: 10, 4: 2 };
-  const fishDollarzRakeMap: Record<number, number> = { 1: 8, 2: 6, 3: 4, 4: 2 };
-  const P2P_FEE = p2pRakeMap[shooterTier] ?? 10;
-  const FISHDOLLARZ_FEE = fishDollarzRakeMap[shooterTier] ?? 8;
+  // No rake — flat $1 listing fee is on the seller, not the backer
+  const RAKE_RATE = 0;
 
   useEffect(() => {
     if (open && user) {
@@ -148,7 +145,7 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
 
     setSubmitting(true);
     try {
-      const rakeRate = paymentMode === "fishdollarz" ? FISHDOLLARZ_FEE / 100 : P2P_FEE / 100;
+      const rakeRate = 0; // No rake — flat listing fee model
 
       if (paymentMode === "fishdollarz") {
         // Deduct from balance atomically
@@ -197,8 +194,8 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
 
       toast.success(
         paymentMode === "fishdollarz"
-          ? `Stake purchased with FishDollarz! (${FISHDOLLARZ_FEE}% fee applies on settlement) ✅`
-          : `Stake submitted via P2P! (${P2P_FEE}% fee applies) Awaiting admin verification.`
+          ? `Stake purchased with FishDollarz! No fees on winnings ✅`
+          : `Stake submitted via P2P! No fees on winnings. Awaiting admin verification.`
       );
       setAmount("");
       setConfirmationRef("");
@@ -304,8 +301,8 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
                     <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent className="max-w-[280px] text-xs bg-card border-border">
-                    <p><strong>FishDollarz (6% fee):</strong> Automatic & instant. Deducted from your balance immediately.</p>
-                    <p className="mt-1"><strong>P2P Direct Pay (8% fee):</strong> Manual confirmation required. Pay the seller directly.</p>
+                    <p><strong>FishDollarz:</strong> Automatic & instant. Deducted from your balance immediately. No fees!</p>
+                    <p className="mt-1"><strong>P2P Direct Pay:</strong> Manual confirmation required. Pay the seller directly. No fees!</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -322,7 +319,7 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
               >
                 <Wallet className="h-4 w-4 mx-auto mb-1" />
                 FishDollarz
-                <span className="block text-[10px] font-normal mt-0.5 text-muted-foreground">6% fee • Automatic</span>
+                <span className="block text-[10px] font-normal mt-0.5 text-muted-foreground">No fee • Automatic</span>
               </button>
               <button
                 type="button"
@@ -338,7 +335,7 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
               >
                 <DollarSign className="h-4 w-4 mx-auto mb-1" />
                 P2P Direct Pay
-                <span className="block text-[10px] font-normal mt-0.5 text-muted-foreground">8% fee • Manual</span>
+                <span className="block text-[10px] font-normal mt-0.5 text-muted-foreground">No fee • Manual</span>
               </button>
             </div>
           </div>
@@ -350,7 +347,7 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
                 <span className="text-accent font-display font-bold text-lg">${balance.toLocaleString()}</span>
               </div>
               <p className="text-xs text-muted-foreground">
-                FishDollarz will be deducted instantly and the stake will be auto-confirmed. A 6% platform fee applies when the session is settled.
+                FishDollarz will be deducted instantly and the stake will be auto-confirmed. No platform fee on winnings!
               </p>
             </div>
           ) : (
@@ -388,7 +385,7 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
                   maxLength={200}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Required so the admin can verify your payment. An 8% platform fee applies on settlement.
+                  Required so the admin can verify your payment. No platform fee on winnings!
                 </p>
               </div>
             </>
@@ -464,8 +461,8 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
               {submitting
                 ? "Submitting..."
                 : paymentMode === "fishdollarz"
-                ? `PAY WITH FISHDOLLARZ (${FISHDOLLARZ_FEE}% FEE)`
-                : `CONFIRM P2P PAYMENT (${P2P_FEE}% FEE)`}
+                ? "PAY WITH FISHDOLLARZ"
+                : "CONFIRM P2P PAYMENT"}
             </Button>
           )}
 

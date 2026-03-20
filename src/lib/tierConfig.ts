@@ -2,7 +2,7 @@ export interface TierConfig {
   name: string;
   label: string;
   maxStakePercent: number;
-  rakePercent: number;
+  listingFee: number;
   colorClass: string;
   bgClass: string;
 }
@@ -12,7 +12,7 @@ export const TIERS: Record<number, TierConfig> = {
     name: "Minnow",
     label: "MINNOW",
     maxStakePercent: 25,
-    rakePercent: 10,
+    listingFee: 1,
     colorClass: "text-muted-foreground",
     bgClass: "bg-muted/20 border-muted-foreground/30",
   },
@@ -20,7 +20,7 @@ export const TIERS: Record<number, TierConfig> = {
     name: "Shark",
     label: "SHARK",
     maxStakePercent: 50,
-    rakePercent: 10,
+    listingFee: 1,
     colorClass: "text-primary",
     bgClass: "bg-primary/20 border-primary/30",
   },
@@ -28,7 +28,7 @@ export const TIERS: Record<number, TierConfig> = {
     name: "Killer Whale",
     label: "KILLER WHALE",
     maxStakePercent: 75,
-    rakePercent: 10,
+    listingFee: 1,
     colorClass: "text-accent",
     bgClass: "bg-accent/20 border-accent/30",
   },
@@ -36,7 +36,7 @@ export const TIERS: Record<number, TierConfig> = {
     name: "Apex Predator",
     label: "VIP",
     maxStakePercent: 75,
-    rakePercent: 2,
+    listingFee: 1,
     colorClass: "text-yellow-400",
     bgClass: "bg-yellow-400/20 border-yellow-400/30",
   },

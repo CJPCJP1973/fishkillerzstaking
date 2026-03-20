@@ -157,7 +157,7 @@ export default function Admin() {
   const [platformStats, setPlatformStats] = useState({
     totalEscrow: 0,
     totalPaidOut: 0,
-    totalRaked: 0,
+    totalListingFees: 0,
     totalRegFees: 0,
   });
   const [payoutRefs, setPayoutRefs] = useState<Record<string, string>>({});
@@ -346,17 +346,17 @@ export default function Admin() {
   };
 
   const fetchPlatformStats = async () => {
-    const [{ data: allProfiles }, { data: paidPayouts }, { data: completedSessions }, { data: regFeeTxns }] = await Promise.all([
+    const [{ data: allProfiles }, { data: paidPayouts }, { data: listingFeeTxns }, { data: regFeeTxns }] = await Promise.all([
       supabase.from("profiles").select("balance"),
       supabase.from("payouts").select("amount_owed").eq("status", "paid"),
-      supabase.from("sessions").select("platform_fee").eq("status", "completed"),
+      supabase.from("transactions").select("amount").eq("type", "listing_fee").eq("status", "completed"),
       supabase.from("transactions").select("amount").eq("type", "registration_fee").eq("status", "confirmed"),
     ]);
 
     setPlatformStats({
       totalEscrow: allProfiles?.reduce((sum, p) => sum + Number(p.balance || 0), 0) || 0,
       totalPaidOut: paidPayouts?.reduce((sum, p) => sum + Number(p.amount_owed || 0), 0) || 0,
-      totalRaked: completedSessions?.reduce((sum, s) => sum + Number(s.platform_fee || 0), 0) || 0,
+      totalListingFees: listingFeeTxns?.reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0,
       totalRegFees: regFeeTxns?.reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0,
     });
   };
@@ -457,20 +457,16 @@ export default function Admin() {
 
       const totalStaked = confirmedStakes.reduce((sum, s) => sum + Number(s.amount), 0);
 
-      // Calculate per-stake rake based on payment_mode
-      let totalFee = 0;
+      // No rake — backers get their full pro-rata share
       const stakeDetails = (confirmedStakes as any[]).map((stake) => {
-        const rakeRate = Number(stake.rake_rate) || 0.08;
         const share = Number(stake.amount) / totalStaked;
         const stakeShareOfCashout = cashOut * share;
-        const stakeFee = Math.round(stakeShareOfCashout * rakeRate * 100) / 100;
-        totalFee += stakeFee;
         return {
           ...stake,
           share,
           stakeShareOfCashout,
-          stakeFee,
-          amountOwed: Math.round((stakeShareOfCashout - stakeFee) * 100) / 100,
+          stakeFee: 0,
+          amountOwed: Math.round(stakeShareOfCashout * 100) / 100,
           paymentMode: stake.payment_mode || "p2p",
         };
       });
@@ -525,7 +521,7 @@ export default function Admin() {
           await supabase.from("notifications").insert({
             user_id: stake.backer_id,
             title: "Winnings Credited ✅",
-            message: `$${stake.amountOwed.toLocaleString()} (after ${Math.round(Number(stake.rake_rate) * 100)}% fee) has been added to your FishDollarz balance.`,
+            message: `$${stake.amountOwed.toLocaleString()} has been added to your FishDollarz balance.`,
             type: "success",
           } as any);
           // Mark payout as paid automatically
@@ -539,18 +535,13 @@ export default function Admin() {
         }
       }
 
-      // Set manual_rake_status if any P2P stakes exist
-      const manualRakeStatus = hasP2PStakes ? "pending_manual_rake" : null;
-
       await supabase.from("sessions").update({
         status: "completed",
         winnings: cashOut,
-        platform_fee: Math.round(totalFee * 100) / 100,
-        manual_rake_status: manualRakeStatus,
+        platform_fee: 0,
       } as any).eq("id", session.id);
 
-      const feeBreakdown = `$${totalFee.toFixed(2)} total rake`;
-      toast.success(`Settled! ${feeBreakdown} • ${payoutInserts.length} payouts created${hasP2PStakes ? " • P2P fee pending" : ""}`);
+      toast.success(`Settled! ${payoutInserts.length} payouts created — no rake, $1 listing fee was pre-paid`);
       setSettleSessionId(null);
       setCashOutAmount("");
       fetchSessions();
@@ -949,7 +940,7 @@ export default function Admin() {
           {[
             { label: "FishDollarz in Escrow", value: `$${platformStats.totalEscrow.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: Wallet, color: "text-primary" },
             { label: "Total Paid Out", value: `$${platformStats.totalPaidOut.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: Send, color: "text-success" },
-            { label: "Total Raked", value: `$${platformStats.totalRaked.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: TrendingUp, color: "text-accent" },
+            { label: "Listing Fees", value: `$${platformStats.totalListingFees.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: TrendingUp, color: "text-accent" },
             { label: "Registration Fees", value: `$${platformStats.totalRegFees.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: Users, color: "text-primary" },
           ].map((stat) => (
             <div key={stat.label} className="gradient-card rounded-lg p-3 flex items-center gap-3">
