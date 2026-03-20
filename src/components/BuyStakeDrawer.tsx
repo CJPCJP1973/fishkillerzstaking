@@ -301,8 +301,8 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
                     <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent className="max-w-[280px] text-xs bg-card border-border">
-                    <p><strong>FishDollarz (6% fee):</strong> Automatic & instant. Deducted from your balance immediately.</p>
-                    <p className="mt-1"><strong>P2P Direct Pay (8% fee):</strong> Manual confirmation required. Pay the seller directly.</p>
+                    <p><strong>FishDollarz:</strong> Automatic & instant. Deducted from your balance immediately. No fees!</p>
+                    <p className="mt-1"><strong>P2P Direct Pay:</strong> Manual confirmation required. Pay the seller directly. No fees!</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
