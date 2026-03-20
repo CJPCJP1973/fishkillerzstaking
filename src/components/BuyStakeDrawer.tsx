@@ -145,7 +145,7 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
 
     setSubmitting(true);
     try {
-      const rakeRate = paymentMode === "fishdollarz" ? FISHDOLLARZ_FEE / 100 : P2P_FEE / 100;
+      const rakeRate = 0; // No rake — flat listing fee model
 
       if (paymentMode === "fishdollarz") {
         // Deduct from balance atomically
