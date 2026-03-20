@@ -69,8 +69,8 @@ export default function SiteRules() {
           </div>
           <ul className="space-y-1.5 text-sm text-foreground list-disc list-inside">
             <li>Sellers must pay backers their pro-rata share within <strong>60 minutes</strong> of any agent cashout.</li>
-            <li>P2P payouts require the seller to send the platform rake to <strong>$fishkillerzstaking</strong> on CashApp for manual confirmation.</li>
-            <li>FishDollarz payouts are processed automatically — rake is deducted and funds credited instantly.</li>
+            <li>FishDollarz payouts are processed automatically — funds are credited instantly with no fees.</li>
+            <li>P2P payouts must be sent directly to the backer within the 60-minute window.</li>
           </ul>
         </section>
 
