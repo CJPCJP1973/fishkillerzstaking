@@ -385,7 +385,7 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
                   maxLength={200}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Required so the admin can verify your payment. An 8% platform fee applies on settlement.
+                  Required so the admin can verify your payment. No platform fee on winnings!
                 </p>
               </div>
             </>
