@@ -27,10 +27,10 @@ export default function Terms() {
           <h3 className="text-base font-semibold text-foreground">3. The Reputation Economy &amp; Tiered Logic</h3>
           <p>User permissions and fees are strictly dictated by the following system architecture:</p>
           <ul className="list-disc pl-5 space-y-1">
-            <li><strong>Tier 1 (Minnow):</strong> 0-4 sessions; Max 25% stake share sold; 8% platform rake.</li>
-            <li><strong>Tier 2 (Shark):</strong> 5-9 sessions; Max 50% stake share sold; 6% platform rake.</li>
-            <li><strong>Tier 3 (Killer Whale):</strong> 10+ sessions; Max 75% stake share sold; 4% platform rake.</li>
-            <li><strong>Tier 4 (Apex Predator):</strong> Invite-only; Max 75% stake share; 2% platform rake; Exclusive VIP listing access.</li>
+            <li><strong>Tier 1 (Minnow):</strong> 0-4 sessions; Max 25% stake share sold; $1 listing fee per session.</li>
+            <li><strong>Tier 2 (Shark):</strong> 5-9 sessions; Max 50% stake share sold; $1 listing fee per session.</li>
+            <li><strong>Tier 3 (Killer Whale):</strong> 10+ sessions; Max 75% stake share sold; $1 listing fee per session.</li>
+            <li><strong>Tier 4 (Apex Predator):</strong> Invite-only; Max 75% stake share; $1 listing fee; Exclusive VIP listing access.</li>
           </ul>
 
           <h3 className="text-base font-semibold text-foreground">4. Staking Rules &amp; Integrity</h3>

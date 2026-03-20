@@ -152,7 +152,7 @@ export default function SiteRules() {
             <AccordionItem value="q4" className="border-border/50">
               <AccordionTrigger className="text-sm text-foreground hover:no-underline">What happens if a session loses?</AccordionTrigger>
               <AccordionContent className="text-sm text-muted-foreground">
-                If the end balance is lower than the buy-in, all backers share in the loss proportionally. No rake is charged on losing sessions. Your stake amount is the maximum you can lose.
+                If the end balance is lower than the buy-in, all backers share in the loss proportionally. Your stake amount is the maximum you can lose.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="q5" className="border-border/50">
