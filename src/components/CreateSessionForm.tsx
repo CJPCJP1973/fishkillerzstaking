@@ -75,6 +75,13 @@ export default function CreateSessionForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check paywall: if trial used (1+ sessions) and not paid, show modal
+    if (!sellerPaid && sessionCount !== null && sessionCount >= 1) {
+      setShowPaywall(true);
+      return;
+    }
+
     if (isOverLimit) {
       toast.error(`Maximum stake is ${maxPercent}% for your tier (${tierConfig.name}). You must keep ${100 - maxPercent}% skin-in-the-game!`);
       return;
