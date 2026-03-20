@@ -457,20 +457,16 @@ export default function Admin() {
 
       const totalStaked = confirmedStakes.reduce((sum, s) => sum + Number(s.amount), 0);
 
-      // Calculate per-stake rake based on payment_mode
-      let totalFee = 0;
+      // No rake — backers get their full pro-rata share
       const stakeDetails = (confirmedStakes as any[]).map((stake) => {
-        const rakeRate = Number(stake.rake_rate) || 0.08;
         const share = Number(stake.amount) / totalStaked;
         const stakeShareOfCashout = cashOut * share;
-        const stakeFee = Math.round(stakeShareOfCashout * rakeRate * 100) / 100;
-        totalFee += stakeFee;
         return {
           ...stake,
           share,
           stakeShareOfCashout,
-          stakeFee,
-          amountOwed: Math.round((stakeShareOfCashout - stakeFee) * 100) / 100,
+          stakeFee: 0,
+          amountOwed: Math.round(stakeShareOfCashout * 100) / 100,
           paymentMode: stake.payment_mode || "p2p",
         };
       });
