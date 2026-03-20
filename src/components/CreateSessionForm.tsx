@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import PaymentSettings from "@/components/PaymentSettings";
 import TierBadge from "@/components/TierBadge";
 import { getTierConfig } from "@/lib/tierConfig";
+import SellerPaywallModal from "@/components/SellerPaywallModal";
 
 interface ConfirmedAgent {
   id: string;
@@ -18,8 +19,10 @@ interface ConfirmedAgent {
 }
 
 export default function CreateSessionForm() {
-  const { user, username, sellerTier } = useAuth();
+  const { user, username, sellerTier, sellerPaid } = useAuth();
   const tierConfig = getTierConfig(sellerTier);
+  const [sessionCount, setSessionCount] = useState<number | null>(null);
+  const [showPaywall, setShowPaywall] = useState(false);
   const [shooterName, setShooterName] = useState(username || "");
   const [platform, setPlatform] = useState("");
   const [agentRoom, setAgentRoom] = useState("");
@@ -50,8 +53,17 @@ export default function CreateSessionForm() {
         .order("agent_name", { ascending: true });
       if (data) setAgents(data as any);
     };
+    const fetchSessionCount = async () => {
+      if (!user) return;
+      const { count } = await supabase
+        .from("sessions")
+        .select("id", { count: "exact", head: true })
+        .eq("shooter_id", user.id);
+      setSessionCount(count ?? 0);
+    };
     fetchAgents();
-  }, []);
+    fetchSessionCount();
+  }, [user]);
 
   const buyInNum = parseFloat(totalBuyIn) || 0;
   const percentNum = parseFloat(stakePercent) || 0;
@@ -63,6 +75,13 @@ export default function CreateSessionForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check paywall: if trial used (1+ sessions) and not paid, show modal
+    if (!sellerPaid && sessionCount !== null && sessionCount >= 1) {
+      setShowPaywall(true);
+      return;
+    }
+
     if (isOverLimit) {
       toast.error(`Maximum stake is ${maxPercent}% for your tier (${tierConfig.name}). You must keep ${100 - maxPercent}% skin-in-the-game!`);
       return;
@@ -128,9 +147,15 @@ export default function CreateSessionForm() {
           <div className="flex items-center gap-2">
             <h2 className="font-display text-xl font-bold text-foreground">Create Session</h2>
             <TierBadge tier={sellerTier} />
+            {!sellerPaid && (
+              <span className="text-[10px] bg-accent/20 text-accent border border-accent/30 px-1.5 py-0.5 rounded font-medium">
+                {sessionCount === 0 ? "FREE TRIAL" : "TRIAL USED"}
+              </span>
+            )}
           </div>
           <p className="text-xs text-muted-foreground">
             Max stake: {tierConfig.maxStakePercent}% · Rake: {tierConfig.rakePercent}%
+            {!sellerPaid && sessionCount === 0 && " · 1 free session"}
           </p>
         </div>
       </div>
@@ -454,6 +479,8 @@ export default function CreateSessionForm() {
 
       {/* Payment Settings - persists across sessions */}
       <PaymentSettings />
+
+      <SellerPaywallModal open={showPaywall} onOpenChange={setShowPaywall} />
     </form>
   );
 }

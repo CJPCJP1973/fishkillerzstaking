@@ -10,6 +10,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isSeller: boolean;
   sellerStatus: string;
+  sellerPaid: boolean;
   username: string | null;
   verificationStatus: string;
   verificationNote: string | null;
@@ -27,6 +28,7 @@ const AuthContext = createContext<AuthContextType>({
   isAdmin: false,
   isSeller: false,
   sellerStatus: "none",
+  sellerPaid: false,
   username: null,
   verificationStatus: "none",
   verificationNote: null,
@@ -44,6 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [userRoles, setUserRoles] = useState<string[]>([]);
   const [sellerStatus, setSellerStatus] = useState("none");
+  const [sellerPaid, setSellerPaid] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
   const [verificationStatus, setVerificationStatus] = useState("none");
   const [verificationNote, setVerificationNote] = useState<string | null>(null);
@@ -62,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase
       .from("profiles")
-      .select("seller_status, username, verification_status, verification_note, seller_tier, is_vip, completed_sessions")
+      .select("seller_status, username, verification_status, verification_note, seller_tier, is_vip, completed_sessions, seller_paid")
       .eq("user_id", userId)
       .single();
     if (data) {
@@ -73,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSellerTier((data as any).seller_tier ?? 1);
       setIsVip((data as any).is_vip ?? false);
       setCompletedSessions((data as any).completed_sessions ?? 0);
+      setSellerPaid((data as any).seller_paid ?? false);
     }
   };
 
@@ -108,6 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSellerTier(1);
           setIsVip(false);
           setCompletedSessions(0);
+          setSellerPaid(false);
         }
         setLoading(false);
       }
@@ -140,6 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAdmin: userRoles.includes("admin"),
         isSeller: userRoles.includes("seller") || sellerStatus === "active",
         sellerStatus,
+        sellerPaid,
         username,
         verificationStatus,
         verificationNote,
