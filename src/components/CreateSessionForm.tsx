@@ -19,8 +19,10 @@ interface ConfirmedAgent {
 }
 
 export default function CreateSessionForm() {
-  const { user, username, sellerTier } = useAuth();
+  const { user, username, sellerTier, sellerPaid } = useAuth();
   const tierConfig = getTierConfig(sellerTier);
+  const [sessionCount, setSessionCount] = useState<number | null>(null);
+  const [showPaywall, setShowPaywall] = useState(false);
   const [shooterName, setShooterName] = useState(username || "");
   const [platform, setPlatform] = useState("");
   const [agentRoom, setAgentRoom] = useState("");
