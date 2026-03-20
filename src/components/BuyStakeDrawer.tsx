@@ -335,7 +335,7 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
               >
                 <DollarSign className="h-4 w-4 mx-auto mb-1" />
                 P2P Direct Pay
-                <span className="block text-[10px] font-normal mt-0.5 text-muted-foreground">8% fee • Manual</span>
+                <span className="block text-[10px] font-normal mt-0.5 text-muted-foreground">No fee • Manual</span>
               </button>
             </div>
           </div>
