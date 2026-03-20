@@ -10,6 +10,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isSeller: boolean;
   sellerStatus: string;
+  sellerPaid: boolean;
   username: string | null;
   verificationStatus: string;
   verificationNote: string | null;
