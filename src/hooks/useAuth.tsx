@@ -44,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [userRoles, setUserRoles] = useState<string[]>([]);
   const [sellerStatus, setSellerStatus] = useState("none");
+  const [sellerPaid, setSellerPaid] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
   const [verificationStatus, setVerificationStatus] = useState("none");
   const [verificationNote, setVerificationNote] = useState<string | null>(null);
