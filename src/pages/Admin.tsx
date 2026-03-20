@@ -535,18 +535,13 @@ export default function Admin() {
         }
       }
 
-      // Set manual_rake_status if any P2P stakes exist
-      const manualRakeStatus = hasP2PStakes ? "pending_manual_rake" : null;
-
       await supabase.from("sessions").update({
         status: "completed",
         winnings: cashOut,
-        platform_fee: Math.round(totalFee * 100) / 100,
-        manual_rake_status: manualRakeStatus,
+        platform_fee: 0,
       } as any).eq("id", session.id);
 
-      const feeBreakdown = `$${totalFee.toFixed(2)} total rake`;
-      toast.success(`Settled! ${feeBreakdown} • ${payoutInserts.length} payouts created${hasP2PStakes ? " • P2P fee pending" : ""}`);
+      toast.success(`Settled! ${payoutInserts.length} payouts created — no rake, $1 listing fee was pre-paid`);
       setSettleSessionId(null);
       setCashOutAmount("");
       fetchSessions();
