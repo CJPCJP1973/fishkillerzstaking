@@ -154,7 +154,7 @@ export default function CreateSessionForm() {
             )}
           </div>
           <p className="text-xs text-muted-foreground">
-            Max stake: {tierConfig.maxStakePercent}% · Rake: {tierConfig.rakePercent}%
+            Max stake: {tierConfig.maxStakePercent}% · Listing fee: ${tierConfig.listingFee} FishDollarz
             {!sellerPaid && sessionCount === 0 && " · 1 free session"}
           </p>
         </div>
