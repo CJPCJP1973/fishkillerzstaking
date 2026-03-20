@@ -157,7 +157,7 @@ export default function Admin() {
   const [platformStats, setPlatformStats] = useState({
     totalEscrow: 0,
     totalPaidOut: 0,
-    totalRaked: 0,
+    totalListingFees: 0,
     totalRegFees: 0,
   });
   const [payoutRefs, setPayoutRefs] = useState<Record<string, string>>({});
