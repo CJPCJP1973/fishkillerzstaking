@@ -194,8 +194,8 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
 
       toast.success(
         paymentMode === "fishdollarz"
-          ? `Stake purchased with FishDollarz! (${FISHDOLLARZ_FEE}% fee applies on settlement) ✅`
-          : `Stake submitted via P2P! (${P2P_FEE}% fee applies) Awaiting admin verification.`
+          ? `Stake purchased with FishDollarz! No fees on winnings ✅`
+          : `Stake submitted via P2P! No fees on winnings. Awaiting admin verification.`
       );
       setAmount("");
       setConfirmationRef("");
