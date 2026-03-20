@@ -145,6 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAdmin: userRoles.includes("admin"),
         isSeller: userRoles.includes("seller") || sellerStatus === "active",
         sellerStatus,
+        sellerPaid,
         username,
         verificationStatus,
         verificationNote,
