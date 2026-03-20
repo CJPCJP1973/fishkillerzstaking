@@ -319,7 +319,7 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
               >
                 <Wallet className="h-4 w-4 mx-auto mb-1" />
                 FishDollarz
-                <span className="block text-[10px] font-normal mt-0.5 text-muted-foreground">6% fee • Automatic</span>
+                <span className="block text-[10px] font-normal mt-0.5 text-muted-foreground">No fee • Automatic</span>
               </button>
               <button
                 type="button"
