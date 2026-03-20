@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import PaymentSettings from "@/components/PaymentSettings";
 import TierBadge from "@/components/TierBadge";
 import { getTierConfig } from "@/lib/tierConfig";
+import SellerPaywallModal from "@/components/SellerPaywallModal";
 
 interface ConfirmedAgent {
   id: string;
