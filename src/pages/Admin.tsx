@@ -521,7 +521,7 @@ export default function Admin() {
           await supabase.from("notifications").insert({
             user_id: stake.backer_id,
             title: "Winnings Credited ✅",
-            message: `$${stake.amountOwed.toLocaleString()} (after ${Math.round(Number(stake.rake_rate) * 100)}% fee) has been added to your FishDollarz balance.`,
+            message: `$${stake.amountOwed.toLocaleString()} has been added to your FishDollarz balance.`,
             type: "success",
           } as any);
           // Mark payout as paid automatically
