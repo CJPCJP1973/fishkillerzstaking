@@ -461,8 +461,8 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
               {submitting
                 ? "Submitting..."
                 : paymentMode === "fishdollarz"
-                ? `PAY WITH FISHDOLLARZ (${FISHDOLLARZ_FEE}% FEE)`
-                : `CONFIRM P2P PAYMENT (${P2P_FEE}% FEE)`}
+                ? "PAY WITH FISHDOLLARZ"
+                : "CONFIRM P2P PAYMENT"}
             </Button>
           )}
 
