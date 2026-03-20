@@ -147,9 +147,15 @@ export default function CreateSessionForm() {
           <div className="flex items-center gap-2">
             <h2 className="font-display text-xl font-bold text-foreground">Create Session</h2>
             <TierBadge tier={sellerTier} />
+            {!sellerPaid && (
+              <span className="text-[10px] bg-accent/20 text-accent border border-accent/30 px-1.5 py-0.5 rounded font-medium">
+                {sessionCount === 0 ? "FREE TRIAL" : "TRIAL USED"}
+              </span>
+            )}
           </div>
           <p className="text-xs text-muted-foreground">
             Max stake: {tierConfig.maxStakePercent}% · Rake: {tierConfig.rakePercent}%
+            {!sellerPaid && sessionCount === 0 && " · 1 free session"}
           </p>
         </div>
       </div>
