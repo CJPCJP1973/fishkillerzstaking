@@ -28,6 +28,7 @@ const AuthContext = createContext<AuthContextType>({
   isAdmin: false,
   isSeller: false,
   sellerStatus: "none",
+  sellerPaid: false,
   username: null,
   verificationStatus: "none",
   verificationNote: null,
