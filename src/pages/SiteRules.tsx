@@ -146,7 +146,7 @@ export default function SiteRules() {
             <AccordionItem value="q3" className="border-border/50">
               <AccordionTrigger className="text-sm text-foreground hover:no-underline">How do payouts work?</AccordionTrigger>
               <AccordionContent className="text-sm text-muted-foreground">
-                After a session ends, the seller uploads an end-balance screenshot. Backers receive their pro-rata share of winnings minus the platform rake. FishDollarz payouts are instant; P2P payouts must be sent within 60 minutes and the rake sent to $fishkillerzstaking on CashApp.
+                After a session ends, the seller uploads an end-balance screenshot. Backers receive their full pro-rata share of winnings — no percentage fees. FishDollarz payouts are instant; P2P payouts must be sent within 60 minutes.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="q4" className="border-border/50">
