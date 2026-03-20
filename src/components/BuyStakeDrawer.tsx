@@ -347,7 +347,7 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
                 <span className="text-accent font-display font-bold text-lg">${balance.toLocaleString()}</span>
               </div>
               <p className="text-xs text-muted-foreground">
-                FishDollarz will be deducted instantly and the stake will be auto-confirmed. A 6% platform fee applies when the session is settled.
+                FishDollarz will be deducted instantly and the stake will be auto-confirmed. No platform fee on winnings!
               </p>
             </div>
           ) : (
