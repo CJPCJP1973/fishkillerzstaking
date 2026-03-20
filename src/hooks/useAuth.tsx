@@ -76,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSellerTier((data as any).seller_tier ?? 1);
       setIsVip((data as any).is_vip ?? false);
       setCompletedSessions((data as any).completed_sessions ?? 0);
+      setSellerPaid((data as any).seller_paid ?? false);
     }
   };
 
