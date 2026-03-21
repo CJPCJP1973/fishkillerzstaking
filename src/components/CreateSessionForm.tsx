@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Crosshair, FileText, Plus, AlertTriangle, Wallet } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import PaymentSettings from "@/components/PaymentSettings";
