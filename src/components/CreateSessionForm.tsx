@@ -192,8 +192,15 @@ export default function CreateSessionForm() {
             <p className="font-display font-bold">Insufficient FishDollarz</p>
             <p className="mt-0.5">
               You need ${tierConfig.listingFee} to list a session but only have ${balance?.toLocaleString() ?? "0"}.
-              <span className="block mt-1">Deposit FishDollarz from your <span className="font-bold">Wallet</span> tab to continue.</span>
             </p>
+            <button
+              type="button"
+              onClick={() => navigate("/settings?tab=wallet")}
+              className="mt-1.5 inline-flex items-center gap-1 text-xs font-bold underline underline-offset-2 hover:text-destructive/80 transition-colors"
+            >
+              <Wallet className="h-3 w-3" />
+              Deposit FishDollarz Now
+            </button>
           </div>
         </div>
       )}
