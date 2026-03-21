@@ -22,6 +22,8 @@ import SellerScreenshotUpload from "@/components/SellerScreenshotUpload";
 export default function Profile() {
   const { user, isAdmin, isSeller, sellerStatus, username, loading, verificationStatus, verificationNote, sellerTier } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") || "wallet";
   const [mySessions, setMySessions] = useState<any[]>([]);
   const [stats, setStats] = useState({ wins: 0, totalStaked: 0, roi: 0, sellerSessions: 0, sellerEarnings: 0 });
 
