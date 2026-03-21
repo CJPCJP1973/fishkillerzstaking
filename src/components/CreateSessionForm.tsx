@@ -21,6 +21,7 @@ interface ConfirmedAgent {
 
 export default function CreateSessionForm() {
   const { user, username, sellerTier, sellerPaid } = useAuth();
+  const navigate = useNavigate();
   const tierConfig = getTierConfig(sellerTier);
   const [sessionCount, setSessionCount] = useState<number | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
