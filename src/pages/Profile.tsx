@@ -133,7 +133,7 @@ export default function Profile() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="wallet" className="w-full">
+        <Tabs defaultValue={initialTab} className="w-full">
           <TabsList className="w-full bg-secondary">
             <TabsTrigger value="wallet" className="flex-1 font-display">Wallet</TabsTrigger>
             {isSeller && <TabsTrigger value="sessions" className="flex-1 font-display">My Sessions</TabsTrigger>}
