@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/hooks/useAuth";
 import { User, Trophy, DollarSign, TrendingUp, Plus, Crosshair } from "lucide-react";
@@ -22,6 +22,8 @@ import SellerScreenshotUpload from "@/components/SellerScreenshotUpload";
 export default function Profile() {
   const { user, isAdmin, isSeller, sellerStatus, username, loading, verificationStatus, verificationNote, sellerTier } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") || "wallet";
   const [mySessions, setMySessions] = useState<any[]>([]);
   const [stats, setStats] = useState({ wins: 0, totalStaked: 0, roi: 0, sellerSessions: 0, sellerEarnings: 0 });
 
@@ -131,7 +133,7 @@ export default function Profile() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="wallet" className="w-full">
+        <Tabs defaultValue={initialTab} className="w-full">
           <TabsList className="w-full bg-secondary">
             <TabsTrigger value="wallet" className="flex-1 font-display">Wallet</TabsTrigger>
             {isSeller && <TabsTrigger value="sessions" className="flex-1 font-display">My Sessions</TabsTrigger>}

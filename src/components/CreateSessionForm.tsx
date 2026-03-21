@@ -195,7 +195,7 @@ export default function CreateSessionForm() {
             </p>
             <button
               type="button"
-              onClick={() => navigate("/settings?tab=wallet")}
+              onClick={() => navigate("/profile?tab=wallet")}
               className="mt-1.5 inline-flex items-center gap-1 text-xs font-bold underline underline-offset-2 hover:text-destructive/80 transition-colors"
             >
               <Wallet className="h-3 w-3" />
