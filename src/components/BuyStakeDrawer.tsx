@@ -7,9 +7,8 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { DollarSign, Crosshair, ShieldCheck, Wallet, Info, AlertTriangle, FileText } from "lucide-react";
+import { DollarSign, Crosshair, ShieldCheck, Wallet, AlertTriangle, FileText } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface BuyStakeDrawerProps {
   open: boolean;
@@ -26,17 +25,11 @@ interface BuyStakeDrawerProps {
   onPurchased?: () => void;
 }
 
-type PaymentMode = "fishdollarz" | "p2p";
-
 export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchased }: BuyStakeDrawerProps) {
   const { user } = useAuth();
   const [amount, setAmount] = useState("");
-  const [confirmationRef, setConfirmationRef] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [paymentMode, setPaymentMode] = useState<PaymentMode>("fishdollarz");
   const [balance, setBalance] = useState<number>(0);
-  const [reliabilityScore, setReliabilityScore] = useState<number>(75);
-  const [forceFishdollarz, setForceFishdollarz] = useState(false);
   const [agentTerms, setAgentTerms] = useState<{ cashout_window: string | null; daily_limit: string | null } | null>(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
 
@@ -46,27 +39,16 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
   const [shooterTier, setShooterTier] = useState(1);
   const [shooterFraudFlags, setShooterFraudFlags] = useState(0);
 
-  // No rake — flat $1 listing fee is on the seller, not the backer
-  const RAKE_RATE = 0;
-
   useEffect(() => {
     if (open && user) {
       supabase
         .from("profiles")
-        .select("balance, reliability_score")
+        .select("balance")
         .eq("user_id", user.id)
         .single()
         .then(({ data }) => {
           if (data) {
             setBalance(Number((data as any).balance));
-            const score = Number((data as any).reliability_score ?? 75);
-            setReliabilityScore(score);
-            if (score < 50) {
-              setForceFishdollarz(true);
-              setPaymentMode("fishdollarz");
-            } else {
-              setForceFishdollarz(false);
-            }
           }
         });
 
@@ -127,79 +109,57 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
       return;
     }
     if (!termsAccepted) {
-      toast.error("You must accept the agent disclosure terms before purchasing");
+      toast.error("You must accept the terms before purchasing");
       return;
     }
-
-    if (paymentMode === "fishdollarz") {
-      if (numAmount > balance) {
-        toast.error(`Insufficient FishDollarz balance. You have $${balance.toLocaleString()}`);
-        return;
-      }
-    } else {
-      if (!confirmationRef.trim()) {
-        toast.error("Please enter your payment confirmation or username");
-        return;
-      }
+    if (numAmount > balance) {
+      toast.error(`Insufficient FishDollarz balance. You have $${balance.toLocaleString()}`);
+      return;
     }
 
     setSubmitting(true);
     try {
-      const rakeRate = 0; // No rake — flat listing fee model
-
-      if (paymentMode === "fishdollarz") {
-        // Deduct from balance atomically
-        const { error: balanceError } = await supabase.rpc("adjust_balance", {
-          target_uid: user.id,
-          delta: -numAmount,
-        });
-        if (balanceError) throw balanceError;
-      }
+      // Deduct from balance atomically
+      const { error: balanceError } = await supabase.rpc("adjust_balance", {
+        target_uid: user.id,
+        delta: -numAmount,
+      });
+      if (balanceError) throw balanceError;
 
       const { error } = await supabase.from("stakes").insert({
         session_id: session.id,
         backer_id: user.id,
         amount: numAmount,
-        payment_method: paymentMode === "fishdollarz" ? "FishDollarz" : confirmationRef.trim(),
-        deposit_confirmed: paymentMode === "fishdollarz",
-        payment_mode: paymentMode,
-        rake_rate: rakeRate,
-        backer_confirmed: paymentMode === "fishdollarz", // auto for fishdollarz
+        payment_method: "FishDollarz",
+        deposit_confirmed: true,
+        payment_mode: "fishdollarz",
+        rake_rate: 0,
+        backer_confirmed: true,
       } as any);
 
       if (error) {
         // Rollback balance if stake insert fails
-        if (paymentMode === "fishdollarz") {
-          await supabase.rpc("adjust_balance", { target_uid: user.id, delta: numAmount });
-        }
+        await supabase.rpc("adjust_balance", { target_uid: user.id, delta: numAmount });
         throw error;
       }
 
-      // Update stake_sold on session for FishDollarz (auto-confirmed)
-      if (paymentMode === "fishdollarz") {
-        await supabase.from("transactions").insert({
-          user_id: user.id,
-          amount: numAmount,
-          type: "stake",
-          status: "completed",
-          payment_method: "FishDollarz",
-          notes: `Stake on ${session.shooterName} (${session.platform})`,
-        } as any);
+      // Log transaction and update session
+      await supabase.from("transactions").insert({
+        user_id: user.id,
+        amount: numAmount,
+        type: "stake",
+        status: "completed",
+        payment_method: "FishDollarz",
+        notes: `Stake on ${session.shooterName} (${session.platform})`,
+      } as any);
 
-        await supabase
-          .from("sessions")
-          .update({ stake_sold: (session.stakeSold || 0) + numAmount })
-          .eq("id", session.id);
-      }
+      await supabase
+        .from("sessions")
+        .update({ stake_sold: (session.stakeSold || 0) + numAmount })
+        .eq("id", session.id);
 
-      toast.success(
-        paymentMode === "fishdollarz"
-          ? `Stake purchased with FishDollarz! No fees on winnings ✅`
-          : `Stake submitted via P2P! No fees on winnings. Awaiting admin verification.`
-      );
+      toast.success("Stake purchased with FishDollarz! No fees on winnings ✅");
       setAmount("");
-      setConfirmationRef("");
-      setPaymentMode(forceFishdollarz ? "fishdollarz" : "fishdollarz");
       onOpenChange(false);
       onPurchased?.();
     } catch (err: any) {
@@ -280,116 +240,19 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
             />
           </div>
 
-          {/* Reliability Score Warning */}
-          {forceFishdollarz && (
-            <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 flex items-start gap-2">
-              <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
-              <div className="text-xs text-destructive">
-                <p className="font-display font-bold">Low Reliability Score ({reliabilityScore}/100)</p>
-                <p>You must use FishDollarz until your score recovers above 50.</p>
-              </div>
+          {/* Balance Display */}
+          <div className="gradient-card rounded-lg p-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-display font-bold text-foreground flex items-center gap-2">
+                <Wallet className="h-4 w-4" />
+                Your Balance
+              </span>
+              <span className="text-accent font-display font-bold text-lg">${balance.toLocaleString()}</span>
             </div>
-          )}
-
-          {/* Payment Mode Toggle */}
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Label className="text-sm text-muted-foreground">Payment Mode</Label>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-[280px] text-xs bg-card border-border">
-                    <p><strong>FishDollarz:</strong> Automatic & instant. Deducted from your balance immediately. No fees!</p>
-                    <p className="mt-1"><strong>P2P Direct Pay:</strong> Manual confirmation required. Pay the seller directly. No fees!</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setPaymentMode("fishdollarz")}
-                className={`rounded-lg border p-3 text-center text-sm font-display font-bold transition-all ${
-                  paymentMode === "fishdollarz"
-                    ? "border-accent bg-accent/10 text-accent"
-                    : "border-border bg-secondary text-muted-foreground hover:border-accent/50"
-                }`}
-              >
-                <Wallet className="h-4 w-4 mx-auto mb-1" />
-                FishDollarz
-                <span className="block text-[10px] font-normal mt-0.5 text-muted-foreground">No fee • Automatic</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => !forceFishdollarz && setPaymentMode("p2p")}
-                disabled={forceFishdollarz}
-                className={`rounded-lg border p-3 text-center text-sm font-display font-bold transition-all ${
-                  forceFishdollarz
-                    ? "border-border bg-secondary/50 text-muted-foreground/50 cursor-not-allowed"
-                    : paymentMode === "p2p"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border bg-secondary text-muted-foreground hover:border-primary/50"
-                }`}
-              >
-                <DollarSign className="h-4 w-4 mx-auto mb-1" />
-                P2P Direct Pay
-                <span className="block text-[10px] font-normal mt-0.5 text-muted-foreground">No fee • Manual</span>
-              </button>
-            </div>
+            <p className="text-xs text-muted-foreground">
+              FishDollarz will be deducted instantly and the stake will be auto-confirmed. No platform fee on winnings!
+            </p>
           </div>
-
-          {paymentMode === "fishdollarz" ? (
-            <div className="gradient-card rounded-lg p-4 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-display font-bold text-foreground">Your Balance</span>
-                <span className="text-accent font-display font-bold text-lg">${balance.toLocaleString()}</span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                FishDollarz will be deducted instantly and the stake will be auto-confirmed. No platform fee on winnings!
-              </p>
-            </div>
-          ) : (
-            <>
-              {/* Payment Instructions */}
-              <div className="gradient-card rounded-lg p-4 space-y-2">
-                <p className="text-sm font-display font-bold text-foreground">P2P Payment Instructions</p>
-                <p className="text-xs text-muted-foreground">Send your stake to one of these:</p>
-                <ul className="text-sm text-foreground space-y-1.5">
-                  <li className="flex justify-between">
-                    <span className="text-muted-foreground">CashApp</span>
-                    <span className="text-primary font-medium">$fishkillerzstaking</span>
-                  </li>
-                  <li className="flex justify-between">
-                    <span className="text-muted-foreground">Chime</span>
-                    <span className="text-primary font-medium">$Christopher-Preston-57</span>
-                  </li>
-                  <li className="flex flex-col gap-1">
-                    <span className="text-muted-foreground">BTC Lightning</span>
-                    <span className="text-primary font-medium text-[10px] break-all leading-tight">lnbc1p56n7qwdqdgdshx6pqg9c8qpp56a7vzmdycc623vrv9epn4neyhukmd40g3lanh6g3nrcxeygwandssp5rcvscch4c3prl9tnqtpvwhh0wdkdnrra2tw84wkuqvtalz2lkk7s9qrsgqcqpcxqy8ayqrzjqfrjnu747au57n0sn07m0j3r5na7dsufjlxayy7xjj3vegwz0ja3wzygxyqqxrcqqyqqqqqqqqqqqqqq9grzjqfzhphca8jlc5zznw52mnqxsnymltjgg3lxe4ul82g42vw0jpkgkwzl4v5qqgucqquqqqqqqqqqqqqqq9grcp0zy9rwe6vfmgqjt8089c4nya3226wq0782nk7nvd5mt96v63nfumays3jy3krz6lxp4vzzumyvfpxfydf49h9hgx0caz8uw82emqq64snp</span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Confirmation Field */}
-              <div>
-                <Label className="text-sm text-muted-foreground">
-                  Payment Confirmation # or Username
-                </Label>
-                <Input
-                  value={confirmationRef}
-                  onChange={(e) => setConfirmationRef(e.target.value)}
-                  placeholder="Paste confirmation # or your CashApp tag"
-                  className="bg-secondary border-border text-foreground"
-                  maxLength={200}
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Required so the admin can verify your payment. No platform fee on winnings!
-                </p>
-              </div>
-            </>
-          )}
 
           {/* Agent Disclosure Terms */}
           {(agentTerms?.cashout_window || agentTerms?.daily_limit) && (
@@ -435,7 +298,7 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
                 className="mt-0.5"
               />
               <label htmlFor="accept-terms-generic" className="text-xs text-muted-foreground leading-tight cursor-pointer">
-                I accept the staking terms and understand the applicable platform fee.
+                I accept the staking terms and understand there are no platform fees on winnings.
               </label>
             </div>
           )}
@@ -450,26 +313,15 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
           ) : (
             <Button
               onClick={handleSubmit}
-              disabled={
-                submitting ||
-                !amount ||
-                !termsAccepted ||
-                (paymentMode === "p2p" && !confirmationRef.trim())
-              }
+              disabled={submitting || !amount || !termsAccepted}
               className="w-full gradient-primary text-primary-foreground font-display font-bold text-base py-5"
             >
-              {submitting
-                ? "Submitting..."
-                : paymentMode === "fishdollarz"
-                ? "PAY WITH FISHDOLLARZ"
-                : "CONFIRM P2P PAYMENT"}
+              {submitting ? "Submitting..." : "PAY WITH FISHDOLLARZ"}
             </Button>
           )}
 
           <p className="text-[10px] text-muted-foreground text-center">
-            {paymentMode === "fishdollarz"
-              ? "FishDollarz will be deducted and your stake confirmed instantly."
-              : "Your stake will show as Pending (yellow) until the admin verifies your payment."}
+            FishDollarz will be deducted and your stake confirmed instantly.
           </p>
           <p className="text-[9px] text-muted-foreground/60 text-center italic">
             FishDollarz are virtual items with no real-world value outside the FishKillerz platform.
