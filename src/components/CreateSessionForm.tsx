@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Crosshair, FileText, Plus } from "lucide-react";
+import { Crosshair, FileText, Plus, AlertTriangle, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import PaymentSettings from "@/components/PaymentSettings";
@@ -42,8 +42,13 @@ export default function CreateSessionForm() {
   const [showPlatformRequest, setShowPlatformRequest] = useState(false);
   const [newPlatformName, setNewPlatformName] = useState("");
   const [requestingPlatform, setRequestingPlatform] = useState(false);
+  const [balance, setBalance] = useState<number | null>(null);
 
   const knownPlatforms = ["Golden Dragon", "Diamond Dragon", "Fire Phoenix", "Vblink", "Riversweeps", "Magic City"];
+
+  const isFreeTrial = !sellerPaid && sessionCount === 0;
+  const needsListingFee = !isFreeTrial;
+  const hasInsufficientBalance = needsListingFee && balance !== null && balance < tierConfig.listingFee;
 
   useEffect(() => {
     const fetchAgents = async () => {
@@ -61,8 +66,18 @@ export default function CreateSessionForm() {
         .eq("shooter_id", user.id);
       setSessionCount(count ?? 0);
     };
+    const fetchBalance = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("profiles")
+        .select("balance")
+        .eq("user_id", user.id)
+        .single();
+      if (data) setBalance(Number((data as any).balance));
+    };
     fetchAgents();
     fetchSessionCount();
+    fetchBalance();
   }, [user]);
 
   const buyInNum = parseFloat(totalBuyIn) || 0;
@@ -166,6 +181,20 @@ export default function CreateSessionForm() {
           </p>
         </div>
       </div>
+
+      {/* Low Balance Warning */}
+      {hasInsufficientBalance && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 flex items-start gap-2">
+          <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+          <div className="text-xs text-destructive">
+            <p className="font-display font-bold">Insufficient FishDollarz</p>
+            <p className="mt-0.5">
+              You need ${tierConfig.listingFee} to list a session but only have ${balance?.toLocaleString() ?? "0"}.
+              <span className="block mt-1">Deposit FishDollarz from your <span className="font-bold">Wallet</span> tab to continue.</span>
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-4">
         <div>
