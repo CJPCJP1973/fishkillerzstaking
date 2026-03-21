@@ -507,10 +507,10 @@ export default function CreateSessionForm() {
 
       <Button
         type="submit"
-        disabled={isOverLimit || submitting}
+        disabled={isOverLimit || submitting || hasInsufficientBalance}
         className="w-full gradient-primary text-primary-foreground font-display font-bold text-base py-5"
       >
-        {submitting ? "Creating..." : "🎯 LAUNCH SESSION"}
+        {submitting ? "Creating..." : hasInsufficientBalance ? "💰 INSUFFICIENT BALANCE" : "🎯 LAUNCH SESSION"}
       </Button>
 
       {/* Payment Settings - persists across sessions */}
