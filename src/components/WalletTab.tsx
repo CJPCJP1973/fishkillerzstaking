@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Wallet, ArrowDownCircle, ArrowUpCircle, Clock, Crosshair, Gift } from "lucide-react";
+import { Wallet, ArrowDownCircle, ArrowUpCircle, Clock, Crosshair, Gift, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
