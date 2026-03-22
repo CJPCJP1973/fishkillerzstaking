@@ -5,14 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Crosshair, FileText, Plus, AlertTriangle, Wallet } from "lucide-react";
+import { Crosshair, FileText, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import PaymentSettings from "@/components/PaymentSettings";
 import TierBadge from "@/components/TierBadge";
-import { getTierConfig } from "@/lib/tierConfig";
-import SellerPaywallModal from "@/components/SellerPaywallModal";
+import { MAX_STAKE_PERCENT, getRakeRate } from "@/lib/tierConfig";
 
 interface ConfirmedAgent {
   id: string;
@@ -20,11 +19,9 @@ interface ConfirmedAgent {
 }
 
 export default function CreateSessionForm() {
-  const { user, username, sellerTier, sellerPaid } = useAuth();
+  const { user, username, isVip } = useAuth();
   const navigate = useNavigate();
-  const tierConfig = getTierConfig(sellerTier);
-  const [sessionCount, setSessionCount] = useState<number | null>(null);
-  const [showPaywall, setShowPaywall] = useState(false);
+  const rakeRate = getRakeRate(isVip);
   const [shooterName, setShooterName] = useState(username || "");
   const [platform, setPlatform] = useState("");
   const [agentRoom, setAgentRoom] = useState("");
@@ -44,13 +41,8 @@ export default function CreateSessionForm() {
   const [showPlatformRequest, setShowPlatformRequest] = useState(false);
   const [newPlatformName, setNewPlatformName] = useState("");
   const [requestingPlatform, setRequestingPlatform] = useState(false);
-  const [balance, setBalance] = useState<number | null>(null);
 
   const knownPlatforms = ["Golden Dragon", "Diamond Dragon", "Fire Phoenix", "Vblink", "Riversweeps", "Magic City"];
-
-  const isFreeTrial = !sellerPaid && sessionCount === 0;
-  const needsListingFee = !isFreeTrial;
-  const hasInsufficientBalance = needsListingFee && balance !== null && balance < tierConfig.listingFee;
 
   useEffect(() => {
     const fetchAgents = async () => {
@@ -60,47 +52,21 @@ export default function CreateSessionForm() {
         .order("agent_name", { ascending: true });
       if (data) setAgents(data as any);
     };
-    const fetchSessionCount = async () => {
-      if (!user) return;
-      const { count } = await supabase
-        .from("sessions")
-        .select("id", { count: "exact", head: true })
-        .eq("shooter_id", user.id);
-      setSessionCount(count ?? 0);
-    };
-    const fetchBalance = async () => {
-      if (!user) return;
-      const { data } = await supabase
-        .from("profiles")
-        .select("balance")
-        .eq("user_id", user.id)
-        .single();
-      if (data) setBalance(Number((data as any).balance));
-    };
     fetchAgents();
-    fetchSessionCount();
-    fetchBalance();
   }, [user]);
 
   const buyInNum = parseFloat(totalBuyIn) || 0;
   const percentNum = parseFloat(stakePercent) || 0;
   const sharePriceNum = parseFloat(sharePrice) || 0;
-  const maxPercent = tierConfig.maxStakePercent;
-  const stakeAmount = buyInNum * (Math.min(percentNum, maxPercent) / 100);
-  const isOverLimit = percentNum > maxPercent;
+  const stakeAmount = buyInNum * (Math.min(percentNum, MAX_STAKE_PERCENT) / 100);
+  const isOverLimit = percentNum > MAX_STAKE_PERCENT;
   const sharesAvailable = sharePriceNum > 0 ? Math.floor(stakeAmount / sharePriceNum) : 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Check paywall: if trial used (1+ sessions) and not paid, show modal
-    if (!sellerPaid && sessionCount !== null && sessionCount >= 1) {
-      setShowPaywall(true);
-      return;
-    }
-
     if (isOverLimit) {
-      toast.error(`Maximum stake is ${maxPercent}% for your tier (${tierConfig.name}). You must keep ${100 - maxPercent}% skin-in-the-game!`);
+      toast.error(`Maximum stake is ${MAX_STAKE_PERCENT}%. You must keep ${100 - MAX_STAKE_PERCENT}% skin-in-the-game!`);
       return;
     }
     if (!shooterName || !platform || !agentRoom || !totalBuyIn || !stakePercent || !sharePrice || !endTime || !cashoutWindow || !dailyLimit) {
@@ -118,13 +84,6 @@ export default function CreateSessionForm() {
 
     setSubmitting(true);
     try {
-      // Deduct $1 listing fee from FishDollarz (free for first session on trial)
-      const { error: feeError } = await supabase.rpc("deduct_listing_fee" as any, {
-        _user_id: user.id,
-        _fee: tierConfig.listingFee,
-      });
-      if (feeError) throw feeError;
-
       const { error } = await supabase.from("sessions").insert({
         shooter_id: user.id,
         shooter_name: shooterName,
@@ -143,7 +102,7 @@ export default function CreateSessionForm() {
 
       if (error) throw error;
 
-      toast.success("Session created! $1 listing fee deducted. Waiting for backers...");
+      toast.success("Session created! Waiting for backers...");
       setShooterName(username || "");
       setPlatform("");
       setAgentRoom("");
@@ -170,40 +129,13 @@ export default function CreateSessionForm() {
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <h2 className="font-display text-xl font-bold text-foreground">Create Session</h2>
-            <TierBadge tier={sellerTier} />
-            {!sellerPaid && (
-              <span className="text-[10px] bg-accent/20 text-accent border border-accent/30 px-1.5 py-0.5 rounded font-medium">
-                {sessionCount === 0 ? "FREE TRIAL" : "TRIAL USED"}
-              </span>
-            )}
+            <TierBadge isVip={isVip} />
           </div>
           <p className="text-xs text-muted-foreground">
-            Max stake: {tierConfig.maxStakePercent}% · Listing fee: ${tierConfig.listingFee} FishDollarz
-            {!sellerPaid && sessionCount === 0 && " · 1 free session"}
+            Max stake: {MAX_STAKE_PERCENT}% · Rake: {(rakeRate * 100).toFixed(0)}% on backer winnings
           </p>
         </div>
       </div>
-
-      {/* Low Balance Warning */}
-      {hasInsufficientBalance && (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 flex items-start gap-2">
-          <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
-          <div className="text-xs text-destructive">
-            <p className="font-display font-bold">Insufficient FishDollarz</p>
-            <p className="mt-0.5">
-              You need ${tierConfig.listingFee} to list a session but only have ${balance?.toLocaleString() ?? "0"}.
-            </p>
-            <button
-              type="button"
-              onClick={() => navigate("/profile?tab=wallet&from=create")}
-              className="mt-1.5 inline-flex items-center gap-1 text-xs font-bold underline underline-offset-2 hover:text-destructive/80 transition-colors"
-            >
-              <Wallet className="h-3 w-3" />
-              Deposit FishDollarz Now
-            </button>
-          </div>
-        </div>
-      )}
 
       <div className="space-y-4">
         <div>
@@ -344,14 +276,6 @@ export default function CreateSessionForm() {
                     if (!user || !newAgentName.trim()) return;
                     setRequestingAgent(true);
                     try {
-                      const { error } = await supabase.from("session_journal").insert({
-                        session_id: "00000000-0000-0000-0000-000000000000",
-                        user_id: user.id,
-                        author_name: username || "User",
-                        message: `Agent request: "${newAgentName.trim()}" — submitted by ${username || user.email}`,
-                        entry_type: "note",
-                      } as any);
-                      // Also create a notification for admins
                       const { data: admins } = await supabase
                         .from("user_roles")
                         .select("user_id")
@@ -516,16 +440,14 @@ export default function CreateSessionForm() {
 
       <Button
         type="submit"
-        disabled={isOverLimit || submitting || hasInsufficientBalance}
+        disabled={isOverLimit || submitting}
         className="w-full gradient-primary text-primary-foreground font-display font-bold text-base py-5"
       >
-        {submitting ? "Creating..." : hasInsufficientBalance ? "💰 INSUFFICIENT BALANCE" : "🎯 LAUNCH SESSION"}
+        {submitting ? "Creating..." : "🎯 LAUNCH SESSION"}
       </Button>
 
       {/* Payment Settings - persists across sessions */}
       <PaymentSettings />
-
-      <SellerPaywallModal open={showPaywall} onOpenChange={setShowPaywall} />
     </form>
   );
 }

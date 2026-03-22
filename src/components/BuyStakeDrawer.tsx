@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { DollarSign, Crosshair, ShieldCheck, Wallet, AlertTriangle, FileText } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { getRakeRate } from "@/lib/tierConfig";
 
 interface BuyStakeDrawerProps {
   open: boolean;
@@ -26,7 +27,7 @@ interface BuyStakeDrawerProps {
 }
 
 export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchased }: BuyStakeDrawerProps) {
-  const { user } = useAuth();
+  const { user, isVip } = useAuth();
   const [amount, setAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [balance, setBalance] = useState<number>(0);
@@ -35,8 +36,8 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
 
   const remaining = session.stakeAvailable - session.stakeSold - session.pendingAmount;
   const sharePrice = Math.min(remaining, 50);
+  const rakeRate = getRakeRate(isVip);
 
-  const [shooterTier, setShooterTier] = useState(1);
   const [shooterFraudFlags, setShooterFraudFlags] = useState(0);
 
   useEffect(() => {
@@ -47,12 +48,10 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
         .eq("user_id", user.id)
         .single()
         .then(({ data }) => {
-          if (data) {
-            setBalance(Number((data as any).balance));
-          }
+          if (data) setBalance(Number((data as any).balance));
         });
 
-      // Fetch shooter tier
+      // Fetch shooter fraud flags
       supabase
         .from("sessions")
         .select("shooter_id")
@@ -62,14 +61,11 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
           if (data) {
             supabase
               .from("profiles")
-              .select("seller_tier, fraud_flags")
+              .select("fraud_flags")
               .eq("user_id", (data as any).shooter_id)
               .single()
               .then(({ data: profile }) => {
-                if (profile) {
-                  setShooterTier((profile as any).seller_tier ?? 1);
-                  setShooterFraudFlags((profile as any).fraud_flags ?? 0);
-                }
+                if (profile) setShooterFraudFlags((profile as any).fraud_flags ?? 0);
               });
           }
         });
@@ -133,12 +129,11 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
         payment_method: "FishDollarz",
         deposit_confirmed: true,
         payment_mode: "fishdollarz",
-        rake_rate: 0,
+        rake_rate: rakeRate,
         backer_confirmed: true,
       } as any);
 
       if (error) {
-        // Rollback balance if stake insert fails
         await supabase.rpc("adjust_balance", { target_uid: user.id, delta: numAmount });
         throw error;
       }
@@ -158,7 +153,7 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
         .update({ stake_sold: (session.stakeSold || 0) + numAmount })
         .eq("id", session.id);
 
-      toast.success("Stake purchased with FishDollarz! No fees on winnings ✅");
+      toast.success(`Stake purchased! ${(rakeRate * 100).toFixed(0)}% rake applies to winnings.`);
       setAmount("");
       onOpenChange(false);
       onPurchased?.();
@@ -199,6 +194,10 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Available Stake</span>
               <span className="text-success font-display font-bold">${remaining.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Platform Rake</span>
+              <span className="text-accent font-display font-bold">{(rakeRate * 100).toFixed(0)}%{isVip ? " (VIP)" : ""}</span>
             </div>
           </div>
 
@@ -250,7 +249,7 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
               <span className="text-accent font-display font-bold text-lg">${balance.toLocaleString()}</span>
             </div>
             <p className="text-xs text-muted-foreground">
-              FishDollarz will be deducted instantly and the stake will be auto-confirmed. No platform fee on winnings!
+              FishDollarz deducted instantly. A {(rakeRate * 100).toFixed(0)}% platform rake applies to winnings{isVip ? " (VIP rate)" : ""}.
             </p>
           </div>
 
@@ -282,7 +281,7 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
                   className="mt-0.5"
                 />
                 <label htmlFor="accept-terms" className="text-xs text-foreground leading-tight cursor-pointer">
-                  I accept the agent disclosure terms and understand the seller agrees to pay my pro-rata share within 60 minutes of any partial agent cashout.
+                  I accept the agent disclosure terms and understand a {(rakeRate * 100).toFixed(0)}% platform rake applies to my winnings.
                 </label>
               </div>
             </div>
@@ -298,7 +297,7 @@ export default function BuyStakeDrawer({ open, onOpenChange, session, onPurchase
                 className="mt-0.5"
               />
               <label htmlFor="accept-terms-generic" className="text-xs text-muted-foreground leading-tight cursor-pointer">
-                I accept the staking terms and understand there are no platform fees on winnings.
+                I accept the staking terms and understand a {(rakeRate * 100).toFixed(0)}% platform rake applies to my winnings.
               </label>
             </div>
           )}
