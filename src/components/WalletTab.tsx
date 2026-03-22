@@ -91,7 +91,11 @@ export default function WalletTab() {
         payment_method: paymentMethod,
       } as any);
       if (error) throw error;
-      toast.success(`Deposit of $${val} submitted for review`);
+      toast.success(
+        fromCreate
+          ? `Deposit of $${val} submitted! Once confirmed, head back to create your session.`
+          : `Deposit of $${val} submitted for review`
+      );
       setAmount("");
       setPaymentMethod("");
       setDepositOpen(false);
