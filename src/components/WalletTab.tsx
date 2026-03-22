@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Wallet, ArrowDownCircle, ArrowUpCircle, Clock, Crosshair, Gift } from "lucide-react";
+import { Wallet, ArrowDownCircle, ArrowUpCircle, Clock, Crosshair, Gift, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,6 +35,9 @@ interface Transaction {
 
 export default function WalletTab() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const fromCreate = searchParams.get("from") === "create";
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [depositOpen, setDepositOpen] = useState(false);
@@ -145,7 +149,17 @@ export default function WalletTab() {
 
   return (
     <div className="space-y-4">
-      {/* Balance Card */}
+      {/* Back to Create Session */}
+      {fromCreate && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/create-session")}
+          className="text-primary hover:text-primary/80 -ml-1"
+        >
+          <ArrowLeft className="h-4 w-4 mr-1" /> Back to Create Session
+        </Button>
+      )}
       <div className="gradient-card rounded-lg p-6 text-center">
         <Wallet className="h-8 w-8 text-primary mx-auto mb-2" />
         <p className="text-xs text-muted-foreground uppercase tracking-wider font-display mb-1">FishDollarz Balance</p>
