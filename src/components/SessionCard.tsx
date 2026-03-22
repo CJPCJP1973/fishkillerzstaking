@@ -37,6 +37,7 @@ export default function SessionCard({ session }: { session: SessionData }) {
   const { user } = useAuth();
   const [pendingAmount, setPendingAmount] = useState(0);
   const [confirmedAmount, setConfirmedAmount] = useState(0);
+  const [isShooterVip, setIsShooterVip] = useState(false);
 
   const fetchStakes = async () => {
     const { data } = await supabase
@@ -54,10 +55,13 @@ export default function SessionCard({ session }: { session: SessionData }) {
 
   useEffect(() => {
     fetchStakes();
+    // Check if shooter is VIP
+    if (session.shooterTier === 4) {
+      setIsShooterVip(true);
+    }
   }, [session.id]);
 
   const available = Math.max(0, session.stakeAvailable - pendingAmount - confirmedAmount);
-  const totalShares = session.sharePrice > 0 ? Math.floor(session.stakeAvailable / session.sharePrice) : 0;
 
   return (
     <>
@@ -76,7 +80,7 @@ export default function SessionCard({ session }: { session: SessionData }) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <TierBadge tier={session.shooterTier ?? 1} />
+            <TierBadge isVip={isShooterVip} />
             {(session.shooterFraudFlags ?? 0) >= 2 ? (
               <span className="flex items-center gap-0.5 text-[10px] font-bold text-destructive bg-destructive/10 rounded px-1.5 py-0.5">
                 <ShieldAlert className="h-3 w-3" />

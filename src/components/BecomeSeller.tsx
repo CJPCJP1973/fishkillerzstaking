@@ -1,29 +1,28 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Rocket, Clock, CheckCircle, Zap } from "lucide-react";
+import { Rocket, Clock, CheckCircle } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export default function BecomeSeller() {
-  const { user, sellerStatus, sellerPaid } = useAuth();
+  const { user, sellerStatus } = useAuth();
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   if (sellerStatus === "active") {
     return (
-      <div className="flex items-center gap-2">
-        <Badge className="bg-primary/20 text-primary border-primary/30">
-          <CheckCircle className="h-3 w-3 mr-1" /> Verified Seller
-        </Badge>
-        {!sellerPaid && (
-          <Badge variant="outline" className="border-accent/40 text-accent text-[10px]">
-            Free Trial
-          </Badge>
-        )}
-      </div>
+      <Badge className="bg-primary/20 text-primary border-primary/30">
+        <CheckCircle className="h-3 w-3 mr-1" /> Active Seller
+      </Badge>
     );
   }
 
@@ -35,17 +34,17 @@ export default function BecomeSeller() {
     );
   }
 
-  const handleStartTrial = async () => {
+  const handleActivate = async () => {
     if (!user) return;
     setSubmitting(true);
     try {
       const { error } = await supabase.rpc("start_seller_trial" as any);
       if (error) throw error;
-      toast.success("Free trial activated! Create your first session now 🎯");
+      toast.success("Seller access activated! You can now create sessions 🎯");
       setOpen(false);
       window.location.reload();
     } catch (err: any) {
-      toast.error(err.message || "Failed to start trial");
+      toast.error(err.message || "Failed to activate seller access");
     }
     setSubmitting(false);
   };
@@ -63,39 +62,34 @@ export default function BecomeSeller() {
         </DialogHeader>
         <div className="space-y-4">
           <div className="gradient-card rounded-lg p-4 space-y-2">
-            <div className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-accent" />
-              <span className="font-display font-bold text-foreground">Your First Session is FREE!</span>
-            </div>
+            <span className="font-display font-bold text-foreground">100% Free to Sell</span>
             <p className="text-xs text-muted-foreground">
-              Try selling stakes with zero commitment. After your first session, a one-time fee of{" "}
-              <span className="text-primary font-medium">$1</span>{" "}
-              <span className="text-muted-foreground">(first 50 sign-ups — normally $10)</span>{" "}
-              unlocks unlimited sessions.
+              No sign-up fees, no listing fees. A 5% platform rake is applied to backer winnings only.
+              VIP sellers (invite-only) enjoy a reduced 3% rake.
             </p>
           </div>
 
           <ul className="text-xs text-muted-foreground space-y-1.5">
             <li className="flex items-center gap-1.5">
               <CheckCircle className="h-3 w-3 text-primary shrink-0" />
-              Create &amp; list your first session instantly
+              Create unlimited sessions instantly
             </li>
             <li className="flex items-center gap-1.5">
               <CheckCircle className="h-3 w-3 text-primary shrink-0" />
-              No payment required for your trial
+              No fees to list — ever
             </li>
             <li className="flex items-center gap-1.5">
               <CheckCircle className="h-3 w-3 text-primary shrink-0" />
-              Upgrade to unlimited sessions for just $1
+              Sell up to 75% of your buy-in
             </li>
           </ul>
 
           <Button
-            onClick={handleStartTrial}
+            onClick={handleActivate}
             disabled={submitting}
             className="w-full gradient-primary text-primary-foreground font-display font-bold"
           >
-            {submitting ? "Activating..." : "⚡ Start Free Trial"}
+            {submitting ? "Activating..." : "🎯 Activate Seller Access"}
           </Button>
         </div>
       </DialogContent>

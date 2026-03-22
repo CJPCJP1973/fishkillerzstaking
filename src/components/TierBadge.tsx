@@ -1,21 +1,19 @@
 import { Badge } from "@/components/ui/badge";
-import { getTierConfig, getTierEmoji } from "@/lib/tierConfig";
 
 interface TierBadgeProps {
-  tier: number;
+  isVip?: boolean;
   className?: string;
 }
 
-export default function TierBadge({ tier, className = "" }: TierBadgeProps) {
-  const config = getTierConfig(tier);
-  const emoji = getTierEmoji(tier);
+export default function TierBadge({ isVip, className = "" }: TierBadgeProps) {
+  if (!isVip) return null;
 
   return (
     <Badge
       variant="outline"
-      className={`${config.bgClass} ${config.colorClass} font-display font-bold text-[10px] ${className}`}
+      className={`bg-yellow-400/20 border-yellow-400/30 text-yellow-400 font-display font-bold text-[10px] ${className}`}
     >
-      {emoji} {config.label}
+      👑 VIP
     </Badge>
   );
 }

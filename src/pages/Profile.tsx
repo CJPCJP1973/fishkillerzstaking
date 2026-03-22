@@ -20,7 +20,7 @@ import ProofUpload from "@/components/ProofUpload";
 import SellerScreenshotUpload from "@/components/SellerScreenshotUpload";
 
 export default function Profile() {
-  const { user, isAdmin, isSeller, sellerStatus, username, loading, verificationStatus, verificationNote, sellerTier } = useAuth();
+  const { user, isAdmin, isSeller, sellerStatus, username, loading, verificationStatus, verificationNote, sellerTier, isVip } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get("tab") || "wallet";
@@ -93,7 +93,7 @@ export default function Profile() {
           <div className="flex flex-col items-center gap-2 mb-4">
             <div className="flex justify-center gap-2">
               {isAdmin && <Badge className="bg-accent/20 text-accent border-accent/30">Admin</Badge>}
-              {isSeller && <TierBadge tier={sellerTier} />}
+              {isSeller && <TierBadge isVip={isVip} />}
               <BecomeSeller />
             </div>
             <IDVerification verificationStatus={verificationStatus} verificationNote={verificationNote} />
