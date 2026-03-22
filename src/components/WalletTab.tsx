@@ -149,7 +149,17 @@ export default function WalletTab() {
 
   return (
     <div className="space-y-4">
-      {/* Balance Card */}
+      {/* Back to Create Session */}
+      {fromCreate && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/create-session")}
+          className="text-primary hover:text-primary/80 -ml-1"
+        >
+          <ArrowLeft className="h-4 w-4 mr-1" /> Back to Create Session
+        </Button>
+      )}
       <div className="gradient-card rounded-lg p-6 text-center">
         <Wallet className="h-8 w-8 text-primary mx-auto mb-2" />
         <p className="text-xs text-muted-foreground uppercase tracking-wider font-display mb-1">FishDollarz Balance</p>
