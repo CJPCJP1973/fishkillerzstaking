@@ -35,6 +35,9 @@ interface Transaction {
 
 export default function WalletTab() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const fromCreate = searchParams.get("from") === "create";
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [depositOpen, setDepositOpen] = useState(false);
