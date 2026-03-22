@@ -94,7 +94,7 @@ export default function Leaderboard() {
                         <span className="font-display font-bold text-foreground truncate">
                           {s.display_name}
                         </span>
-                        <TierBadge tier={s.is_vip ? 4 : s.seller_tier} />
+                        <TierBadge isVip={s.is_vip} />
                       </div>
                       <span className="text-xs text-muted-foreground">@{s.username}</span>
                     </div>
