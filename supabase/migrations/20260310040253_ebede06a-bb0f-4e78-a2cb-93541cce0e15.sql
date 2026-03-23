@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN fraud_flags integer NOT NULL DEFAULT 0;

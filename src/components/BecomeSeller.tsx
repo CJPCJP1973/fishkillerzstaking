@@ -1,11 +1,17 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Rocket, Clock, CheckCircle, DollarSign } from "lucide-react";
+import { Rocket, Clock, CheckCircle } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export default function BecomeSeller() {
   const { user, sellerStatus } = useAuth();
@@ -15,7 +21,7 @@ export default function BecomeSeller() {
   if (sellerStatus === "active") {
     return (
       <Badge className="bg-primary/20 text-primary border-primary/30">
-        <CheckCircle className="h-3 w-3 mr-1" /> Verified Seller
+        <CheckCircle className="h-3 w-3 mr-1" /> Active Seller
       </Badge>
     );
   }
@@ -28,26 +34,17 @@ export default function BecomeSeller() {
     );
   }
 
-  const handleSubmit = async () => {
+  const handleActivate = async () => {
     if (!user) return;
     setSubmitting(true);
     try {
-      const { error: reqError } = await supabase
-        .from("seller_requests")
-        .insert({ user_id: user.id } as any);
-      if (reqError) throw reqError;
-
-      const { error: profError } = await supabase
-        .from("profiles")
-        .update({ seller_status: "pending" } as any)
-        .eq("user_id", user.id);
-      if (profError) throw profError;
-
-      toast.success("Request submitted! We'll verify your payment shortly.");
+      const { error } = await supabase.rpc("start_seller_trial" as any);
+      if (error) throw error;
+      toast.success("Seller access activated! You can now create sessions 🎯");
       setOpen(false);
       window.location.reload();
     } catch (err: any) {
-      toast.error(err.message || "Failed to submit request");
+      toast.error(err.message || "Failed to activate seller access");
     }
     setSubmitting(false);
   };
@@ -61,32 +58,38 @@ export default function BecomeSeller() {
       </DialogTrigger>
       <DialogContent className="bg-background border-border max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-display text-xl text-foreground">Unlock Seller Tools</DialogTitle>
+          <DialogTitle className="font-display text-xl text-foreground">Start Selling Stakes</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Pay the one-time registration fee to unlock the ability to create and list sessions on FishKillerz.
-          </p>
           <div className="gradient-card rounded-lg p-4 space-y-2">
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-primary" />
-              <span className="font-display font-bold text-foreground">Registration Fee: $25</span>
-            </div>
-            <p className="text-xs text-muted-foreground">Send payment to one of these:</p>
-            <ul className="text-sm text-foreground space-y-1">
-              <li>CashApp: <span className="text-primary font-medium">$unclehomie75</span></li>
-              <li>Chime: <span className="text-primary font-medium">$Christopher-Preston-57</span></li>
-            </ul>
+            <span className="font-display font-bold text-foreground">100% Free to Sell</span>
+            <p className="text-xs text-muted-foreground">
+              No sign-up fees, no listing fees. A 5% platform rake is applied to backer winnings only.
+              VIP sellers (invite-only) enjoy a reduced 3% rake.
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground">
-            After sending payment, click below. An admin will verify and activate your account within 24 hours.
-          </p>
+
+          <ul className="text-xs text-muted-foreground space-y-1.5">
+            <li className="flex items-center gap-1.5">
+              <CheckCircle className="h-3 w-3 text-primary shrink-0" />
+              Create unlimited sessions instantly
+            </li>
+            <li className="flex items-center gap-1.5">
+              <CheckCircle className="h-3 w-3 text-primary shrink-0" />
+              No fees to list — ever
+            </li>
+            <li className="flex items-center gap-1.5">
+              <CheckCircle className="h-3 w-3 text-primary shrink-0" />
+              Sell up to 75% of your buy-in
+            </li>
+          </ul>
+
           <Button
-            onClick={handleSubmit}
+            onClick={handleActivate}
             disabled={submitting}
             className="w-full gradient-primary text-primary-foreground font-display font-bold"
           >
-            {submitting ? "Submitting..." : "I've Paid — Submit Request"}
+            {submitting ? "Activating..." : "🎯 Activate Seller Access"}
           </Button>
         </div>
       </DialogContent>

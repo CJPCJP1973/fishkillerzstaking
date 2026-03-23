@@ -37,6 +37,12 @@ export default function Auth() {
         return;
       }
 
+      if (!displayName.trim() || displayName.trim().length > 50) {
+        toast.error("Display name is required and must be under 50 characters");
+        setLoading(false);
+        return;
+      }
+
       const trimmedUsername = username.trim().toLowerCase();
       if (!/^[a-z0-9_]{3,20}$/.test(trimmedUsername)) {
         toast.error("Username must be 3-20 characters (letters, numbers, underscores only)");

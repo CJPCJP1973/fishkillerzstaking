@@ -10,10 +10,7 @@ export default function Sessions() {
 
   useEffect(() => {
     const fetch = async () => {
-      const { data } = await supabase
-        .from("sessions")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const { data } = await supabase.rpc("get_public_sessions");
 
       if (data) {
         setSessions(
@@ -25,10 +22,12 @@ export default function Sessions() {
             totalBuyIn: Number(s.total_buy_in),
             stakeAvailable: Number(s.stake_available),
             stakeSold: Number(s.stake_sold ?? 0),
-            sharePrice: Number((s as any).share_price ?? 50),
+            sharePrice: Number(s.share_price),
             endTime: new Date(s.end_time).toLocaleString(),
             status: (s.status ?? "pending") as SessionData["status"],
             streamUrl: s.stream_url ?? undefined,
+            shooterTier: (s as any).shooter_tier ?? 1,
+            shooterFraudFlags: (s as any).shooter_fraud_flags ?? 0,
           }))
         );
       }

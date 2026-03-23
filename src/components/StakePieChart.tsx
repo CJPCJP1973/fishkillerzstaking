@@ -33,8 +33,8 @@ export default function StakePieChart({ available, pending, sold, sharePrice, to
 
   const data: { name: string; value: number; color: string; label: string }[] = [];
 
-  for (let i = 0; i < skinShares; i++) {
-    data.push({ name: "Seller Skin", value: 1, color: COLORS.skin, label: `Seller #${i + 1}` });
+  if (skinShares > 0) {
+    data.push({ name: "Seller Skin", value: skinShares, color: COLORS.skin, label: `Seller (${skinShares} shares)` });
   }
   for (let i = 0; i < soldShares; i++) {
     data.push({ name: "Sold", value: 1, color: COLORS.sold, label: `Sold #${i + 1}` });
@@ -95,8 +95,8 @@ export default function StakePieChart({ available, pending, sold, sharePrice, to
       {/* Center label */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="text-center">
-          <p className="font-display font-bold text-foreground text-lg">{totalShares}</p>
-          <p className="text-[10px] text-muted-foreground">SHARES</p>
+          <p className="font-display font-bold text-foreground text-lg">{availableShares}</p>
+          <p className="text-[10px] text-muted-foreground">AVAILABLE</p>
         </div>
       </div>
 

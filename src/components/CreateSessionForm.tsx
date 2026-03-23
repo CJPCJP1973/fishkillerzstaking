@@ -1,24 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Crosshair } from "lucide-react";
+import { Crosshair, FileText, Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import PaymentSettings from "@/components/PaymentSettings";
+import TierBadge from "@/components/TierBadge";
+import { MAX_STAKE_PERCENT, getRakeRate } from "@/lib/tierConfig";
 
-const platforms = [
-  "Golden Dragon",
-  "Diamond Dragon",
-  "Fire Phoenix",
-  "Vblink",
-  "Riversweeps",
-  "Magic City",
-];
+interface ConfirmedAgent {
+  id: string;
+  agent_name: string;
+}
 
 export default function CreateSessionForm() {
-  const { user, username } = useAuth();
+  const { user, username, isVip } = useAuth();
+  const navigate = useNavigate();
+  const rakeRate = getRakeRate(isVip);
   const [shooterName, setShooterName] = useState(username || "");
   const [platform, setPlatform] = useState("");
   const [agentRoom, setAgentRoom] = useState("");
@@ -27,24 +30,51 @@ export default function CreateSessionForm() {
   const [endTime, setEndTime] = useState("");
   const [sharePrice, setSharePrice] = useState("");
   const [streamUrl, setStreamUrl] = useState("");
+  const [cashoutWindow, setCashoutWindow] = useState("");
+  const [dailyLimit, setDailyLimit] = useState("");
+  const [payoutAgreement, setPayoutAgreement] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [agents, setAgents] = useState<ConfirmedAgent[]>([]);
+  const [showAgentRequest, setShowAgentRequest] = useState(false);
+  const [newAgentName, setNewAgentName] = useState("");
+  const [requestingAgent, setRequestingAgent] = useState(false);
+  const [showPlatformRequest, setShowPlatformRequest] = useState(false);
+  const [newPlatformName, setNewPlatformName] = useState("");
+  const [requestingPlatform, setRequestingPlatform] = useState(false);
+
+  const knownPlatforms = ["Golden Dragon", "Diamond Dragon", "Fire Phoenix", "Vblink", "Riversweeps", "Magic City"];
+
+  useEffect(() => {
+    const fetchAgents = async () => {
+      const { data } = await supabase
+        .from("confirmed_agents_public")
+        .select("id, agent_name")
+        .order("agent_name", { ascending: true });
+      if (data) setAgents(data as any);
+    };
+    fetchAgents();
+  }, [user]);
 
   const buyInNum = parseFloat(totalBuyIn) || 0;
   const percentNum = parseFloat(stakePercent) || 0;
   const sharePriceNum = parseFloat(sharePrice) || 0;
-  const maxPercent = 75;
-  const stakeAmount = buyInNum * (Math.min(percentNum, maxPercent) / 100);
-  const isOverLimit = percentNum > maxPercent;
+  const stakeAmount = buyInNum * (Math.min(percentNum, MAX_STAKE_PERCENT) / 100);
+  const isOverLimit = percentNum > MAX_STAKE_PERCENT;
   const sharesAvailable = sharePriceNum > 0 ? Math.floor(stakeAmount / sharePriceNum) : 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (isOverLimit) {
-      toast.error("Maximum stake is 75%. You must keep 25% skin-in-the-game!");
+      toast.error(`Maximum stake is ${MAX_STAKE_PERCENT}%. You must keep ${100 - MAX_STAKE_PERCENT}% skin-in-the-game!`);
       return;
     }
-    if (!shooterName || !platform || !agentRoom || !totalBuyIn || !stakePercent || !sharePrice || !endTime) {
+    if (!shooterName || !platform || !agentRoom || !totalBuyIn || !stakePercent || !sharePrice || !endTime || !cashoutWindow || !dailyLimit) {
       toast.error("Please fill in all fields");
+      return;
+    }
+    if (!payoutAgreement) {
+      toast.error("You must agree to the payout terms before creating a session");
       return;
     }
     if (!user) {
@@ -65,6 +95,9 @@ export default function CreateSessionForm() {
         end_time: new Date(endTime).toISOString(),
         stream_url: streamUrl || null,
         status: "funding",
+        agent_cashout_window: cashoutWindow,
+        agent_daily_limit: dailyLimit,
+        seller_payout_agreement: true,
       } as any);
 
       if (error) throw error;
@@ -78,6 +111,9 @@ export default function CreateSessionForm() {
       setSharePrice("");
       setEndTime("");
       setStreamUrl("");
+      setCashoutWindow("");
+      setDailyLimit("");
+      setPayoutAgreement(false);
     } catch (err: any) {
       toast.error(err.message || "Failed to create session");
     }
@@ -90,9 +126,14 @@ export default function CreateSessionForm() {
         <div className="p-2 rounded-md bg-primary/20">
           <Crosshair className="h-5 w-5 text-primary" />
         </div>
-        <div>
-          <h2 className="font-display text-xl font-bold text-foreground">Create Session</h2>
-          <p className="text-xs text-muted-foreground">List a new staking session for backers</p>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h2 className="font-display text-xl font-bold text-foreground">Create Session</h2>
+            <TierBadge isVip={isVip} />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Max stake: {MAX_STAKE_PERCENT}% · Rake: {(rakeRate * 100).toFixed(0)}% on backer winnings
+          </p>
         </div>
       </div>
 
@@ -109,26 +150,169 @@ export default function CreateSessionForm() {
 
         <div>
           <Label className="text-sm text-muted-foreground">Game Platform</Label>
-          <Select value={platform} onValueChange={setPlatform}>
+          <Select value={platform} onValueChange={(val) => {
+            if (val === "__request_new_platform__") {
+              setShowPlatformRequest(true);
+              return;
+            }
+            setPlatform(val);
+          }}>
             <SelectTrigger className="bg-secondary border-border text-foreground">
-              <SelectValue placeholder="Select platform" />
+              <SelectValue placeholder="Select a platform" />
             </SelectTrigger>
-            <SelectContent className="bg-card border-border">
-              {platforms.map((p) => (
+            <SelectContent className="bg-background border-border">
+              {knownPlatforms.map((p) => (
                 <SelectItem key={p} value={p}>{p}</SelectItem>
               ))}
+              <div className="border-t border-border mt-1 pt-1">
+                <SelectItem value="__request_new_platform__" className="text-primary">
+                  <span className="flex items-center gap-1.5"><Plus className="h-3 w-3" /> Request New Platform</span>
+                </SelectItem>
+              </div>
             </SelectContent>
           </Select>
+
+          {showPlatformRequest && (
+            <div className="mt-2 rounded-md border border-primary/20 bg-primary/5 p-3 space-y-2">
+              <p className="text-xs font-medium text-foreground">Request a new platform for admin approval</p>
+              <Input
+                value={newPlatformName}
+                onChange={(e) => setNewPlatformName(e.target.value)}
+                placeholder="Platform name"
+                className="bg-secondary border-border text-foreground text-sm"
+              />
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={!newPlatformName.trim() || requestingPlatform}
+                  className="gradient-primary text-primary-foreground text-xs"
+                  onClick={async () => {
+                    if (!user || !newPlatformName.trim()) return;
+                    setRequestingPlatform(true);
+                    try {
+                      const { data: admins } = await supabase
+                        .from("user_roles")
+                        .select("user_id")
+                        .eq("role", "admin");
+                      if (admins) {
+                        for (const admin of admins) {
+                          await supabase.from("notifications").insert({
+                            user_id: admin.user_id,
+                            title: "New Platform Request 🎮",
+                            message: `${username || "A user"} requested platform: "${newPlatformName.trim()}"`,
+                            type: "platform_request",
+                          } as any);
+                        }
+                      }
+                      toast.success("Platform request submitted! An admin will review it.");
+                      setNewPlatformName("");
+                      setShowPlatformRequest(false);
+                    } catch {
+                      toast.error("Failed to submit request");
+                    }
+                    setRequestingPlatform(false);
+                  }}
+                >
+                  {requestingPlatform ? "Sending..." : "Submit Request"}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="text-xs text-muted-foreground"
+                  onClick={() => { setShowPlatformRequest(false); setNewPlatformName(""); }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         <div>
-          <Label className="text-sm text-muted-foreground">Agent / Room Name</Label>
-          <Input
-            value={agentRoom}
-            onChange={(e) => setAgentRoom(e.target.value)}
-            placeholder="e.g. Room #42"
-            className="bg-secondary border-border text-foreground"
-          />
+          <Label className="text-sm text-muted-foreground">Agent</Label>
+          <Select value={agentRoom} onValueChange={(val) => {
+            if (val === "__request_new__") {
+              setShowAgentRequest(true);
+              return;
+            }
+            setAgentRoom(val);
+          }}>
+            <SelectTrigger className="bg-secondary border-border text-foreground">
+              <SelectValue placeholder="Select confirmed agent" />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-border">
+              {agents.length > 0 ? agents.map((a) => (
+                <SelectItem key={a.id} value={a.agent_name}>{a.agent_name}</SelectItem>
+              )) : (
+                <div className="px-3 py-2 text-xs text-muted-foreground">No agents available yet.</div>
+              )}
+              <div className="border-t border-border mt-1 pt-1">
+                <SelectItem value="__request_new__" className="text-primary">
+                  <span className="flex items-center gap-1.5"><Plus className="h-3 w-3" /> Request New Agent</span>
+                </SelectItem>
+              </div>
+            </SelectContent>
+          </Select>
+          <p className="text-[10px] text-muted-foreground mt-1">Only admin-approved agents are available.</p>
+
+          {showAgentRequest && (
+            <div className="mt-2 rounded-md border border-primary/20 bg-primary/5 p-3 space-y-2">
+              <p className="text-xs font-medium text-foreground">Request a new agent for admin approval</p>
+              <Input
+                value={newAgentName}
+                onChange={(e) => setNewAgentName(e.target.value)}
+                placeholder="Agent name"
+                className="bg-secondary border-border text-foreground text-sm"
+              />
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={!newAgentName.trim() || requestingAgent}
+                  className="gradient-primary text-primary-foreground text-xs"
+                  onClick={async () => {
+                    if (!user || !newAgentName.trim()) return;
+                    setRequestingAgent(true);
+                    try {
+                      const { data: admins } = await supabase
+                        .from("user_roles")
+                        .select("user_id")
+                        .eq("role", "admin");
+                      if (admins) {
+                        for (const admin of admins) {
+                          await supabase.from("notifications").insert({
+                            user_id: admin.user_id,
+                            title: "New Agent Request",
+                            message: `${username || "A user"} requested agent: "${newAgentName.trim()}"`,
+                            type: "agent_request",
+                          } as any);
+                        }
+                      }
+                      toast.success("Agent request submitted! An admin will review it.");
+                      setNewAgentName("");
+                      setShowAgentRequest(false);
+                    } catch {
+                      toast.error("Failed to submit request");
+                    }
+                    setRequestingAgent(false);
+                  }}
+                >
+                  {requestingAgent ? "Sending..." : "Submit Request"}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="text-xs text-muted-foreground"
+                  onClick={() => { setShowAgentRequest(false); setNewAgentName(""); }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -214,6 +398,44 @@ export default function CreateSessionForm() {
             className="bg-secondary border-border text-foreground"
           />
         </div>
+
+        {/* Agent Disclosure */}
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
+          <div className="flex items-center gap-2 mb-1">
+            <FileText className="h-4 w-4 text-primary" />
+            <span className="font-display font-bold text-sm text-foreground">Agent Disclosure (Required)</span>
+          </div>
+          <p className="text-[10px] text-muted-foreground">These terms will be shown to backers before they accept a stake. They form a binding agreement for dispute resolution.</p>
+          <div>
+            <Label className="text-sm text-muted-foreground">Agent Cashout Window</Label>
+            <Input
+              value={cashoutWindow}
+              onChange={(e) => setCashoutWindow(e.target.value)}
+              placeholder="e.g. 12pm - 10pm EST"
+              className="bg-secondary border-border text-foreground"
+            />
+          </div>
+          <div>
+            <Label className="text-sm text-muted-foreground">Daily Cashout Limit</Label>
+            <Input
+              value={dailyLimit}
+              onChange={(e) => setDailyLimit(e.target.value)}
+              placeholder="e.g. $1,000 or Unlimited"
+              className="bg-secondary border-border text-foreground"
+            />
+          </div>
+          <div className="flex items-start gap-2 pt-1">
+            <Checkbox
+              id="payout-agreement"
+              checked={payoutAgreement}
+              onCheckedChange={(v) => setPayoutAgreement(v === true)}
+              className="mt-0.5"
+            />
+            <label htmlFor="payout-agreement" className="text-xs text-foreground leading-tight cursor-pointer">
+              I agree to pay the Backer their pro-rata share within 60 minutes of any partial agent cashout.
+            </label>
+          </div>
+        </div>
       </div>
 
       <Button
@@ -223,6 +445,9 @@ export default function CreateSessionForm() {
       >
         {submitting ? "Creating..." : "🎯 LAUNCH SESSION"}
       </Button>
+
+      {/* Payment Settings - persists across sessions */}
+      <PaymentSettings />
     </form>
   );
 }
