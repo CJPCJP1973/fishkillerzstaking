@@ -24,13 +24,13 @@ export default function Terms() {
             <li><strong>Terminology:</strong> All participants are designated as &quot;Users.&quot; While users may act as &quot;Sellers&quot; or &quot;Backers,&quot; the unified &quot;User&quot; designation applies to all account functions.</li>
           </ul>
 
-          <h3 className="text-base font-semibold text-foreground">3. The Reputation Economy &amp; Tiered Logic</h3>
-          <p>User permissions and fees are strictly dictated by the following system architecture:</p>
+          <h3 className="text-base font-semibold text-foreground">3. The Reputation Economy</h3>
+          <p>User permissions and platform fees are as follows:</p>
           <ul className="list-disc pl-5 space-y-1">
-            <li><strong>Tier 1 (Minnow):</strong> 0-4 sessions; Max 25% stake share sold; $1 listing fee per session.</li>
-            <li><strong>Tier 2 (Shark):</strong> 5-9 sessions; Max 50% stake share sold; $1 listing fee per session.</li>
-            <li><strong>Tier 3 (Killer Whale):</strong> 10+ sessions; Max 75% stake share sold; $1 listing fee per session.</li>
-            <li><strong>Tier 4 (Apex Predator):</strong> Invite-only; Max 75% stake share; $1 listing fee; Exclusive VIP listing access.</li>
+            <li><strong>All Users:</strong> Free to sign up, buy stakes, and become a seller. No listing fees or registration fees.</li>
+            <li><strong>Standard Rake:</strong> A 5% platform rake is applied to backer winnings on profitable sessions only.</li>
+            <li><strong>VIP (Invite Only):</strong> Reduced 3% rake; access to exclusive VIP sessions. VIP status is granted by admin invitation only.</li>
+            <li><strong>Stake Cap:</strong> Sellers may sell up to 75% of their buy-in, retaining at least 25% skin-in-the-game.</li>
           </ul>
 
           <h3 className="text-base font-semibold text-foreground">4. Staking Rules &amp; Integrity</h3>
