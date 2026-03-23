@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.deduct_listing_fee(uuid, numeric);

@@ -704,10 +704,6 @@ export type Database = {
         Args: { delta: number; target_uid: string }
         Returns: undefined
       }
-      deduct_listing_fee: {
-        Args: { _fee?: number; _user_id: string }
-        Returns: undefined
-      }
       get_public_sessions: {
         Args: never
         Returns: {
