@@ -99,10 +99,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          setTimeout(() => {
-            fetchRoles(session.user.id);
-            fetchProfile(session.user.id);
-          }, 0);
+          await fetchRoles(session.user.id);
+          await fetchProfile(session.user.id);
         } else {
           setUserRoles([]);
           setSellerStatus("none");
