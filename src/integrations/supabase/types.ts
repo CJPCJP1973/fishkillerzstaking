@@ -297,7 +297,6 @@ export type Database = {
           completed_sessions: number
           created_at: string | null
           display_name: string
-          email: string | null
           fraud_flags: number
           id: string
           is_shadow_banned: boolean
@@ -323,7 +322,6 @@ export type Database = {
           completed_sessions?: number
           created_at?: string | null
           display_name: string
-          email?: string | null
           fraud_flags?: number
           id?: string
           is_shadow_banned?: boolean
@@ -349,7 +347,6 @@ export type Database = {
           completed_sessions?: number
           created_at?: string | null
           display_name?: string
-          email?: string | null
           fraud_flags?: number
           id?: string
           is_shadow_banned?: boolean
@@ -766,6 +763,13 @@ export type Database = {
       adjust_balance: {
         Args: { delta: number; target_uid: string }
         Returns: undefined
+      }
+      admin_get_user_emails: {
+        Args: { _user_ids: string[] }
+        Returns: {
+          email: string
+          user_id: string
+        }[]
       }
       delete_email: {
         Args: { message_id: number; queue_name: string }
