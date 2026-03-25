@@ -772,7 +772,6 @@ export type Database = {
           total_staked: number | null
           total_wins: number | null
           updated_at: string | null
-          user_id: string | null
           username: string | null
           verified: boolean | null
           win_rate: number | null
@@ -787,7 +786,6 @@ export type Database = {
           total_staked?: number | null
           total_wins?: number | null
           updated_at?: string | null
-          user_id?: string | null
           username?: string | null
           verified?: boolean | null
           win_rate?: number | null
@@ -802,7 +800,6 @@ export type Database = {
           total_staked?: number | null
           total_wins?: number | null
           updated_at?: string | null
-          user_id?: string | null
           username?: string | null
           verified?: boolean | null
           win_rate?: number | null
