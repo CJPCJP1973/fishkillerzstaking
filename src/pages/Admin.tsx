@@ -28,7 +28,7 @@ interface SellerRequest {
   user_id: string;
   status: string;
   created_at: string;
-  profiles?: { display_name: string; email: string; username: string } | null;
+  profiles?: { display_name: string; username: string } | null;
 }
 
 interface PendingStake {
@@ -173,7 +173,7 @@ export default function Admin() {
     const userIds = data.map((r: any) => r.user_id);
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("user_id, display_name, email, username")
+      .select("user_id, display_name, username")
       .in("user_id", userIds);
 
     setRequests(data.map((r: any) => ({
@@ -238,19 +238,20 @@ export default function Admin() {
   const fetchUsers = async () => {
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("user_id, display_name, username, email, seller_status, verified, created_at, fraud_flags, is_shadow_banned")
+      .select("user_id, display_name, username, seller_status, verified, created_at, fraud_flags, is_shadow_banned")
       .order("created_at", { ascending: false });
 
     if (!profiles) return;
 
-    const userIds = profiles.map((p) => p.user_id);
-    const { data: roles } = await supabase
-      .from("user_roles")
-      .select("user_id, role")
-      .in("user_id", userIds);
+    const userIds = (profiles as any[]).map((p: any) => p.user_id);
+    const [{ data: roles }, { data: emails }] = await Promise.all([
+      supabase.from("user_roles").select("user_id, role").in("user_id", userIds),
+      supabase.rpc("admin_get_user_emails", { _user_ids: userIds }),
+    ]);
 
     setUsers((profiles as any[]).map((p: any) => ({
       ...p,
+      email: (emails as any[])?.find((e: any) => e.user_id === p.user_id)?.email || null,
       fraud_flags: p.fraud_flags ?? 0,
       is_shadow_banned: p.is_shadow_banned ?? false,
       roles: roles?.filter((r) => r.user_id === p.user_id).map((r) => r.role) || [],
@@ -260,10 +261,16 @@ export default function Admin() {
   const fetchConfirmedSellers = async () => {
     const { data } = await supabase
       .from("profiles")
-      .select("user_id, display_name, username, email, seller_status, verified")
+      .select("user_id, display_name, username, seller_status, verified")
       .eq("seller_status", "active")
       .order("display_name", { ascending: true });
-    if (data) setConfirmedSellers(data);
+    if (!data) return;
+    const sellerIds = (data as any[]).map((s: any) => s.user_id);
+    const { data: emails } = await supabase.rpc("admin_get_user_emails", { _user_ids: sellerIds });
+    setConfirmedSellers((data as any[]).map((s: any) => ({
+      ...s,
+      email: (emails as any[])?.find((e: any) => e.user_id === s.user_id)?.email || null,
+    })));
   };
 
   const fetchAgents = async () => {
@@ -297,11 +304,17 @@ export default function Admin() {
   const fetchPendingVerifications = async () => {
     const { data } = await supabase
       .from("profiles")
-      .select("user_id, display_name, username, email, verification_status, verification_note")
+      .select("user_id, display_name, username, verification_status, verification_note")
       .eq("verification_status", "pending_verification")
       .order("created_at", { ascending: true });
     if (!data) return;
-    setPendingVerifications(data as any);
+    const pvIds = (data as any[]).map((p: any) => p.user_id);
+    const { data: emails } = await supabase.rpc("admin_get_user_emails", { _user_ids: pvIds });
+    const enriched = (data as any[]).map((p: any) => ({
+      ...p,
+      email: (emails as any[])?.find((e: any) => e.user_id === p.user_id)?.email || null,
+    }));
+    setPendingVerifications(enriched as any);
 
     // Fetch signed URLs for each user's ID image
     const imageMap: Record<string, string> = {};
@@ -1166,7 +1179,7 @@ export default function Admin() {
                         {req.profiles?.username && <span className="text-primary ml-1">@{req.profiles.username}</span>}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {req.profiles?.email} • {new Date(req.created_at).toLocaleDateString()}
+                        {new Date(req.created_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
