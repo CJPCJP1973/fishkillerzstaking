@@ -29,35 +29,32 @@ export default function PublicProfile() {
 
   useEffect(() => {
     if (!username) return;
-    const fetch = async () => {
-      // profiles_public view doesn't have tier/vip, so query profiles with limited columns
-      // Use profiles_public for safe public data
-      const { data, error } = await supabase
-        .from("profiles_public")
-        .select("display_name, username, bio, avatar_url, seller_status, total_wins, total_staked, win_rate, verified, user_id")
-        .eq("username", username)
-        .single();
+    const fetchProfile = async () => {
+      const { data, error } = await supabase.rpc("get_public_profile", {
+        _username: username,
+      });
 
-      if (error || !data) {
+      if (error || !data || (data as any[]).length === 0) {
         setNotFound(true);
         setLoading(false);
         return;
       }
 
-      // Get tier info from leaderboard or a separate query
-      // Since profiles_public doesn't expose tier, we'll get it from the leaderboard data
+      const profileData = (data as any[])[0];
+
+      // Get tier info from leaderboard
       const { data: leaderboard } = await supabase.rpc("get_seller_leaderboard");
       const lbEntry = (leaderboard as any[])?.find((e: any) => e.username === username);
 
       setProfile({
-        ...(data as any),
+        ...profileData,
         seller_tier: lbEntry?.seller_tier ?? 1,
         is_vip: lbEntry?.is_vip ?? false,
         completed_sessions: lbEntry?.completed_sessions ?? 0,
       } as PublicProfileData);
       setLoading(false);
     };
-    fetch();
+    fetchProfile();
   }, [username]);
 
   return (

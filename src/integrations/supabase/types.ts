@@ -761,54 +761,6 @@ export type Database = {
         }
         Relationships: []
       }
-      profiles_public: {
-        Row: {
-          avatar_url: string | null
-          bio: string | null
-          created_at: string | null
-          display_name: string | null
-          id: string | null
-          seller_status: string | null
-          total_staked: number | null
-          total_wins: number | null
-          updated_at: string | null
-          user_id: string | null
-          username: string | null
-          verified: boolean | null
-          win_rate: number | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string | null
-          display_name?: string | null
-          id?: string | null
-          seller_status?: string | null
-          total_staked?: number | null
-          total_wins?: number | null
-          updated_at?: string | null
-          user_id?: string | null
-          username?: string | null
-          verified?: boolean | null
-          win_rate?: number | null
-        }
-        Update: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string | null
-          display_name?: string | null
-          id?: string | null
-          seller_status?: string | null
-          total_staked?: number | null
-          total_wins?: number | null
-          updated_at?: string | null
-          user_id?: string | null
-          username?: string | null
-          verified?: boolean | null
-          win_rate?: number | null
-        }
-        Relationships: []
-      }
     }
     Functions: {
       adjust_balance: {
@@ -822,6 +774,23 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      get_public_profile: {
+        Args: { _username: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          created_at: string
+          display_name: string
+          id: string
+          seller_status: string
+          total_staked: number
+          total_wins: number
+          updated_at: string
+          username: string
+          verified: boolean
+          win_rate: number
+        }[]
       }
       get_public_sessions: {
         Args: never
