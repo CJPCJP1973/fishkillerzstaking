@@ -46,10 +46,7 @@ export default function CreateSessionForm() {
 
   useEffect(() => {
     const fetchAgents = async () => {
-      const { data } = await supabase
-        .from("confirmed_agents_public")
-        .select("id, agent_name")
-        .order("agent_name", { ascending: true });
+      const { data } = await supabase.rpc("get_confirmed_agents");
       if (data) setAgents(data as any);
     };
     fetchAgents();

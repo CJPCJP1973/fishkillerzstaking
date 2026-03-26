@@ -1,1 +1,6 @@
-{}
+{
+  "imports": {
+    "npm:@lovable.dev/email-js": "npm:@lovable.dev/email-js",
+    "npm:@supabase/supabase-js@2": "npm:@supabase/supabase-js@2"
+  }
+}

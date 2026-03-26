@@ -740,24 +740,7 @@ export type Database = {
       }
     }
     Views: {
-      confirmed_agents_public: {
-        Row: {
-          agent_name: string | null
-          created_at: string | null
-          id: string | null
-        }
-        Insert: {
-          agent_name?: string | null
-          created_at?: string | null
-          id?: string | null
-        }
-        Update: {
-          agent_name?: string | null
-          created_at?: string | null
-          id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       adjust_balance: {
@@ -778,6 +761,13 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      get_confirmed_agents: {
+        Args: never
+        Returns: {
+          agent_name: string
+          id: string
+        }[]
       }
       get_public_profile: {
         Args: { _username: string }
@@ -825,6 +815,21 @@ export type Database = {
           seller_tier: number
           total_earnings: number
           username: string
+        }[]
+      }
+      get_session_payouts_for_shooter: {
+        Args: { _session_id: string }
+        Returns: {
+          amount_owed: number
+          backer_id: string
+          backer_name: string
+          created_at: string
+          id: string
+          session_id: string
+          stake_id: string
+          status: string
+          transaction_reference: string
+          updated_at: string
         }[]
       }
       has_role: {
