@@ -33,6 +33,7 @@ const App = () => {
   const [geoChecked, setGeoChecked] = useState(false);
 
   useEffect(() => {
+    const timeout = setTimeout(() => setGeoChecked(true), 3000);
     supabase.functions
       .invoke("check-geo")
       .then(({ data }) => {
@@ -44,7 +45,10 @@ const App = () => {
       .catch(() => {
         // Fail open — don't block on error
       })
-      .finally(() => setGeoChecked(true));
+      .finally(() => {
+        clearTimeout(timeout);
+        setGeoChecked(true);
+      });
   }, []);
 
   if (!geoChecked) return null;
