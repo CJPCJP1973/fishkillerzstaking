@@ -754,6 +754,13 @@ export type Database = {
           user_id: string
         }[]
       }
+      check_profile_update_allowed: {
+        Args: {
+          _new: Database["public"]["Tables"]["profiles"]["Row"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -767,6 +774,30 @@ export type Database = {
         Returns: {
           agent_name: string
           id: string
+        }[]
+      }
+      get_own_profile: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          balance: number
+          bio: string
+          completed_sessions: number
+          created_at: string
+          display_name: string
+          id: string
+          is_vip: boolean
+          seller_paid: boolean
+          seller_status: string
+          seller_tier: number
+          total_staked: number
+          total_wins: number
+          updated_at: string
+          user_id: string
+          username: string
+          verification_status: string
+          verified: boolean
+          win_rate: number
         }[]
       }
       get_public_profile: {

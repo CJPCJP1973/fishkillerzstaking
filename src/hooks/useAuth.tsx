@@ -62,21 +62,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUserRoles(data?.map((r) => r.role) || []);
   };
 
-  const fetchProfile = async (userId: string) => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("seller_status, username, verification_status, verification_note, seller_tier, is_vip, completed_sessions, seller_paid")
-      .eq("user_id", userId)
-      .single();
-    if (data) {
-      setSellerStatus((data as any).seller_status || "none");
-      setUsername((data as any).username || null);
-      setVerificationStatus((data as any).verification_status || "none");
-      setVerificationNote((data as any).verification_note || null);
-      setSellerTier((data as any).seller_tier ?? 1);
-      setIsVip((data as any).is_vip ?? false);
-      setCompletedSessions((data as any).completed_sessions ?? 0);
-      setSellerPaid((data as any).seller_paid ?? false);
+  const fetchProfile = async (_userId: string) => {
+    const { data } = await supabase.rpc("get_own_profile");
+    const profile = Array.isArray(data) ? data[0] : data;
+    if (profile) {
+      setSellerStatus(profile.seller_status || "none");
+      setUsername(profile.username || null);
+      setVerificationStatus(profile.verification_status || "none");
+      setVerificationNote(null); // excluded from RPC for security
+      setSellerTier(profile.seller_tier ?? 1);
+      setIsVip(profile.is_vip ?? false);
+      setCompletedSessions(profile.completed_sessions ?? 0);
+      setSellerPaid(profile.seller_paid ?? false);
     }
   };
 
