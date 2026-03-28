@@ -17,6 +17,12 @@ interface ScanEntry {
   session_status?: string;
 }
 
+interface SessionLookup {
+  id: string;
+  shooter_name: string | null;
+  status: string | null;
+}
+
 export default function OcrDashboardWidget() {
   const { isAdmin } = useAuth();
   const [scans, setScans] = useState<ScanEntry[]>([]);
@@ -29,8 +35,14 @@ export default function OcrDashboardWidget() {
       .from("sessions")
       .select("id, shooter_name, status")
       .in("id", sessionIds);
-    const sessionMap = new Map(
-      (sessions || []).map((s: any) => [s.id, { name: s.shooter_name, status: s.status }])
+    const sessionMap = new Map<string, { name: string; status: string }>(
+      ((sessions || []) as SessionLookup[]).map((s) => [
+        s.id,
+        {
+          name: s.shooter_name || "Unknown",
+          status: s.status || "unknown",
+        },
+      ])
     );
     return rawScans.map((scan) => ({
       ...scan,
