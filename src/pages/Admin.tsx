@@ -76,7 +76,7 @@ interface PayoutRow {
   status: string;
   transaction_reference: string | null;
   session_info?: { shooter_name: string; platform: string } | null;
-  payment_info?: { cashapp_tag: string | null; venmo_username: string | null; chime_handle: string | null; btc_address: string | null; btc_lightning: string | null } | null;
+  payment_info?: { cashapp_tag: string | null; chime_handle: string | null; btc_address: string | null; btc_lightning: string | null } | null;
 }
 
 interface WalletTransaction {
@@ -225,7 +225,7 @@ export default function Admin() {
     const backerIds = [...new Set(data.map((p: any) => p.backer_id))];
     const [{ data: sessionsData }, { data: paymentProfiles }] = await Promise.all([
       supabase.from("sessions").select("id, shooter_name, platform").in("id", sessionIds),
-      supabase.from("payment_profiles").select("user_id, cashapp_tag, venmo_username, chime_handle, btc_address, btc_lightning").in("user_id", backerIds),
+      supabase.from("payment_profiles").select("user_id, cashapp_tag, chime_handle, btc_address, btc_lightning").in("user_id", backerIds),
     ]);
 
     setPayouts(data.map((p: any) => ({
@@ -1115,9 +1115,6 @@ export default function Admin() {
                           {payout.payment_info?.cashapp_tag && (
                             <Badge variant="outline" className="text-[10px] bg-success/10 text-success border-success/30">${payout.payment_info.cashapp_tag}</Badge>
                           )}
-                          {payout.payment_info?.venmo_username && (
-                            <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/30">Venmo: @{payout.payment_info.venmo_username}</Badge>
-                          )}
                           {payout.payment_info?.chime_handle && (
                             <Badge variant="outline" className="text-[10px] bg-accent/10 text-accent border-accent/30">Chime: {payout.payment_info.chime_handle}</Badge>
                           )}
@@ -1127,7 +1124,7 @@ export default function Admin() {
                           {payout.payment_info?.btc_lightning && (
                             <Badge variant="outline" className="text-[10px] bg-accent/10 text-accent border-accent/30">⚡ {payout.payment_info.btc_lightning.slice(0, 12)}…</Badge>
                           )}
-                          {!payout.payment_info?.cashapp_tag && !payout.payment_info?.venmo_username && !payout.payment_info?.chime_handle && !payout.payment_info?.btc_address && !payout.payment_info?.btc_lightning && (
+                          {!payout.payment_info?.cashapp_tag && !payout.payment_info?.chime_handle && !payout.payment_info?.btc_address && !payout.payment_info?.btc_lightning && (
                             <span className="text-[10px] text-destructive">No payment info on file</span>
                           )}
                         </div>

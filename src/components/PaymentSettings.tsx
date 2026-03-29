@@ -13,7 +13,6 @@ export default function PaymentSettings() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     cashapp_tag: "",
-    venmo_username: "",
     chime_handle: "",
     btc_address: "",
     btc_lightning: "",
@@ -30,7 +29,6 @@ export default function PaymentSettings() {
         if (data) {
           setForm({
             cashapp_tag: data.cashapp_tag || "",
-            venmo_username: data.venmo_username || "",
             chime_handle: data.chime_handle || "",
             btc_address: data.btc_address || "",
             btc_lightning: data.btc_lightning || "",
@@ -42,7 +40,6 @@ export default function PaymentSettings() {
 
   const LIMITS = {
     cashapp_tag: 30,
-    venmo_username: 30,
     chime_handle: 30,
     btc_address: 100,
     btc_lightning: 200,
@@ -61,10 +58,6 @@ export default function PaymentSettings() {
 
     if (form.cashapp_tag && !/^\$?[a-zA-Z0-9_-]{1,25}$/.test(form.cashapp_tag)) {
       toast.error("Invalid CashApp tag format");
-      return;
-    }
-    if (form.venmo_username && !/^@?[a-zA-Z0-9_-]{1,25}$/.test(form.venmo_username)) {
-      toast.error("Invalid Venmo username format");
       return;
     }
     if (form.btc_address && !/^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,90}$/.test(form.btc_address)) {
@@ -89,7 +82,6 @@ export default function PaymentSettings() {
 
   const fields = [
     { key: "cashapp_tag", label: "CashApp ($Tag)", placeholder: "$YourTag", max: LIMITS.cashapp_tag },
-    { key: "venmo_username", label: "Venmo (@Username)", placeholder: "@YourVenmo", max: LIMITS.venmo_username },
     { key: "chime_handle", label: "Chime Handle", placeholder: "YourChimeHandle", max: LIMITS.chime_handle },
     { key: "btc_address", label: "Bitcoin Wallet", placeholder: "bc1q...", max: LIMITS.btc_address },
     { key: "btc_lightning", label: "BTC Lightning", placeholder: "lnbc...", max: LIMITS.btc_lightning },
