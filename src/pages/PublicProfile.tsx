@@ -42,13 +42,12 @@ export default function PublicProfile() {
 
       const profileData = (data as any[])[0];
 
-      // Get tier info from leaderboard
+      // Get VIP and session info from leaderboard
       const { data: leaderboard } = await supabase.rpc("get_seller_leaderboard");
       const lbEntry = (leaderboard as any[])?.find((e: any) => e.username === username);
 
       setProfile({
         ...profileData,
-        seller_tier: lbEntry?.seller_tier ?? 1,
         is_vip: lbEntry?.is_vip ?? false,
         completed_sessions: lbEntry?.completed_sessions ?? 0,
       } as PublicProfileData);
