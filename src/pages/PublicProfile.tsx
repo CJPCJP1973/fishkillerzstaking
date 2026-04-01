@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import TierBadge from "@/components/TierBadge";
+import { Badge } from "@/components/ui/badge";
 import { User, Trophy, TrendingUp, Target, ShieldAlert, ShieldCheck } from "lucide-react";
 
 interface PublicProfileData {
@@ -16,7 +16,7 @@ interface PublicProfileData {
   total_staked: number | null;
   win_rate: number | null;
   verified: boolean | null;
-  seller_tier: number;
+  
   is_vip: boolean;
   completed_sessions: number;
 }
@@ -42,13 +42,12 @@ export default function PublicProfile() {
 
       const profileData = (data as any[])[0];
 
-      // Get tier info from leaderboard
+      // Get VIP and session info from leaderboard
       const { data: leaderboard } = await supabase.rpc("get_seller_leaderboard");
       const lbEntry = (leaderboard as any[])?.find((e: any) => e.username === username);
 
       setProfile({
         ...profileData,
-        seller_tier: lbEntry?.seller_tier ?? 1,
         is_vip: lbEntry?.is_vip ?? false,
         completed_sessions: lbEntry?.completed_sessions ?? 0,
       } as PublicProfileData);
@@ -88,7 +87,7 @@ export default function PublicProfile() {
                       <h1 className="font-display text-2xl font-bold text-foreground truncate">
                         {profile.display_name}
                       </h1>
-                      <TierBadge isVip={profile.is_vip} />
+                      {profile.is_vip && <Badge className="bg-yellow-400/20 text-yellow-400 border-yellow-400/30 text-[10px]">👑 VIP</Badge>}
                     </div>
                     <p className="text-sm text-muted-foreground">@{profile.username}</p>
                     {profile.bio && (
