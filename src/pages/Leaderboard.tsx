@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import TierBadge from "@/components/TierBadge";
+import { Badge } from "@/components/ui/badge";
 import { Trophy, TrendingUp, Crosshair, Crown } from "lucide-react";
 
 interface LeaderboardEntry {
