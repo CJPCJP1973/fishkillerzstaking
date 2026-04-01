@@ -87,7 +87,7 @@ export default function PublicProfile() {
                       <h1 className="font-display text-2xl font-bold text-foreground truncate">
                         {profile.display_name}
                       </h1>
-                      <TierBadge isVip={profile.is_vip} />
+                      {profile.is_vip && <Badge className="bg-yellow-400/20 text-yellow-400 border-yellow-400/30 text-[10px]">👑 VIP</Badge>}
                     </div>
                     <p className="text-sm text-muted-foreground">@{profile.username}</p>
                     {profile.bio && (

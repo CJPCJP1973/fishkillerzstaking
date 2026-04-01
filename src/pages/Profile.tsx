@@ -93,7 +93,7 @@ export default function Profile() {
           <div className="flex flex-col items-center gap-2 mb-4">
             <div className="flex justify-center gap-2">
               {isAdmin && <Badge className="bg-accent/20 text-accent border-accent/30">Admin</Badge>}
-              {isSeller && <TierBadge isVip={isVip} />}
+              {isSeller && isVip && <Badge className="bg-yellow-400/20 text-yellow-400 border-yellow-400/30">👑 VIP</Badge>}
               <BecomeSeller />
             </div>
             <IDVerification verificationStatus={verificationStatus} verificationNote={verificationNote} />

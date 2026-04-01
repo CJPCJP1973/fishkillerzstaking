@@ -142,7 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         username,
         verificationStatus,
         verificationNote,
-        sellerTier: isVip ? 4 : sellerTier,
+        
         isVip,
         completedSessions,
         signOut,

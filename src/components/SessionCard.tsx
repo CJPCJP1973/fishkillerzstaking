@@ -76,7 +76,7 @@ export default function SessionCard({ session }: { session: SessionData }) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <TierBadge isVip={isShooterVip} />
+            {isShooterVip && <Badge className="bg-yellow-400/20 text-yellow-400 border-yellow-400/30 text-[10px]">👑 VIP</Badge>}
             {(session.shooterFraudFlags ?? 0) >= 2 ? (
               <span className="flex items-center gap-0.5 text-[10px] font-bold text-destructive bg-destructive/10 rounded px-1.5 py-0.5">
                 <ShieldAlert className="h-3 w-3" />

@@ -88,13 +88,13 @@ export default function Leaderboard() {
                       )}
                     </div>
 
-                    {/* Name + Tier */}
+                    {/* Name + VIP */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-display font-bold text-foreground truncate">
                           {s.display_name}
                         </span>
-                        <TierBadge isVip={s.is_vip} />
+                        {s.is_vip && <Badge className="bg-yellow-400/20 text-yellow-400 border-yellow-400/30 text-[10px]">👑 VIP</Badge>}
                       </div>
                       <span className="text-xs text-muted-foreground">@{s.username}</span>
                     </div>
