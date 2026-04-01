@@ -55,10 +55,6 @@ export default function SessionCard({ session }: { session: SessionData }) {
 
   useEffect(() => {
     fetchStakes();
-    // Check if shooter is VIP
-    if (session.shooterTier === 4) {
-      setIsShooterVip(true);
-    }
   }, [session.id]);
 
   const available = Math.max(0, session.stakeAvailable - pendingAmount - confirmedAmount);
