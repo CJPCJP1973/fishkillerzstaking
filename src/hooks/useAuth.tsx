@@ -68,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUsername(profile.username || null);
       setVerificationStatus(profile.verification_status || "none");
       setVerificationNote(null); // excluded from RPC for security
-      setSellerTier(profile.seller_tier ?? 1);
+      
       setIsVip(profile.is_vip ?? false);
       setCompletedSessions(profile.completed_sessions ?? 0);
       setSellerPaid(profile.seller_paid ?? false);
