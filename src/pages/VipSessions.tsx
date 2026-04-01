@@ -38,7 +38,7 @@ export default function VipSessions() {
             endTime: new Date(s.end_time).toLocaleString(),
             status: (s.status ?? "pending") as SessionData["status"],
             streamUrl: s.stream_url ?? undefined,
-            shooterTier: s.shooter_tier ?? 1,
+            
           }))
         );
       }

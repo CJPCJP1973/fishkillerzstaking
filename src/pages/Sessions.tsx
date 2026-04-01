@@ -26,7 +26,7 @@ export default function Sessions() {
             endTime: new Date(s.end_time).toLocaleString(),
             status: (s.status ?? "pending") as SessionData["status"],
             streamUrl: s.stream_url ?? undefined,
-            shooterTier: (s as any).shooter_tier ?? 1,
+            
             shooterFraudFlags: (s as any).shooter_fraud_flags ?? 0,
           }))
         );
