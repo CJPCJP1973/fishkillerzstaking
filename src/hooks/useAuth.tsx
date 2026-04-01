@@ -31,7 +31,6 @@ const AuthContext = createContext<AuthContextType>({
   username: null,
   verificationStatus: "none",
   verificationNote: null,
-  sellerTier: 1,
   isVip: false,
   completedSessions: 0,
   signOut: async () => {},
