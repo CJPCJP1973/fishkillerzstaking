@@ -14,7 +14,6 @@ interface AuthContextType {
   username: string | null;
   verificationStatus: string;
   verificationNote: string | null;
-  sellerTier: number;
   isVip: boolean;
   completedSessions: number;
   signOut: () => Promise<void>;
