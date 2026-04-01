@@ -16,7 +16,7 @@ interface PublicProfileData {
   total_staked: number | null;
   win_rate: number | null;
   verified: boolean | null;
-  seller_tier: number;
+  
   is_vip: boolean;
   completed_sessions: number;
 }
