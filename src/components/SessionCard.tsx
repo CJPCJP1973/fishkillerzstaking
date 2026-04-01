@@ -20,7 +20,7 @@ export interface SessionData {
   endTime: string;
   status: "live" | "funding" | "completed" | "pending";
   streamUrl?: string;
-  shooterTier?: number;
+  
   shooterFraudFlags?: number;
 }
 
