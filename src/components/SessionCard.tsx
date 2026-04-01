@@ -3,7 +3,6 @@ import { Clock, Crosshair, DollarSign, ChevronDown, ChevronUp, ShieldCheck, Shie
 import { Badge } from "@/components/ui/badge";
 import StakePieChart from "./StakePieChart";
 import BuyStakeDrawer from "./BuyStakeDrawer";
-import { Badge } from "@/components/ui/badge";
 import SessionJournal from "./SessionJournal";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
