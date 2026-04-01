@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [username, setUsername] = useState<string | null>(null);
   const [verificationStatus, setVerificationStatus] = useState("none");
   const [verificationNote, setVerificationNote] = useState<string | null>(null);
-  const [sellerTier, setSellerTier] = useState(1);
+  
   const [isVip, setIsVip] = useState(false);
   const [completedSessions, setCompletedSessions] = useState(0);
 
