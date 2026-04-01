@@ -102,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUsername(null);
           setVerificationStatus("none");
           setVerificationNote(null);
-          setSellerTier(1);
+          
           setIsVip(false);
           setCompletedSessions(0);
           setSellerPaid(false);
