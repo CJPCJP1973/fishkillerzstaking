@@ -10,7 +10,7 @@ interface LeaderboardEntry {
   display_name: string;
   username: string;
   avatar_url: string | null;
-  seller_tier: number;
+  
   is_vip: boolean;
   completed_sessions: number;
   total_earnings: number;
