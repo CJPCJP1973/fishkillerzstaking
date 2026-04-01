@@ -20,7 +20,7 @@ import ProofUpload from "@/components/ProofUpload";
 import SellerScreenshotUpload from "@/components/SellerScreenshotUpload";
 
 export default function Profile() {
-  const { user, isAdmin, isSeller, sellerStatus, username, loading, verificationStatus, verificationNote, sellerTier, isVip } = useAuth();
+  const { user, isAdmin, isSeller, sellerStatus, username, loading, verificationStatus, verificationNote, isVip } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get("tab") || "wallet";
