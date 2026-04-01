@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import TierBadge from "@/components/TierBadge";
+import { Badge } from "@/components/ui/badge";
 import { User, Trophy, TrendingUp, Target, ShieldAlert, ShieldCheck } from "lucide-react";
 
 interface PublicProfileData {
