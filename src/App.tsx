@@ -34,7 +34,7 @@ const App = () => {
   const [geoChecked, setGeoChecked] = useState(false);
 
   useEffect(() => {
-    const timeout = setTimeout(() => setGeoChecked(true), 3000);
+    const timeout = setTimeout(() => setGeoChecked(true), 1500);
     supabase.functions
       .invoke("check-geo")
       .then(({ data }) => {
