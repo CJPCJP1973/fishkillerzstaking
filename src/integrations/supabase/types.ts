@@ -304,7 +304,6 @@ export type Database = {
           reliability_score: number
           seller_paid: boolean
           seller_status: string
-          seller_tier: number
           total_staked: number | null
           total_wins: number | null
           updated_at: string | null
@@ -329,7 +328,6 @@ export type Database = {
           reliability_score?: number
           seller_paid?: boolean
           seller_status?: string
-          seller_tier?: number
           total_staked?: number | null
           total_wins?: number | null
           updated_at?: string | null
@@ -354,7 +352,6 @@ export type Database = {
           reliability_score?: number
           seller_paid?: boolean
           seller_status?: string
-          seller_tier?: number
           total_staked?: number | null
           total_wins?: number | null
           updated_at?: string | null
@@ -789,7 +786,6 @@ export type Database = {
           is_vip: boolean
           seller_paid: boolean
           seller_status: string
-          seller_tier: number
           total_staked: number
           total_wins: number
           updated_at: string
@@ -828,7 +824,6 @@ export type Database = {
           share_price: number
           shooter_fraud_flags: number
           shooter_name: string
-          shooter_tier: number
           stake_available: number
           stake_sold: number
           status: Database["public"]["Enums"]["session_status"]
@@ -843,7 +838,6 @@ export type Database = {
           completed_sessions: number
           display_name: string
           is_vip: boolean
-          seller_tier: number
           total_earnings: number
           username: string
         }[]
