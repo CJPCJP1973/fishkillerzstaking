@@ -206,7 +206,6 @@ export type Database = {
           id: string
           updated_at: string | null
           user_id: string
-          venmo_username: string | null
         }
         Insert: {
           btc_address?: string | null
@@ -217,7 +216,6 @@ export type Database = {
           id?: string
           updated_at?: string | null
           user_id: string
-          venmo_username?: string | null
         }
         Update: {
           btc_address?: string | null
@@ -228,7 +226,6 @@ export type Database = {
           id?: string
           updated_at?: string | null
           user_id?: string
-          venmo_username?: string | null
         }
         Relationships: []
       }
