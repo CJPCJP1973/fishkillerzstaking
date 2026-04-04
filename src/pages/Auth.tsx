@@ -19,6 +19,12 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  useSEO({
+    title: "Sign In or Register | FishKillerz",
+    description: "Create your FishKillerz account or log in to buy stakes, sell sessions, and track your fish table earnings.",
+    canonical: "/auth",
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);

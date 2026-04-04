@@ -18,9 +18,17 @@ import { AlertTriangle, Camera, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ProofUpload from "@/components/ProofUpload";
 import SellerScreenshotUpload from "@/components/SellerScreenshotUpload";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function Profile() {
   const { user, isAdmin, isSeller, sellerStatus, username, loading, verificationStatus, verificationNote, isVip } = useAuth();
+  const navigate = useNavigate();
+
+  useSEO({
+    title: "My Profile | FishKillerz",
+    description: "Manage your FishKillerz profile, wallet, seller status, and session history.",
+    canonical: "/profile",
+  });
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get("tab") || "wallet";

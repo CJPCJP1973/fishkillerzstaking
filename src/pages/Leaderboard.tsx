@@ -21,6 +21,12 @@ export default function Leaderboard() {
   const [sellers, setSellers] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
+  useSEO({
+    title: "Seller Leaderboard | FishKillerz",
+    description: "See the top-ranked fish table sellers on FishKillerz. Ranked by completed sessions and total earnings.",
+    canonical: "/leaderboard",
+  });
+
   useEffect(() => {
     supabase.rpc("get_seller_leaderboard").then(({ data }) => {
       setSellers((data as LeaderboardEntry[]) || []);

@@ -18,6 +18,12 @@ export default function Index() {
   const [sessions, setSessions] = useState<SessionData[]>([]);
   const [loading, setLoading] = useState(true);
 
+  useSEO({
+    title: "FishKillerz — Fish Table Staking Marketplace",
+    description: "Buy & sell stakes in live fish table sessions. Golden Dragon, Vblink, Riversweeps & more. Join the #1 fish game staking community.",
+    canonical: "/",
+  });
+
   useEffect(() => {
     const fetchSessions = async () => {
       const { data: allData } = await supabase.rpc("get_public_sessions");
