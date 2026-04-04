@@ -10,6 +10,7 @@ import PlatformBadge from "@/components/PlatformBadge";
 
 import heroBg from "@/assets/hero-bg.png";
 import { supabase } from "@/integrations/supabase/client";
+import { useSEO } from "@/hooks/useSEO";
 
 const featuredPlatforms = ["Golden Dragon", "Diamond Dragon", "Fire Phoenix", "Vblink", "Riversweeps", "Magic City"];
 
