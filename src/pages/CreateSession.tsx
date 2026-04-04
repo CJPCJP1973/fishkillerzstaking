@@ -14,7 +14,6 @@ export default function CreateSession() {
     description: "List a new fish table staking session on FishKillerz. Set your buy-in, stake amount, and platform.",
     canonical: "/create-session",
   });
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (!loading && (!user || !isSeller)) {

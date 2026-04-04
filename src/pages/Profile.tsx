@@ -29,7 +29,6 @@ export default function Profile() {
     description: "Manage your FishKillerz profile, wallet, seller status, and session history.",
     canonical: "/profile",
   });
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get("tab") || "wallet";
   const [mySessions, setMySessions] = useState<any[]>([]);
