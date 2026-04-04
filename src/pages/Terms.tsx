@@ -1,6 +1,12 @@
 import Layout from "@/components/Layout";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function Terms() {
+  useSEO({
+    title: "Terms of Service | FishKillerz",
+    description: "Read the FishKillerz Terms of Service covering staking rules, FishDollarz, deposits, liability, and account policies.",
+    canonical: "/terms",
+  });
   return (
     <Layout>
       <div className="container py-8 pb-24 md:pb-8 max-w-3xl mx-auto space-y-6">

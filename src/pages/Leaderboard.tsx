@@ -1,3 +1,11 @@
+import { useSEO } from "@/hooks/useSEO";
+
+// Inside the Leaderboard() function:
+useSEO({
+  title: "Top Fish Table Stakers | FishKillerz Leaderboard",
+  description: "See the top-ranked fish table stakers on FishKillerz. Check earnings, completed sessions and VIP sellers.",
+  canonical: "/leaderboard",
+});
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -5,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, TrendingUp, Crosshair, Crown } from "lucide-react";
+import { useSEO } from "@/hooks/useSEO";
 
 interface LeaderboardEntry {
   display_name: string;
@@ -19,6 +28,12 @@ interface LeaderboardEntry {
 export default function Leaderboard() {
   const [sellers, setSellers] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useSEO({
+    title: "Seller Leaderboard | FishKillerz",
+    description: "See the top-ranked fish table sellers on FishKillerz. Ranked by completed sessions and total earnings.",
+    canonical: "/leaderboard",
+  });
 
   useEffect(() => {
     supabase.rpc("get_seller_leaderboard").then(({ data }) => {
