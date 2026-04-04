@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Crosshair, Mail, Lock, User, ArrowRight, AtSign } from "lucide-react";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
