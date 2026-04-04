@@ -6,12 +6,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Crosshair, Lock } from "lucide-react";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
   const navigate = useNavigate();
+
+  useSEO({
+    title: "Reset Password | FishKillerz",
+    description: "Set a new password for your FishKillerz account.",
+    canonical: "/reset-password",
+  });
 
   useEffect(() => {
     // Listen for PASSWORD_RECOVERY event to confirm this is a valid reset session
