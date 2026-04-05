@@ -1,6 +1,12 @@
 import Layout from "@/components/Layout";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function Terms() {
+  useSEO({
+    title: "Terms of Service | FishKillerz",
+    description: "Read the FishKillerz Terms of Service covering staking rules, FishDollarz, deposits, liability, and account policies.",
+    canonical: "/terms",
+  });
   return (
     <Layout>
       <div className="container py-8 pb-24 md:pb-8 max-w-3xl mx-auto space-y-6">
@@ -29,7 +35,7 @@ export default function Terms() {
           <ul className="list-disc pl-5 space-y-1">
             <li><strong>All Users:</strong> Free to sign up, buy stakes, and become a seller. No listing fees or registration fees.</li>
             <li><strong>Standard Rake:</strong> A 5% platform rake is applied to backer winnings on profitable sessions only.</li>
-            <li><strong>VIP (Invite Only):</strong> Reduced 3% rake; access to exclusive VIP sessions. VIP status is granted by admin invitation only.</li>
+            <li><strong>VIP (Invite Only):</strong> Reduced 2% rake; access to exclusive VIP sessions. VIP status is granted by admin invitation only.</li>
             <li><strong>Stake Cap:</strong> Sellers may sell up to 75% of their buy-in, retaining at least 25% skin-in-the-game.</li>
           </ul>
 

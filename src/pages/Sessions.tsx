@@ -3,10 +3,18 @@ import Layout from "@/components/Layout";
 import SessionCard, { SessionData } from "@/components/SessionCard";
 import { Crosshair } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function Sessions() {
   const [sessions, setSessions] = useState<SessionData[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useSEO({
+    title: "Active Sessions | FishKillerz Staking",
+    description:
+      "Browse all active fish table staking sessions. Buy shares in live Golden Dragon, Diamond Dragon, Vblink & Riversweeps sessions and win big.",
+    canonical: "/sessions",
+  });
 
   useEffect(() => {
     const fetch = async () => {
@@ -26,7 +34,6 @@ export default function Sessions() {
             endTime: new Date(s.end_time).toLocaleString(),
             status: (s.status ?? "pending") as SessionData["status"],
             streamUrl: s.stream_url ?? undefined,
-            shooterTier: (s as any).shooter_tier ?? 1,
             shooterFraudFlags: (s as any).shooter_fraud_flags ?? 0,
           }))
         );

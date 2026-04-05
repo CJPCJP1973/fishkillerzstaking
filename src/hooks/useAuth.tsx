@@ -14,7 +14,6 @@ interface AuthContextType {
   username: string | null;
   verificationStatus: string;
   verificationNote: string | null;
-  sellerTier: number;
   isVip: boolean;
   completedSessions: number;
   signOut: () => Promise<void>;
@@ -32,7 +31,6 @@ const AuthContext = createContext<AuthContextType>({
   username: null,
   verificationStatus: "none",
   verificationNote: null,
-  sellerTier: 1,
   isVip: false,
   completedSessions: 0,
   signOut: async () => {},
@@ -50,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [username, setUsername] = useState<string | null>(null);
   const [verificationStatus, setVerificationStatus] = useState("none");
   const [verificationNote, setVerificationNote] = useState<string | null>(null);
-  const [sellerTier, setSellerTier] = useState(1);
+  
   const [isVip, setIsVip] = useState(false);
   const [completedSessions, setCompletedSessions] = useState(0);
 
@@ -70,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUsername(profile.username || null);
       setVerificationStatus(profile.verification_status || "none");
       setVerificationNote(null); // excluded from RPC for security
-      setSellerTier(profile.seller_tier ?? 1);
+      
       setIsVip(profile.is_vip ?? false);
       setCompletedSessions(profile.completed_sessions ?? 0);
       setSellerPaid(profile.seller_paid ?? false);
@@ -104,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUsername(null);
           setVerificationStatus("none");
           setVerificationNote(null);
-          setSellerTier(1);
+          
           setIsVip(false);
           setCompletedSessions(0);
           setSellerPaid(false);
@@ -144,7 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         username,
         verificationStatus,
         verificationNote,
-        sellerTier: isVip ? 4 : sellerTier,
+        
         isVip,
         completedSessions,
         signOut,
