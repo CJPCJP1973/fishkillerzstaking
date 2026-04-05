@@ -1,8 +1,14 @@
 import Layout from "@/components/Layout";
 import { ShieldCheck, DollarSign, AlertTriangle, Crosshair, HelpCircle } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function SiteRules() {
+  useSEO({
+    title: "Site Rules | FishKillerz",
+    description: "FishKillerz platform rules: rake structure, staking guidelines, evidence requirements, dispute process, and VIP perks.",
+    canonical: "/rules",
+  });
   return (
     <Layout>
       <div className="container py-8 pb-24 md:pb-8 max-w-3xl mx-auto space-y-8">

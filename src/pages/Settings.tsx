@@ -5,10 +5,17 @@ import { useEffect } from "react";
 import { Settings as SettingsIcon } from "lucide-react";
 import AccountSettings from "@/components/AccountSettings";
 import PaymentSettings from "@/components/PaymentSettings";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function Settings() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+
+  useSEO({
+    title: "Settings | FishKillerz",
+    description: "Manage your FishKillerz account settings, display name, and payment methods.",
+    canonical: "/settings",
+  });
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth");

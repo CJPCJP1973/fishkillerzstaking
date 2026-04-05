@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { User, Trophy, TrendingUp, Target, ShieldAlert, ShieldCheck } from "lucide-react";
+import { useSEO } from "@/hooks/useSEO";
 
 interface PublicProfileData {
   display_name: string;
@@ -26,6 +27,12 @@ export default function PublicProfile() {
   const [profile, setProfile] = useState<PublicProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+
+  useSEO({
+    title: username ? `@${username} | FishKillerz` : "Player Profile | FishKillerz",
+    description: username ? `View ${username}'s fish table staking stats, win rate, and session history on FishKillerz.` : "View player profile on FishKillerz.",
+    canonical: username ? `/u/${username}` : undefined,
+  });
 
   useEffect(() => {
     if (!username) return;
