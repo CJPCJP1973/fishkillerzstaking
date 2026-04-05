@@ -1,11 +1,3 @@
-import { useSEO } from "@/hooks/useSEO";
-
-// Inside the Leaderboard() function:
-useSEO({
-  title: "Top Fish Table Stakers | FishKillerz Leaderboard",
-  description: "See the top-ranked fish table stakers on FishKillerz. Check earnings, completed sessions and VIP sellers.",
-  canonical: "/leaderboard",
-});
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
