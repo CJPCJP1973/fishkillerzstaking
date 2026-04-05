@@ -3,7 +3,6 @@ import { Clock, Crosshair, DollarSign, ChevronDown, ChevronUp, ShieldCheck, Shie
 import { Badge } from "@/components/ui/badge";
 import StakePieChart from "./StakePieChart";
 import BuyStakeDrawer from "./BuyStakeDrawer";
-import TierBadge from "./TierBadge";
 import SessionJournal from "./SessionJournal";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,7 +19,7 @@ export interface SessionData {
   endTime: string;
   status: "live" | "funding" | "completed" | "pending";
   streamUrl?: string;
-  shooterTier?: number;
+  
   shooterFraudFlags?: number;
 }
 
@@ -55,10 +54,6 @@ export default function SessionCard({ session }: { session: SessionData }) {
 
   useEffect(() => {
     fetchStakes();
-    // Check if shooter is VIP
-    if (session.shooterTier === 4) {
-      setIsShooterVip(true);
-    }
   }, [session.id]);
 
   const available = Math.max(0, session.stakeAvailable - pendingAmount - confirmedAmount);
@@ -80,7 +75,7 @@ export default function SessionCard({ session }: { session: SessionData }) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <TierBadge isVip={isShooterVip} />
+            {isShooterVip && <Badge className="bg-yellow-400/20 text-yellow-400 border-yellow-400/30 text-[10px]">👑 VIP</Badge>}
             {(session.shooterFraudFlags ?? 0) >= 2 ? (
               <span className="flex items-center gap-0.5 text-[10px] font-bold text-destructive bg-destructive/10 rounded px-1.5 py-0.5">
                 <ShieldAlert className="h-3 w-3" />

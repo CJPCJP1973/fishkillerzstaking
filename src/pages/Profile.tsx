@@ -2,7 +2,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/hooks/useAuth";
 import { User, Trophy, DollarSign, TrendingUp, Plus, Crosshair } from "lucide-react";
-import TierBadge from "@/components/TierBadge";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
@@ -18,10 +18,17 @@ import { AlertTriangle, Camera, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ProofUpload from "@/components/ProofUpload";
 import SellerScreenshotUpload from "@/components/SellerScreenshotUpload";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function Profile() {
-  const { user, isAdmin, isSeller, sellerStatus, username, loading, verificationStatus, verificationNote, sellerTier, isVip } = useAuth();
+  const { user, isAdmin, isSeller, sellerStatus, username, loading, verificationStatus, verificationNote, isVip } = useAuth();
   const navigate = useNavigate();
+
+  useSEO({
+    title: "My Profile | FishKillerz",
+    description: "Manage your FishKillerz profile, wallet, seller status, and session history.",
+    canonical: "/profile",
+  });
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get("tab") || "wallet";
   const [mySessions, setMySessions] = useState<any[]>([]);
@@ -93,7 +100,7 @@ export default function Profile() {
           <div className="flex flex-col items-center gap-2 mb-4">
             <div className="flex justify-center gap-2">
               {isAdmin && <Badge className="bg-accent/20 text-accent border-accent/30">Admin</Badge>}
-              {isSeller && <TierBadge isVip={isVip} />}
+              {isSeller && isVip && <Badge className="bg-yellow-400/20 text-yellow-400 border-yellow-400/30">👑 VIP</Badge>}
               <BecomeSeller />
             </div>
             <IDVerification verificationStatus={verificationStatus} verificationNote={verificationNote} />

@@ -6,11 +6,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Crosshair, Mail, ArrowLeft } from "lucide-react";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+
+  useSEO({
+    title: "Forgot Password | FishKillerz",
+    description: "Reset your FishKillerz account password. Enter your email to receive a password reset link.",
+    canonical: "/forgot-password",
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

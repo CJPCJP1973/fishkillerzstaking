@@ -65,7 +65,7 @@ export default function BecomeSeller() {
             <span className="font-display font-bold text-foreground">100% Free to Sell</span>
             <p className="text-xs text-muted-foreground">
               No sign-up fees, no listing fees. A 5% platform rake is applied to backer winnings only.
-              VIP sellers (invite-only) enjoy a reduced 3% rake.
+              VIP sellers (invite-only) enjoy a reduced 2% rake.
             </p>
           </div>
 

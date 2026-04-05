@@ -3,14 +3,15 @@ import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import TierBadge from "@/components/TierBadge";
+import { Badge } from "@/components/ui/badge";
 import { Trophy, TrendingUp, Crosshair, Crown } from "lucide-react";
+import { useSEO } from "@/hooks/useSEO";
 
 interface LeaderboardEntry {
   display_name: string;
   username: string;
   avatar_url: string | null;
-  seller_tier: number;
+  
   is_vip: boolean;
   completed_sessions: number;
   total_earnings: number;
@@ -19,6 +20,12 @@ interface LeaderboardEntry {
 export default function Leaderboard() {
   const [sellers, setSellers] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useSEO({
+    title: "Seller Leaderboard | FishKillerz",
+    description: "See the top-ranked fish table sellers on FishKillerz. Ranked by completed sessions and total earnings.",
+    canonical: "/leaderboard",
+  });
 
   useEffect(() => {
     supabase.rpc("get_seller_leaderboard").then(({ data }) => {
@@ -88,13 +95,13 @@ export default function Leaderboard() {
                       )}
                     </div>
 
-                    {/* Name + Tier */}
+                    {/* Name + VIP */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-display font-bold text-foreground truncate">
                           {s.display_name}
                         </span>
-                        <TierBadge isVip={s.is_vip} />
+                        {s.is_vip && <Badge className="bg-yellow-400/20 text-yellow-400 border-yellow-400/30 text-[10px]">👑 VIP</Badge>}
                       </div>
                       <span className="text-xs text-muted-foreground">@{s.username}</span>
                     </div>

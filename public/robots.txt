@@ -1,14 +1,10 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /profile
+Disallow: /settings
+Disallow: /create
+Disallow: /reset-password
+Disallow: /forgot-password
+
+Sitemap: https://fishkillerz.com/sitemap.xml

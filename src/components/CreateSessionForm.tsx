@@ -6,11 +6,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Crosshair, FileText, Plus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import PaymentSettings from "@/components/PaymentSettings";
-import TierBadge from "@/components/TierBadge";
+
 import { MAX_STAKE_PERCENT, getRakeRate } from "@/lib/tierConfig";
 
 interface ConfirmedAgent {
@@ -126,7 +127,7 @@ export default function CreateSessionForm() {
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <h2 className="font-display text-xl font-bold text-foreground">Create Session</h2>
-            <TierBadge isVip={isVip} />
+            {isVip && <Badge className="bg-yellow-400/20 text-yellow-400 border-yellow-400/30 text-[10px]">👑 VIP</Badge>}
           </div>
           <p className="text-xs text-muted-foreground">
             Max stake: {MAX_STAKE_PERCENT}% · Rake: {(rakeRate * 100).toFixed(0)}% on backer winnings

@@ -1,0 +1,1 @@
+ALTER TABLE public.payment_profiles DROP COLUMN venmo_username;

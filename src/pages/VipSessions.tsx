@@ -5,12 +5,20 @@ import SessionCard, { SessionData } from "@/components/SessionCard";
 import { Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function VipSessions() {
   const { user, isVip, loading } = useAuth();
   const navigate = useNavigate();
   const [sessions, setSessions] = useState<SessionData[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
+
+  useSEO({
+    title: "VIP Sessions | FishKillerz Staking",
+    description:
+      "Exclusive high-stakes fish table staking sessions from Apex Predator sellers. VIP access only — 2% rake. Golden Dragon, Diamond Dragon & more.",
+    canonical: "/vip-sessions",
+  });
 
   useEffect(() => {
     if (!loading && (!user || !isVip)) {
@@ -23,7 +31,6 @@ export default function VipSessions() {
     const fetch = async () => {
       const { data } = await supabase.rpc("get_public_sessions");
       if (data) {
-        // VIP sessions: only show sessions from other VIP sellers (tier 4)
         const vipSessions = (data as any[]).filter((s) => s.shooter_tier === 4);
         setSessions(
           vipSessions.map((s) => ({
@@ -38,7 +45,6 @@ export default function VipSessions() {
             endTime: new Date(s.end_time).toLocaleString(),
             status: (s.status ?? "pending") as SessionData["status"],
             streamUrl: s.stream_url ?? undefined,
-            shooterTier: s.shooter_tier ?? 1,
           }))
         );
       }
@@ -58,7 +64,9 @@ export default function VipSessions() {
           </div>
           <div>
             <h1 className="font-display text-2xl font-bold text-foreground">VIP Sessions</h1>
-            <p className="text-xs text-muted-foreground">Exclusive listings from Apex Predator sellers · 2% rake</p>
+            <p className="text-xs text-muted-foreground">
+              Exclusive listings from Apex Predator sellers · 2% rake
+            </p>
           </div>
         </div>
         {loadingSessions ? (
@@ -67,7 +75,9 @@ export default function VipSessions() {
           <div className="gradient-card rounded-lg p-8 text-center">
             <Crown className="h-10 w-10 text-yellow-400/50 mx-auto mb-3" />
             <p className="text-muted-foreground font-display">No VIP sessions available right now.</p>
-            <p className="text-xs text-muted-foreground mt-1">Check back soon for exclusive high-stakes listings.</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Check back soon for exclusive high-stakes listings.
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
