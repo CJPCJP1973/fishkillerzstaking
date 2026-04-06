@@ -130,6 +130,11 @@ interface PendingVerification {
 }
 
 export default function Admin() {
+  useSEO({
+    title: "Admin Dashboard | FishKillerz",
+    description: "Manage sessions, sellers, disputes, and payouts on FishKillerz.",
+  });
+
   const [requests, setRequests] = useState<SellerRequest[]>([]);
   const [stakes, setStakes] = useState<PendingStake[]>([]);
   const [sessions, setSessions] = useState<SessionRow[]>([]);
