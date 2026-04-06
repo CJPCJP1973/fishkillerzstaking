@@ -1,4 +1,4 @@
-{
+I{
   "name": "fishkillerz",
   "private": true,
   "version": "0.0.0",
@@ -94,6 +94,7 @@
     "glob": "10.5.0",
     "brace-expansion": "1.1.13",
     "react-router": "6.30.2",
+ 
     "rollup": "4.22.4",
     "@remix-run/router": "1.23.2",
     "lodash": "4.17.23",
@@ -103,6 +104,7 @@
     "minimatch": "3.1.4",
     "@tootallnate/once": "3.0.1",
     "ajv": "6.14.0",
-    "browserslist": "4.25.3"
+    "browserslist": "4.25.3",
+    "serialize-javascript": "^7.1.0"
   }
 }
