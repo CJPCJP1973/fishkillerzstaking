@@ -51,6 +51,19 @@
 
   <body>
     <div id="root"></div>
+    <noscript>
+      <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0a0a0a;color:#e5e5e5;font-family:system-ui,sans-serif;text-align:center;padding:2rem">
+        <div><h1 style="font-size:1.5rem;margin-bottom:1rem">JavaScript Required</h1><p>Please enable JavaScript to use FishKillerz.</p></div>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      setTimeout(function(){
+        var r=document.getElementById("root");
+        if(r && r.children.length===0){
+          r.innerHTML='<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0a0a0a;color:#e5e5e5;font-family:system-ui,sans-serif;text-align:center;padding:2rem"><div><h1 style="font-size:1.5rem;margin-bottom:1rem">Something went wrong</h1><p style="margin-bottom:1rem;color:#a3a3a3">The app failed to load. This is usually fixed by a hard refresh.</p><button onclick="location.reload(true)" style="padding:.5rem 1.5rem;background:#06b6d4;color:#000;border:none;border-radius:.375rem;cursor:pointer;font-weight:600">Reload</button></div></div>';
+        }
+      },8000);
+    </script>
   </body>
 </html>

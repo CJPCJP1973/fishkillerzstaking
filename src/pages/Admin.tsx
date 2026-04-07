@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useSEO } from "@/hooks/useSEO";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -129,6 +130,11 @@ interface PendingVerification {
 }
 
 export default function Admin() {
+  useSEO({
+    title: "Admin Dashboard | FishKillerz",
+    description: "Manage sessions, sellers, disputes, and payouts on FishKillerz.",
+  });
+
   const [requests, setRequests] = useState<SellerRequest[]>([]);
   const [stakes, setStakes] = useState<PendingStake[]>([]);
   const [sessions, setSessions] = useState<SessionRow[]>([]);

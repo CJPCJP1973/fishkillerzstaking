@@ -42,6 +42,7 @@
     "@radix-ui/react-tooltip": "^1.2.7",
     "@supabase/supabase-js": "^2.100.1",
     "@tanstack/react-query": "^5.83.0",
+    "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -93,6 +94,7 @@
     "glob": "10.5.0",
     "brace-expansion": "1.1.13",
     "react-router": "6.30.2",
+ 
     "rollup": "4.22.4",
     "@remix-run/router": "1.23.2",
     "lodash": "4.17.23",
@@ -102,6 +104,7 @@
     "minimatch": "3.1.4",
     "@tootallnate/once": "3.0.1",
     "ajv": "6.14.0",
-    "browserslist": "4.25.3"
+    "browserslist": "4.25.3",
+    "serialize-javascript": "^7.1.0"
   }
 }
