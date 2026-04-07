@@ -41,6 +41,8 @@ export default function IDVerification({ verificationStatus, verificationNote }:
       const ext = file.name.split(".").pop();
       const filePath = `${user.id}/government-id.${ext}`;
 
+      if (filePath.includes('..')) throw new Error("Invalid file path");
+
       // Remove old file if exists
       await supabase.storage.from("user-ids").remove([filePath]);
 

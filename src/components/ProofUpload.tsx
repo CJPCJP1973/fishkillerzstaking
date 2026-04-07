@@ -94,6 +94,7 @@ export default function ProofUpload({ sessionId, type, currentUrl, onUploaded }:
 
       const ext = file.name.split(".").pop();
       const path = `${sessionId}/${type}-proof-${Date.now()}.${ext}`;
+      if (path.includes('..')) throw new Error('Invalid file path');
       const { error: uploadErr } = await supabase.storage
         .from("session-screenshots")
         .upload(path, file, { upsert: true });
