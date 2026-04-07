@@ -105,6 +105,6 @@
     "@tootallnate/once": "3.0.1",
     "ajv": "6.14.0",
     "browserslist": "4.25.3",
-    "serialize-javascript": "^7.1.0"
+    "serialize-javascript": "6.0.2"
   }
 }
