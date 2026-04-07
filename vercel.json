@@ -56,7 +56,7 @@
   ],
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/((?!api/|assets/|favicon.ico|robots.txt|sitemap.xml|manifest.webmanifest|sw.js|.*\\.[^/]+$).*)",
       "destination": "/index.html"
     }
   ]
