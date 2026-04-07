@@ -152,6 +152,9 @@ export default function ScreenshotComparison({
       }
 
       const path = `${sessionId}/${type}-${Date.now()}.${file.name.split(".").pop()}`;
+      if (path.includes('..')) {
+        throw new Error("Invalid file path");
+      }
       const { error: uploadErr } = await supabase.storage
         .from("session-screenshots")
         .upload(path, file, { upsert: true });
@@ -184,6 +187,9 @@ export default function ScreenshotComparison({
   };
 
   const getSignedUrl = async (storagePath: string): Promise<string | null> => {
+    if (storagePath.includes('..')) {
+      throw new Error('Invalid storage path');
+    }
     const { data, error } = await supabase.storage
       .from("session-screenshots")
       .createSignedUrl(storagePath, 300);

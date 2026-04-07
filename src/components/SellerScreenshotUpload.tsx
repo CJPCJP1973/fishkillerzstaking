@@ -34,6 +34,9 @@ export default function SellerScreenshotUpload({
 
   useEffect(() => {
     if (currentUrl) {
+      if (currentUrl.includes('..')) {
+        throw new Error('Invalid file path');
+      }
       supabase.storage
         .from("session-screenshots")
         .createSignedUrl(currentUrl, 300)
@@ -89,6 +92,7 @@ export default function SellerScreenshotUpload({
       // 3. Upload file
       const ext = file.name.split(".").pop();
       const path = `${sessionId}/${type}-${Date.now()}.${ext}`;
+      if (path.includes('..')) throw new Error('Invalid path');
       const { error: uploadErr } = await supabase.storage
         .from("session-screenshots")
         .upload(path, file, { upsert: true });
@@ -119,6 +123,7 @@ export default function SellerScreenshotUpload({
       onUploaded();
 
       // 7. Auto-trigger OCR
+      if (path.includes('..')) throw new Error('Invalid path');
       const signedUrlForOcr = await supabase.storage
         .from("session-screenshots")
         .createSignedUrl(path, 300);
