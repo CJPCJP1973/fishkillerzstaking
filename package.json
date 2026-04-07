@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:dev": "vite build --mode development",
+    "build:dev": "vite build --mode-development",
     "preview": "vite preview",
     "test": "vitest run",
     "lint": "eslint ."
@@ -103,8 +103,8 @@
     "@tootallnate/once": "3.0.1",
     "ajv": "6.14.0",
     "browserslist": "4.25.3",
-    "serialize-javascript": "7.0.5",
     "lodash": "4.18.0",
+    "serialize-javascript": "7.0.5",
     "nanoid": "3.3.8"
   },
   "optionalDependencies": {
