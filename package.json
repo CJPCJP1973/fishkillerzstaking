@@ -1,12 +1,10 @@
 {
   "name": "fishkillerz",
-  "private": true,
+  "private": false,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
     "build": "vite build",
-    "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "test": "vitest run",
     "lint": "eslint ."
@@ -73,8 +71,6 @@
     "@testing-library/react": "^16.0.0",
     "@types/node": "^22.16.5",
     "@types/react": "^18.3.23",
-    "@types/react-dom": "^18.3.7",
-    "@vitejs/plugin-react-swc": "^3.11.0",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.32.0",
     "eslint-plugin-react-hooks": "^5.2.0",
