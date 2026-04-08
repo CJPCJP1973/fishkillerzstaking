@@ -14,8 +14,8 @@ import Sessions from "./pages/Sessions";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Admin from "./pages/Admin";
 
-const Admin = lazy(() => import("./pages/Admin"));
 const Settings = lazy(() => import("./pages/Settings"));
 const CreateSession = lazy(() => import("./pages/CreateSession"));
 const Profile = lazy(() => import("./pages/Profile"));
