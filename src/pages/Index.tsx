@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Crosshair, ArrowRight } from "lucide-react";
+import { Crosshair, ArrowRight, Download } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
@@ -14,9 +14,38 @@ import { useSEO } from "@/hooks/useSEO";
 
 const featuredPlatforms = ["Golden Dragon", "Diamond Dragon", "Fire Phoenix", "Vblink", "Riversweeps", "Magic City"];
 
+let deferredPrompt: any = null;
+if (typeof window !== "undefined") {
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+  });
+}
+
 export default function Index() {
   const [sessions, setSessions] = useState<SessionData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [canInstall, setCanInstall] = useState(!!deferredPrompt);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      setCanInstall(true);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const result = await deferredPrompt.userChoice;
+    if (result.outcome === "accepted") {
+      setCanInstall(false);
+      deferredPrompt = null;
+    }
+  };
 
   useSEO({
     title: "FishKillerz — Fish Table Staking Marketplace",
@@ -90,6 +119,15 @@ export default function Index() {
                   I'm a Seller
                 </Button>
               </Link>
+              {canInstall && (
+                <Button
+                  onClick={handleInstall}
+                  variant="outline"
+                  className="border-success/30 text-success hover:bg-success/10 font-display font-bold px-6 py-5 text-base"
+                >
+                  <Download className="mr-2 h-4 w-4" /> Install App
+                </Button>
+              )}
             </div>
             <div className="mt-4 space-y-1">
               <p className="text-sm font-display font-semibold text-accent">1 FishDollar = $1</p>
