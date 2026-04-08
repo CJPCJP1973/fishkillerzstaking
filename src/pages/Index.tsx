@@ -96,7 +96,15 @@ export default function Index() {
             <div className="flex items-center gap-2 mb-4">
               <Crosshair className="h-5 w-5 text-primary" />
               <span className="text-xs font-bold text-primary uppercase tracking-widest">Staking Marketplace</span>
-            </div>
+              {canInstall && (
+                <Button
+                  onClick={handleInstall}
+                  variant="outline"
+                  className="border-success/30 text-success hover:bg-success/10 font-display font-bold px-6 py-5 text-base"
+                >
+                  <Download className="mr-2 h-4 w-4" /> Install App
+                </Button>
+              )}
             <h1 className="font-display text-4xl md:text-6xl font-bold text-foreground leading-tight mb-4">
               FISH<span className="text-primary glow-text-cyan">KILLERZ</span>
             </h1>
