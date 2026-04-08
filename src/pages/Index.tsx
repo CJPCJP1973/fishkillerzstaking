@@ -119,6 +119,15 @@ export default function Index() {
                   I'm a Seller
                 </Button>
               </Link>
+              {canInstall && (
+                <Button
+                  onClick={handleInstall}
+                  variant="outline"
+                  className="border-success/30 text-success hover:bg-success/10 font-display font-bold px-6 py-5 text-base"
+                >
+                  <Download className="mr-2 h-4 w-4" /> Install App
+                </Button>
+              )}
             </div>
             <div className="mt-4 space-y-1">
               <p className="text-sm font-display font-semibold text-accent">1 FishDollar = $1</p>
