@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Crosshair, ArrowRight } from "lucide-react";
+import { Crosshair, ArrowRight, Download } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
@@ -13,6 +13,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSEO } from "@/hooks/useSEO";
 
 const featuredPlatforms = ["Golden Dragon", "Diamond Dragon", "Fire Phoenix", "Vblink", "Riversweeps", "Magic City"];
+
+let deferredPrompt: any = null;
+if (typeof window !== "undefined") {
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+  });
+}
 
 export default function Index() {
   const [sessions, setSessions] = useState<SessionData[]>([]);
