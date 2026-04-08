@@ -25,6 +25,27 @@ if (typeof window !== "undefined") {
 export default function Index() {
   const [sessions, setSessions] = useState<SessionData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [canInstall, setCanInstall] = useState(!!deferredPrompt);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      setCanInstall(true);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const result = await deferredPrompt.userChoice;
+    if (result.outcome === "accepted") {
+      setCanInstall(false);
+      deferredPrompt = null;
+    }
+  };
 
   useSEO({
     title: "FishKillerz — Fish Table Staking Marketplace",
