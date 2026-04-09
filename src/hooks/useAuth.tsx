@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { defaultUserProfileState } from "@/lib/authState";
 
 interface AuthContextType {
   user: User | null;
@@ -52,76 +53,103 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isVip, setIsVip] = useState(false);
   const [completedSessions, setCompletedSessions] = useState(0);
 
+  const resetProfileState = () => {
+    setSellerStatus(defaultUserProfileState.sellerStatus);
+    setUsername(defaultUserProfileState.username);
+    setVerificationStatus(defaultUserProfileState.verificationStatus);
+    setVerificationNote(defaultUserProfileState.verificationNote);
+    setIsVip(defaultUserProfileState.isVip);
+    setCompletedSessions(defaultUserProfileState.completedSessions);
+    setSellerPaid(defaultUserProfileState.sellerPaid);
+  };
+
   const fetchRoles = async (userId: string) => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", userId);
-    setUserRoles(data?.map((r) => r.role) || []);
+
+    if (error) throw error;
+    return data?.map((r) => r.role) || [];
   };
 
   const fetchProfile = async (_userId: string) => {
-    const { data } = await supabase.rpc("get_own_profile");
+    const { data, error } = await supabase.rpc("get_own_profile");
+    if (error) throw error;
     const profile = Array.isArray(data) ? data[0] : data;
-    if (profile) {
-      setSellerStatus(profile.seller_status || "none");
-      setUsername(profile.username || null);
-      setVerificationStatus(profile.verification_status || "none");
-      setVerificationNote(null); // excluded from RPC for security
-      
-      setIsVip(profile.is_vip ?? false);
-      setCompletedSessions(profile.completed_sessions ?? 0);
-      setSellerPaid(profile.seller_paid ?? false);
-    }
+    return {
+      sellerStatus: profile?.seller_status || "none",
+      username: profile?.username || null,
+      verificationStatus: profile?.verification_status || "none",
+      verificationNote: null,
+      isVip: profile?.is_vip ?? false,
+      completedSessions: profile?.completed_sessions ?? 0,
+      sellerPaid: profile?.seller_paid ?? false,
+    };
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        // On password recovery, redirect to reset page instead of auto-login
-        if (event === "PASSWORD_RECOVERY") {
-          // Navigate to reset-password page — use window.location to ensure it works
-          // even before React Router is fully ready
-          if (window.location.pathname !== "/reset-password") {
-            window.location.href = "/reset-password";
-          }
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
-          return;
-        }
+    let active = true;
 
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await fetchRoles(session.user.id);
-          await fetchProfile(session.user.id);
-        } else {
-          setUserRoles([]);
-          setSellerStatus("none");
-          setUsername(null);
-          setVerificationStatus("none");
-          setVerificationNote(null);
-          
-          setIsVip(false);
-          setCompletedSessions(0);
-          setSellerPaid(false);
-        }
+    const syncAuthState = async (nextSession: Session | null, event?: string) => {
+      if (!active) return;
+
+      setSession(nextSession);
+      setUser(nextSession?.user ?? null);
+
+      if (event === "PASSWORD_RECOVERY") {
         setLoading(false);
+        if (window.location.pathname !== "/reset-password") {
+          window.location.href = "/reset-password";
+        }
+        return;
       }
-    );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchRoles(session.user.id);
-        fetchProfile(session.user.id);
+      if (!nextSession?.user) {
+        setUserRoles([]);
+        resetProfileState();
+        setLoading(false);
+        return;
       }
+
+      const [rolesResult, profileResult] = await Promise.allSettled([
+        fetchRoles(nextSession.user.id),
+        fetchProfile(nextSession.user.id),
+      ]);
+
+      if (!active) return;
+
+      setUserRoles(rolesResult.status === "fulfilled" ? rolesResult.value : []);
+
+      if (profileResult.status === "fulfilled") {
+        setSellerStatus(profileResult.value.sellerStatus);
+        setUsername(profileResult.value.username);
+        setVerificationStatus(profileResult.value.verificationStatus);
+        setVerificationNote(profileResult.value.verificationNote);
+        setIsVip(profileResult.value.isVip);
+        setCompletedSessions(profileResult.value.completedSessions);
+        setSellerPaid(profileResult.value.sellerPaid);
+      } else {
+        resetProfileState();
+      }
+
       setLoading(false);
+    };
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      void syncAuthState(nextSession, event);
     });
 
-    return () => subscription.unsubscribe();
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      void syncAuthState(currentSession);
+    });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
