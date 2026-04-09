@@ -1,12 +1,11 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-dom";
-import path from "path";
-import { componentTagger } from "lovable-tagger";
+import path from "dist";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "::",
+    host: "https://www.fishkillerz.com",
     port: 8080,
     hmr: {
       overlay: false,
@@ -14,7 +13,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    mode === "development" && componentTagger(),
+    mode === "production"(),
   ].filter(Boolean),
   resolve: {
     alias: {
