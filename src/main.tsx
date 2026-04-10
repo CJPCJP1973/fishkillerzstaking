@@ -177,6 +177,7 @@ const recoverStartup = async (reason: unknown) => {
   bootCompleted = false;
 
   const error = normalizeError(reason);
+  pushBootError(error);
   console.error("Startup recovery triggered", error);
 
   if (!bootRetryUsed) {
