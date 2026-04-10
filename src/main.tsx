@@ -44,6 +44,16 @@ const clearPersistedAuthState = () => {
 const normalizeError = (reason: unknown) =>
   reason instanceof Error ? reason : new Error(typeof reason === "string" ? reason : "Unknown startup error");
 
+// Collect boot errors for the diagnostic panel
+const bootErrors: { time: string; message: string; stack?: string }[] = [];
+const pushBootError = (err: Error) => {
+  bootErrors.push({
+    time: new Date().toISOString(),
+    message: err.message,
+    stack: err.stack?.split("\n").slice(0, 6).join("\n"),
+  });
+};
+
 function StartupScreen({ retrying }: { retrying: boolean }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-6 py-10 text-foreground">
@@ -62,6 +72,28 @@ function StartupScreen({ retrying }: { retrying: boolean }) {
   );
 }
 
+function ErrorLogPanel() {
+  if (bootErrors.length === 0) return null;
+  return (
+    <details className="mt-4 w-full text-left" open>
+      <summary className="cursor-pointer text-xs font-bold text-destructive">
+        🔍 Boot diagnostics ({bootErrors.length} error{bootErrors.length > 1 ? "s" : ""})
+      </summary>
+      <div className="mt-2 max-h-48 overflow-y-auto rounded-lg border border-destructive/30 bg-destructive/5 p-3 font-mono text-[11px] leading-relaxed text-destructive">
+        {bootErrors.map((e, i) => (
+          <div key={i} className={i > 0 ? "mt-3 border-t border-destructive/20 pt-3" : ""}>
+            <p className="font-bold">[{e.time}]</p>
+            <p>{e.message}</p>
+            {e.stack && (
+              <pre className="mt-1 whitespace-pre-wrap break-all text-destructive/70">{e.stack}</pre>
+            )}
+          </div>
+        ))}
+      </div>
+    </details>
+  );
+}
+
 function FatalStartupScreen() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-6 py-10 text-foreground">
@@ -70,6 +102,7 @@ function FatalStartupScreen() {
         <p className="mt-2 text-sm text-muted-foreground">
           We cleared stale cached state, but this browser still has an old copy stuck.
         </p>
+        <ErrorLogPanel />
         <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <button
             type="button"
@@ -93,7 +126,6 @@ function FatalStartupScreen() {
     </div>
   );
 }
-
 function BootReady({ children }: { children: ReactNode }) {
   useEffect(() => {
     bootCompleted = true;
