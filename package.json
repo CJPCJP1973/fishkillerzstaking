@@ -10,20 +10,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "lint": "eslint ."
-  },
+},
   "engines": {
     "node": "24.x"
-  },
-  on:
-  - push
-  - pull_request
-
-jobs:
-  install:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: pnpm/action-setup@v6
 },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
