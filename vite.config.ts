@@ -4,6 +4,10 @@ import path from 'node:path'
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    port: 8080,
+    allowedHosts: true,
+  },
   resolve: {
     alias: [
       {
