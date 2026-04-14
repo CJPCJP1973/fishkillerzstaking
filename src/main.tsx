@@ -228,3 +228,4 @@ if (typeof window !== "undefined") {
 }
 
 void mountApp();
+
