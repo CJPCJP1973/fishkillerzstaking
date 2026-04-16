@@ -23,6 +23,7 @@ import Leaderboard from "./pages/Leaderboard";
 import PublicProfile from "./pages/PublicProfile";
 import Terms from "./pages/Terms";
 import SiteRules from "./pages/SiteRules";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
@@ -78,6 +79,7 @@ const App = () => {
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/site-rules" element={<SiteRules />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/u/:username" element={<PublicProfile />} />
