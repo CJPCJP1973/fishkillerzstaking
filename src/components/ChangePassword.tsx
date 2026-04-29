@@ -11,7 +11,7 @@ export default function ChangePassword() {
   const [form, setForm] = useState({ password: "", confirm: "" });
 
   const handleSave = async () => {
-    if (!form.password || form.password.length < 6) {
+    if (!form.password || form.password.length < 12) {
       toast.error("Password must be at least 6 characters");
       return;
     }
@@ -47,7 +47,7 @@ export default function ChangePassword() {
             onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
             placeholder="••••••••"
             className="bg-secondary border-border text-foreground"
-            minLength={6}
+            minLength={12}
           />
         </div>
         <div>
@@ -58,7 +58,7 @@ export default function ChangePassword() {
             onChange={(e) => setForm((f) => ({ ...f, confirm: e.target.value }))}
             placeholder="••••••••"
             className="bg-secondary border-border text-foreground"
-            minLength={6}
+            minLength={12}
           />
         </div>
       </div>
