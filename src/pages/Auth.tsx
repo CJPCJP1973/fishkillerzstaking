@@ -24,8 +24,35 @@ export default function Auth() {
     description: "Create your FishKillerz account or log in to buy stakes, sell sessions, and track your fish table earnings.",
     canonical: "/auth",
   });
+    const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  if (isLogin) {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Welcome back!");
+      navigate("/");
+    }
+  } else {
+    // ADD THIS VALIDATION:
+    if (password.length < 12) {
+      toast.error("Password must be at least 12 characters");
+      setLoading(false);
+      return;
+    }
+
+    if (!agreedToTerms) {
+      toast.error("You must agree to the Terms of Service and Site Rules");
+      setLoading(false);
+      return;
+    }
+    // ... rest of code
+  }
+  setLoading(false);
+};
     e.preventDefault();
     setLoading(true);
 
