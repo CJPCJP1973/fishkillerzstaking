@@ -25,7 +25,7 @@ export default function Auth() {
     canonical: "/auth",
   });
     const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+  preventDefault();
   setLoading(true);
 
   if (isLogin) {
