@@ -162,7 +162,7 @@ export default function Auth() {
                 placeholder="••••••••"
                 className="bg-secondary border-border text-foreground pl-9"
                 required
-                minLength={6}
+                minLength={12}
               />
             </div>
           </div>
