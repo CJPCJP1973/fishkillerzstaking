@@ -1,18 +1,35 @@
+# Default security headers for all routes
 /
-  Cache-Control: no-cache, no-store, must-revalidate
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' *.vercel.com *.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' *.supabase.co *.googletagmanager.com
 
+# HTML entry point - no caching
 /index.html
   Cache-Control: no-cache, no-store, must-revalidate
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
 
+# Service worker - no caching
 /sw.js
   Cache-Control: no-cache, no-store, must-revalidate
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
 
 /registerSW.js
   Cache-Control: no-cache, no-store, must-revalidate
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
 
+# Manifest - revalidate frequently
 /manifest.webmanifest
   Cache-Control: no-cache, must-revalidate
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
 
+# Immutable assets - cache forever
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
@@ -22,6 +39,7 @@
 /*.css
   Cache-Control: public, max-age=31536000, immutable
 
+# Images - long cache
 /*.png
   Cache-Control: public, max-age=86400
 
@@ -34,6 +52,7 @@
 /*.webp
   Cache-Control: public, max-age=86400
 
+# Fonts - cache forever (immutable)
 /*.woff2
   Cache-Control: public, max-age=31536000, immutable
 
