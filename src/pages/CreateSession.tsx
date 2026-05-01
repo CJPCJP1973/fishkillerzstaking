@@ -12,7 +12,7 @@ export default function CreateSession() {
   useSEO({
     title: "Create Session | FishKillerz",
     description: "List a new fish table staking session on FishKillerz. Set your buy-in, stake amount, and platform.",
-    canonical: "/create-session",
+    canonical: "/create",
   });
 
   useEffect(() => {
