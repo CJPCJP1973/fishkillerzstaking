@@ -26,6 +26,7 @@ import SiteRules from "./pages/SiteRules";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import LegacyRedirect from "./components/LegacyRedirect";
 
 const queryClient = new QueryClient();
 
@@ -83,6 +84,14 @@ const App = () => {
               <Route path="/settings" element={<Settings />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/u/:username" element={<PublicProfile />} />
+              {/* Legacy URL redirects (301-equivalent for SPA) */}
+              <Route path="/create-session" element={<LegacyRedirect to="/create" />} />
+              <Route path="/rules" element={<LegacyRedirect to="/site-rules" />} />
+              <Route path="/privacy-policy" element={<LegacyRedirect to="/privacy" />} />
+              <Route path="/login" element={<LegacyRedirect to="/auth" />} />
+              <Route path="/signup" element={<LegacyRedirect to="/auth" />} />
+              <Route path="/register" element={<LegacyRedirect to="/auth" />} />
+              <Route path="/sessions/vip" element={<LegacyRedirect to="/vip-sessions" />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
