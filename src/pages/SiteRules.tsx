@@ -7,7 +7,7 @@ export default function SiteRules() {
   useSEO({
     title: "Site Rules | FishKillerz",
     description: "FishKillerz platform rules: rake structure, staking guidelines, evidence requirements, dispute process, and VIP perks.",
-    canonical: "/rules",
+    canonical: "/site-rules",
   });
   return (
     <Layout>
