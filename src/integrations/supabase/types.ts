@@ -839,21 +839,6 @@ export type Database = {
           username: string
         }[]
       }
-      get_session_payouts_for_shooter: {
-        Args: { _session_id: string }
-        Returns: {
-          amount_owed: number
-          backer_id: string
-          backer_name: string
-          created_at: string
-          id: string
-          session_id: string
-          stake_id: string
-          status: string
-          transaction_reference: string
-          updated_at: string
-        }[]
-      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
