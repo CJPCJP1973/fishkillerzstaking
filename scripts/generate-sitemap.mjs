@@ -22,15 +22,17 @@ const TODAY = new Date().toISOString().slice(0, 10);
 // Private routes (/profile, /settings, /admin, /reset-password, /u/:username) are
 // excluded — they require auth or are dynamic and disallowed in robots.txt.
 const PUBLIC_ROUTES = [
-  { path: "/",                priority: "1.0", changefreq: "daily"   },
-  { path: "/sessions",        priority: "0.9", changefreq: "hourly"  },
-  { path: "/vip-sessions",    priority: "0.8", changefreq: "hourly"  },
-  { path: "/leaderboard",     priority: "0.7", changefreq: "daily"   },
-  { path: "/auth",            priority: "0.5", changefreq: "monthly" },
-  { path: "/terms",           priority: "0.3", changefreq: "monthly" },
-  { path: "/site-rules",      priority: "0.3", changefreq: "monthly" },
-  { path: "/privacy",         priority: "0.3", changefreq: "monthly" },
-  { path: "/forgot-password", priority: "0.2", changefreq: "yearly"  },
+  { path: "/",                     priority: "1.0", changefreq: "daily"   },
+  { path: "/sessions",             priority: "0.9", changefreq: "hourly"  },
+  { path: "/vip-sessions",         priority: "0.8", changefreq: "hourly"  },
+  { path: "/our-staking-services", priority: "0.8", changefreq: "weekly"  },
+  { path: "/crypto-staking-guide", priority: "0.7", changefreq: "weekly"  },
+  { path: "/leaderboard",          priority: "0.7", changefreq: "daily"   },
+  { path: "/auth",                 priority: "0.5", changefreq: "monthly" },
+  { path: "/terms",                priority: "0.3", changefreq: "monthly" },
+  { path: "/site-rules",           priority: "0.3", changefreq: "monthly" },
+  { path: "/privacy",              priority: "0.3", changefreq: "monthly" },
+  { path: "/forgot-password",      priority: "0.2", changefreq: "yearly"  },
 ];
 
 const appSrc = readFileSync(resolve(ROOT, "src/App.tsx"), "utf8");
@@ -56,6 +58,8 @@ const pageFiles = [
   "src/pages/Index.tsx",
   "src/pages/Sessions.tsx",
   "src/pages/VipSessions.tsx",
+  "src/pages/OurStakingServices.tsx",
+  "src/pages/CryptoStakingGuide.tsx",
   "src/pages/Leaderboard.tsx",
   "src/pages/Auth.tsx",
   "src/pages/Terms.tsx",
