@@ -80,7 +80,7 @@ async function runFor(label, client) {
 
   // Authenticated-only — auth.uid() based, must error or return empty for anon
   if (label === "anon") {
-    await expect(client, "get_own_profile", label, (c) => c.rpc("get_own_profile"), "empty");
+    await expect(client, "get_own_profile", label, (c) => c.rpc("get_own_profile"), "deny");
     await expect(client, "start_seller_trial", label, (c) => c.rpc("start_seller_trial"), "deny");
   } else {
     await expect(client, "get_own_profile", label, (c) => c.rpc("get_own_profile"), "ok");
