@@ -86,6 +86,8 @@ const App = () => {
               <Route path="/settings" element={<Settings />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/u/:username" element={<PublicProfile />} />
+              <Route path="/crypto-staking-guide" element={<CryptoStakingGuide />} />
+              <Route path="/our-staking-services" element={<OurStakingServices />} />
               {/* Legacy URL redirects (301-equivalent for SPA) */}
               <Route path="/create-session" element={<LegacyRedirect to="/create" />} />
               <Route path="/rules" element={<LegacyRedirect to="/site-rules" />} />
