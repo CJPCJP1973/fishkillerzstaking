@@ -26,6 +26,8 @@ import SiteRules from "./pages/SiteRules";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import CryptoStakingGuide from "./pages/CryptoStakingGuide";
+import OurStakingServices from "./pages/OurStakingServices";
 import LegacyRedirect from "./components/LegacyRedirect";
 
 const queryClient = new QueryClient();
