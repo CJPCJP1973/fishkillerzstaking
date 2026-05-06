@@ -77,11 +77,10 @@ d("RPC regression (anon)", () => {
     expect(Array.isArray(data) && data[0]?.success === false).toBe(true);
   });
 
-  it("get_own_profile returns no rows for anon", async () => {
+  it("get_own_profile denies anon (authenticated-only)", async () => {
     if (skipIfOffline()) return;
-    const { data, error } = await client.rpc("get_own_profile");
-    expect(error).toBeNull();
-    expect(Array.isArray(data) && data.length === 0).toBe(true);
+    const { error } = await client.rpc("get_own_profile");
+    expect(error).toBeTruthy();
   });
 
   it.each([
