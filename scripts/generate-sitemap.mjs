@@ -58,6 +58,8 @@ const pageFiles = [
   "src/pages/Index.tsx",
   "src/pages/Sessions.tsx",
   "src/pages/VipSessions.tsx",
+  "src/pages/OurStakingServices.tsx",
+  "src/pages/CryptoStakingGuide.tsx",
   "src/pages/Leaderboard.tsx",
   "src/pages/Auth.tsx",
   "src/pages/Terms.tsx",
