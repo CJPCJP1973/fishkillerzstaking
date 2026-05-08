@@ -34,6 +34,33 @@ serve(async (req) => {
 
     const { start_screenshot_url, end_screenshot_url, session_id } = await req.json();
 
+    // SSRF guard: only allow Supabase storage URLs from this project
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+    const allowedHost = new URL(SUPABASE_URL).host;
+    const isAllowedUrl = (u: unknown): boolean => {
+      if (typeof u !== "string" || u.length === 0) return false;
+      try {
+        const parsed = new URL(u);
+        if (parsed.protocol !== "https:") return false;
+        if (parsed.host !== allowedHost) return false;
+        // must be a storage object path under session-screenshots
+        return parsed.pathname.startsWith("/storage/v1/object/") &&
+          parsed.pathname.includes("/session-screenshots/");
+      } catch {
+        return false;
+      }
+    };
+    if (start_screenshot_url && !isAllowedUrl(start_screenshot_url)) {
+      return new Response(JSON.stringify({ error: "Invalid start_screenshot_url" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (end_screenshot_url && !isAllowedUrl(end_screenshot_url)) {
+      return new Response(JSON.stringify({ error: "Invalid end_screenshot_url" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Verify caller is admin OR the session's shooter
     const adminClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
