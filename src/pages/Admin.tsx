@@ -1007,7 +1007,7 @@ export default function Admin() {
               </TabsTrigger>
               <TabsTrigger value="sessions" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
                 <Crosshair className="h-4 w-4" />
-                <span>Sessions <span className="text-primary">({sessions.length})</span></span>
+                <span>Committed</span>
               </TabsTrigger>
               <TabsTrigger value="users" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
                 <Users className="h-4 w-4" />
