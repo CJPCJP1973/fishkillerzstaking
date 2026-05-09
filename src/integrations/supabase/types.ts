@@ -755,6 +755,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      consume_unsubscribe_token: {
+        Args: { _token: string }
+        Returns: {
+          email: string
+          success: boolean
+        }[]
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
