@@ -5,6 +5,7 @@ import ScreenshotComparison from "@/components/admin/ScreenshotComparison";
 import ProofUpload from "@/components/ProofUpload";
 import DisputeReview from "@/components/admin/DisputeReview";
 import TransactionLogs from "@/components/admin/TransactionLogs";
+import CommittedSessionsTab from "@/components/admin/CommittedSessionsTab";
 import OcrDashboardWidget from "@/components/OcrDashboardWidget";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1006,7 +1007,7 @@ export default function Admin() {
               </TabsTrigger>
               <TabsTrigger value="sessions" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
                 <Crosshair className="h-4 w-4" />
-                <span>Sessions <span className="text-primary">({sessions.length})</span></span>
+                <span>Committed</span>
               </TabsTrigger>
               <TabsTrigger value="users" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
                 <Users className="h-4 w-4" />
@@ -1200,199 +1201,8 @@ export default function Admin() {
           </TabsContent>
 
           {/* Sessions */}
-          <TabsContent value="sessions" className="space-y-3 mt-4">
-            <h2 className="font-display text-lg font-bold text-foreground">All Sessions</h2>
-            {sessions.length === 0 ? (
-              <div className="gradient-card rounded-lg p-6 text-center">
-                <p className="text-muted-foreground text-sm">No sessions yet.</p>
-              </div>
-            ) : (
-              sessions.map((s) => (
-                <div key={s.id} className="gradient-card rounded-lg p-4 space-y-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="p-2 rounded-md bg-primary/20 shrink-0">
-                        <Crosshair className="h-4 w-4 text-primary" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">
-                          {s.shooter_name} — {s.platform}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          ${Number(s.total_buy_in).toLocaleString()} buy-in • ${Number(s.stake_sold || 0).toLocaleString()} sold
-                          {s.winnings != null && ` • $${Number(s.winnings).toLocaleString()} cash-out`}
-                          {s.platform_fee != null && Number(s.platform_fee) > 0 && (
-                            <span className="text-accent"> • ${Number(s.platform_fee).toLocaleString()} rake</span>
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge variant="outline" className={statusColor[s.status] || "bg-secondary text-muted-foreground"}>
-                      {(s.status || "pending").toUpperCase()}
-                    </Badge>
-                  </div>
-
-                  {/* Action Buttons - organized grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {s.status === "funding" && (
-                      <Button
-                        disabled={loadingId === s.id || !s.deposit_proof_url}
-                        title={!s.deposit_proof_url ? "Deposit proof required" : "Start session"}
-                        onClick={async () => {
-                          if (!s.deposit_proof_url) {
-                            await supabase.from("notifications").insert({
-                              user_id: s.shooter_id,
-                              title: "⚠️ Deposit Proof Missing",
-                              message: `Your session "${s.shooter_name} — ${s.platform}" cannot be started. Please upload deposit proof documentation.`,
-                              type: "warning",
-                            } as any);
-                            toast.error("Deposit proof missing — seller notified");
-                            return;
-                          }
-                          setLoadingId(s.id);
-                          try {
-                            await supabase.from("sessions").update({ status: "live" } as any).eq("id", s.id);
-                            toast.success("Session started (Live)");
-                            fetchSessions();
-                          } catch (err: any) { toast.error(err.message); }
-                          setLoadingId(null);
-                        }}
-                        className="bg-live/20 text-live border border-live/30 hover:bg-live/30 font-display font-bold text-sm h-10"
-                      >
-                        <Crosshair className="h-4 w-4 mr-1.5" /> Start
-                      </Button>
-                    )}
-                    <Button
-                      variant="outline"
-                      disabled={loadingId === s.id}
-                      onClick={() => setScreenshotSessionId(screenshotSessionId === s.id ? null : s.id)}
-                      className="text-primary border-primary/30 hover:bg-primary/10 font-display font-bold text-sm h-10"
-                    >
-                      <Eye className="h-4 w-4 mr-1.5" /> Verify
-                    </Button>
-                    {s.status !== "completed" && (
-                      <Button
-                        disabled={loadingId === s.id || (s.status === "live" && !s.payout_proof_url)}
-                        title={s.status === "live" && !s.payout_proof_url ? "Payout proof required" : "Settle"}
-                        onClick={async () => {
-                          if (s.status === "live" && !s.payout_proof_url) {
-                            await supabase.from("notifications").insert({
-                              user_id: s.shooter_id,
-                              title: "⚠️ Payout Proof Missing",
-                              message: `Your session "${s.shooter_name} — ${s.platform}" cannot be settled. Please upload payout proof documentation.`,
-                              type: "warning",
-                            } as any);
-                            toast.error("Payout proof missing — seller notified");
-                            return;
-                          }
-                          setSettleSessionId(settleSessionId === s.id ? null : s.id);
-                          setCashOutAmount("");
-                        }}
-                        className="bg-success/20 text-success border border-success/30 hover:bg-success/30 font-display font-bold text-sm h-10"
-                      >
-                        <Banknote className="h-4 w-4 mr-1.5" /> Settle
-                      </Button>
-                    )}
-                    <Button
-                      variant="outline"
-                      disabled={loadingId === s.id}
-                      onClick={() => handleDeleteSession(s)}
-                      className="text-destructive border-destructive/30 hover:bg-destructive/10 font-display font-bold text-sm h-10"
-                    >
-                      <Trash2 className="h-4 w-4 mr-1.5" /> Delete
-                    </Button>
-                  </div>
-
-                  {/* Proof Uploads */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <ProofUpload sessionId={s.id} type="deposit" currentUrl={s.deposit_proof_url} onUploaded={fetchSessions} />
-                    <ProofUpload sessionId={s.id} type="payout" currentUrl={s.payout_proof_url} onUploaded={fetchSessions} />
-                  </div>
-
-                  {/* Screenshot Comparison */}
-                  {screenshotSessionId === s.id && (
-                    <ScreenshotComparison
-                      sessionId={s.id}
-                      startScreenshotUrl={s.start_screenshot_url}
-                      endScreenshotUrl={s.end_screenshot_url}
-                      ocrStartAmount={s.ocr_start_amount}
-                      ocrEndAmount={s.ocr_end_amount}
-                      ocrConfidence={s.ocr_confidence}
-                      shooterId={s.shooter_id}
-                      shooterName={s.shooter_name}
-                      onUpdate={fetchSessions}
-                      onBanned={() => { fetchSessions(); fetchUsers(); }}
-                    />
-                  )}
-
-                  {/* Settle Form */}
-                  {settleSessionId === s.id && (
-                    <div className="bg-secondary rounded-md p-3 space-y-2">
-                      <Label className="text-sm text-muted-foreground">Final Cash-Out Amount ($)</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          type="number"
-                          value={cashOutAmount}
-                          onChange={(e) => setCashOutAmount(e.target.value)}
-                          placeholder="e.g. 1500"
-                          className="bg-background border-border text-foreground"
-                          min={0}
-                        />
-                        <Button
-                          size="sm"
-                          disabled={loadingId === s.id || !cashOutAmount}
-                          onClick={() => handleSettleSession(s)}
-                          className="gradient-primary text-primary-foreground font-display font-bold text-xs shrink-0"
-                        >
-                          {loadingId === s.id ? "Settling..." : "Confirm Settle"}
-                        </Button>
-                      </div>
-                      {cashOutAmount && (
-                        <div className="text-[10px] text-muted-foreground space-y-0.5">
-                          <p>FishDollarz stakes: <span className="text-accent font-bold">6% rake</span> (auto-credited)</p>
-                          <p>P2P stakes: <span className="text-primary font-bold">8% rake</span> (manual fee required)</p>
-                        </div>
-                      )}
-                      <p className="text-[10px] text-muted-foreground">
-                        Rake rates vary by payment mode. FishDollarz winnings auto-credited to backer balances.
-                      </p>
-                    </div>
-                  )}
-
-                  {/* P2P Manual Rake Confirmation */}
-                  {s.status === "completed" && s.manual_rake_status === "pending_manual_rake" && (
-                    <div className="bg-accent/10 border border-accent/30 rounded-md p-3 space-y-2">
-                      <p className="text-sm font-display font-bold text-accent flex items-center gap-2">
-                        <AlertTriangle className="h-4 w-4" />
-                        Pending P2P Manual Rake
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Seller must pay the 8% P2P fee via CashApp ($fishkillerzstaking). Confirm receipt below.
-                      </p>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          disabled={loadingId === s.id}
-                          onClick={() => handleConfirmManualRake(s)}
-                          className="gradient-primary text-primary-foreground font-display font-bold text-xs"
-                        >
-                          <CheckCircle className="h-3 w-3 mr-1" /> Confirm Fee Received
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={loadingId === s.id}
-                          onClick={() => handleLateManualRake(s)}
-                          className="text-destructive border-destructive/30 text-xs"
-                        >
-                          <AlertTriangle className="h-3 w-3 mr-1" /> Mark Late (-5 Score)
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))
-            )}
+          <TabsContent value="sessions" className="mt-0">
+            <CommittedSessionsTab />
           </TabsContent>
 
           {/* Users Tab */}
