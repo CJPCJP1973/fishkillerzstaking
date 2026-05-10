@@ -98,6 +98,7 @@
     },
     "@rollup/plugin-terser": {
       "serialize-javascript": "7.0.5"
-    }
+    },
+    "rollup": "3.29.5"
   }
 }
