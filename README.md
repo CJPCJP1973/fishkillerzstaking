@@ -1,4 +1,4 @@
-FishKillerz
+FishKillerz Staking 2026
 
 ​README.md - Serves as the technical and operational manual for the FishKillerz platform. It aligns with branding and the automated reputation economy established for the ecosystem.
 
