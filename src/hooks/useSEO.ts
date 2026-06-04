@@ -5,20 +5,21 @@ interface SEOProps {
   description: string;
   canonical?: string;
   ogImage?: string;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
 const DEFAULT_IMAGE =
   "https://storage.googleapis.com/gpt-engineer-file-uploads/TRfEiSXEKjb49MMpABtkIBhKTEG2/social-images/social-1772747178383-3009.webp";
-const BASE_URL = "https://fishkillerz.com";
+const BASE_URL = "https://fishkillerz.lovable.app";
 
 /**
  * useSEO — updates document title, meta description, canonical,
  * og: and twitter: tags dynamically on every route change.
  *
- * Usage:
- *   useSEO({ title: "Page Title", description: "...", canonical: "/path" });
+ * Pass `jsonLd` (single object or array) to inject route-scoped
+ * <script type="application/ld+json"> tags. They are removed on unmount.
  */
-export function useSEO({ title, description, canonical, ogImage }: SEOProps) {
+export function useSEO({ title, description, canonical, ogImage, jsonLd }: SEOProps) {
   useEffect(() => {
     document.title = title;
 
@@ -52,5 +53,22 @@ export function useSEO({ title, description, canonical, ogImage }: SEOProps) {
       document.head.appendChild(link);
     }
     link.setAttribute("href", canonicalUrl);
-  }, [title, description, canonical, ogImage]);
+
+    const ldNodes: HTMLScriptElement[] = [];
+    if (jsonLd) {
+      const items = Array.isArray(jsonLd) ? jsonLd : [jsonLd];
+      for (const item of items) {
+        const s = document.createElement("script");
+        s.type = "application/ld+json";
+        s.dataset.routeSeo = "true";
+        s.textContent = JSON.stringify(item);
+        document.head.appendChild(s);
+        ldNodes.push(s);
+      }
+    }
+
+    return () => {
+      ldNodes.forEach((n) => n.remove());
+    };
+  }, [title, description, canonical, ogImage, JSON.stringify(jsonLd ?? null)]);
 }

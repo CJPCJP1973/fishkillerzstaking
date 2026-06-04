@@ -99,6 +99,9 @@ export default function Index() {
             </div>
             <h1 className="font-display text-4xl md:text-6xl font-bold text-foreground leading-tight mb-4">
               FISH<span className="text-primary glow-text-cyan">KILLERZ</span>
+              <span className="block text-lg md:text-2xl font-semibold text-muted-foreground mt-2">
+                Fish Table Staking Marketplace
+              </span>
             </h1>
             <p className="text-muted-foreground text-base md:text-lg mb-6 max-w-md">
               Back elite players on fish table sessions. Buy stakes, track live wins, and collect your cut.

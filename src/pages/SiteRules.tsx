@@ -4,10 +4,28 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { useSEO } from "@/hooks/useSEO";
 
 export default function SiteRules() {
+  const faqs: { q: string; a: string }[] = [
+    { q: "What are FishDollarz?", a: "FishDollarz are virtual credits used on the FishKillerz platform. 1 FishDollar = $1. They can be used to buy stakes in sessions and receive payouts. FishDollarz have no real-world value outside of FishKillerz." },
+    { q: "How do I become a seller?", a: "Go to your Profile page and click 'Become a Seller.' It's completely free — one click and you're activated instantly. Once activated, you can create sessions and sell stakes to backers." },
+    { q: "How do payouts work?", a: "After a session ends, the seller uploads an end-balance screenshot. Backers receive their full pro-rata share of winnings — no percentage fees. FishDollarz payouts are instant; P2P payouts must be sent within 60 minutes." },
+    { q: "What happens if a session loses?", a: "If the end balance is lower than the buy-in, all backers share in the loss proportionally. Your stake amount is the maximum you can lose." },
+    { q: "How do I report a dispute?", a: "If you believe a session result is incorrect or a seller hasn't paid out, contact support at fishkillerzstaking@gmail.com. Admins will review screenshots and transaction records to resolve the dispute." },
+    { q: "Can I get banned?", a: "Yes. Accumulating 3 fraud flags results in an automatic ban. Fraud flags are issued for manipulated screenshots, duplicate images, or failure to pay out backers. Banned users lose all seller privileges." },
+  ];
+
   useSEO({
     title: "Site Rules | FishKillerz",
     description: "FishKillerz platform rules: rake structure, staking guidelines, evidence requirements, dispute process, and VIP perks.",
     canonical: "/site-rules",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faqs.map((f) => ({
+        "@type": "Question",
+        name: f.q,
+        acceptedAnswer: { "@type": "Answer", text: f.a },
+      })),
+    },
   });
   return (
     <Layout>

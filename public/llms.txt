@@ -1,0 +1,21 @@
+# FishKillerz
+
+> Trust-by-Evidence staking marketplace for skill-based fish table games. Backers buy verified stakes in live sessions and collect a proportional share of winnings, settled in FishDollarz (1 FD = $1 USD).
+
+FishKillerz pairs sellers (players) with backers (stakers). Sellers list a session on platforms like Golden Dragon, Diamond Dragon, Vblink, and Riversweeps, sell up to 75% of their action (25% skin-in-the-game required), and upload screenshot evidence at start and end. Payouts are pro-rata; standard rake is 5% on backer winnings (2% for VIPs). Geo-restricted in WA, UT, ID, LA, NJ.
+
+## Pages
+
+- [Home](/): Marketplace overview and live activity.
+- [Sessions](/sessions): Live and upcoming sessions open for staking.
+- [VIP Sessions](/vip-sessions): Invite-only VIP staking sessions.
+- [Leaderboard](/leaderboard): Top sellers ranked by performance and reliability.
+- [Our Staking Services](/our-staking-services): How FishKillerz crypto-backed staking works.
+- [Crypto Staking Guide](/crypto-staking-guide): Full guide to crypto-backed poker/fish table staking.
+- [Site Rules](/site-rules): Rake structure, evidence rules, disputes, FAQ.
+- [Terms](/terms): Terms of service.
+- [Privacy](/privacy): Privacy policy.
+
+## Optional
+
+- [Sign In or Register](/auth): Account creation and login.

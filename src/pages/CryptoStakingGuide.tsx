@@ -10,6 +10,16 @@ export default function CryptoStakingGuide() {
     description:
       "Complete guide to crypto-backed poker staking: how stakes work, skin-in-the-game rules, rake structure, payouts, and how FishDollarz keep settlement instant and transparent.",
     canonical: "/crypto-staking-guide",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: "The Complete Crypto Staking Guide",
+      description:
+        "Everything you need to understand how modern, crypto-backed poker staking works on FishKillerz — from buying your first stake to collecting payouts.",
+      mainEntityOfPage: "https://fishkillerz.lovable.app/crypto-staking-guide",
+      author: { "@type": "Organization", name: "FishKillerz" },
+      publisher: { "@type": "Organization", name: "FishKillerz" },
+    },
   });
 
   return (
