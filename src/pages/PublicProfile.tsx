@@ -32,6 +32,20 @@ export default function PublicProfile() {
     title: username ? `@${username} | FishKillerz` : "Player Profile | FishKillerz",
     description: username ? `View ${username}'s fish table staking stats, win rate, and session history on FishKillerz.` : "View player profile on FishKillerz.",
     canonical: username ? `/u/${username}` : undefined,
+    jsonLd: username && profile
+      ? {
+          "@context": "https://schema.org",
+          "@type": "ProfilePage",
+          mainEntity: {
+            "@type": "Person",
+            name: profile.display_name,
+            alternateName: profile.username,
+            description: profile.bio ?? undefined,
+            image: profile.avatar_url ?? undefined,
+            url: `https://fishkillerz.lovable.app/u/${profile.username}`,
+          },
+        }
+      : undefined,
   });
 
   useEffect(() => {

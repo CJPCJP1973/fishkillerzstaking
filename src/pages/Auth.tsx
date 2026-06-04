@@ -101,6 +101,9 @@ export default function Auth() {
               FISH<span className="text-primary glow-text-cyan">KILLERZ</span>
             </span>
           </Link>
+          <h1 className="font-display text-2xl font-bold text-foreground mt-4">
+            {isLogin ? "Sign In" : "Create Your Account"}
+          </h1>
           <p className="text-muted-foreground text-sm mt-2">
             {isLogin ? "Sign in to your account" : "Create your account"}
           </p>
