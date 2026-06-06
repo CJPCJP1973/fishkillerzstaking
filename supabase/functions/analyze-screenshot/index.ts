@@ -216,7 +216,7 @@ If you cannot read the amount, return {"amount": null, "confidence": 0, "raw_tex
     });
   } catch (e) {
     console.error("analyze-screenshot error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Internal server error" }), {
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
