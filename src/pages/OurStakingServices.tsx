@@ -7,7 +7,7 @@ export default function OurStakingServices() {
   useSEO({
     title: "Our Staking Services: Buy & Sell Poker Stakes | FishKillerz",
     description:
-      "Browse FishKillerz staking services: instant stake purchases, VIP sessions with reduced rake, seller activation, and concierge support — all backed by escrowed FishDollarz.",
+      "Instant stake purchases, VIP sessions with reduced rake, and seller activation — all backed by escrowed FishDollarz.",
     canonical: "/our-staking-services",
   });
 

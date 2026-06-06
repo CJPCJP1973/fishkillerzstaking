@@ -8,18 +8,58 @@ export default function CryptoStakingGuide() {
   useSEO({
     title: "Crypto Staking Guide: How Poker Staking Works | FishKillerz",
     description:
-      "Complete guide to crypto-backed poker staking: how stakes work, skin-in-the-game rules, rake structure, payouts, and how FishDollarz keep settlement instant and transparent.",
+      "Crypto-backed poker staking explained: how stakes work, skin-in-the-game rules, rake, payouts, and instant FishDollarz settlement.",
     canonical: "/crypto-staking-guide",
-    jsonLd: {
-      "@context": "https://schema.org",
-      "@type": "Article",
-      headline: "The Complete Crypto Staking Guide",
-      description:
-        "Everything you need to understand how modern, crypto-backed poker staking works on FishKillerz — from buying your first stake to collecting payouts.",
-      mainEntityOfPage: "https://fishkillerz.lovable.app/crypto-staking-guide",
-      author: { "@type": "Organization", name: "FishKillerz" },
-      publisher: { "@type": "Organization", name: "FishKillerz" },
-    },
+    jsonLd: [
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        headline: "The Complete Crypto Staking Guide",
+        description:
+          "How modern crypto-backed poker staking works on FishKillerz — from buying your first stake to collecting payouts.",
+        mainEntityOfPage: "https://fishkillerz.lovable.app/crypto-staking-guide",
+        author: { "@type": "Organization", name: "FishKillerz" },
+        publisher: { "@type": "Organization", name: "FishKillerz" },
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: [
+          {
+            "@type": "Question",
+            name: "How fast are payouts?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Sellers must initiate payout within 60 minutes of session end. Backer balances update instantly upon admin verification.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "What rake does FishKillerz charge?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "5% on backer winnings (2% for VIPs). No listing fees, no rake on losses.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "What happens if a seller goes bust?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Backers share the loss pro-rata. The seller's mandatory 25% contribution means they always lose alongside their backers.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Do I need crypto to stake?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "No — you can fund your wallet with CashApp, Chime, or Bitcoin. All balances internally use FishDollarz (1 FD = $1 USD).",
+            },
+          },
+        ],
+      },
+    ],
   });
 
   return (
