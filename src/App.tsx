@@ -29,6 +29,7 @@ import ResetPassword from "./pages/ResetPassword";
 import CryptoStakingGuide from "./pages/CryptoStakingGuide";
 import OurStakingServices from "./pages/OurStakingServices";
 import LegacyRedirect from "./components/LegacyRedirect";
+import CompareStakeKings from "./pages/CompareStakeKings";
 
 const queryClient = new QueryClient();
 
@@ -88,6 +89,7 @@ const App = () => {
               <Route path="/u/:username" element={<PublicProfile />} />
               <Route path="/crypto-staking-guide" element={<CryptoStakingGuide />} />
               <Route path="/our-staking-services" element={<OurStakingServices />} />
+              <Route path="/compare/stakekings" element={<CompareStakeKings />} />
               {/* Legacy URL redirects (301-equivalent for SPA) */}
               <Route path="/create-session" element={<LegacyRedirect to="/create" />} />
               <Route path="/rules" element={<LegacyRedirect to="/site-rules" />} />
