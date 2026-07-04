@@ -30,6 +30,7 @@ import CryptoStakingGuide from "./pages/CryptoStakingGuide";
 import OurStakingServices from "./pages/OurStakingServices";
 import LegacyRedirect from "./components/LegacyRedirect";
 import CompareStakeKings from "./pages/CompareStakeKings";
+import SlotPools from "./pages/SlotPools";
 
 const queryClient = new QueryClient();
 
