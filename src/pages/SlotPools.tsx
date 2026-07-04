@@ -10,25 +10,28 @@ import { Dice5, Plus, Users, DollarSign, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 type SlotPool = {
   id: string;
+  owner_id: string;
   name: string;
   platform: string;
-  buyIn: number;
+  buy_in: number;
   seats: number;
-  seatPrice: number;
-  seatsSold: number;
-  endTime: string;
-  createdAt: string;
+  seat_price: number;
+  seats_sold: number;
+  end_time: string;
+  status: string;
+  created_at: string;
 };
 
-const STORAGE_KEY = "fk_slot_pools_v1";
 const PLATFORMS = ["Golden Dragon", "Diamond Dragon", "Fire Phoenix", "Vblink", "Riversweeps", "Magic City"];
 
 export default function SlotPools() {
   const { user } = useAuth();
   const [pools, setPools] = useState<SlotPool[]>([]);
+  const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
   const [platform, setPlatform] = useState("");
   const [buyIn, setBuyIn] = useState("");
@@ -44,19 +47,34 @@ export default function SlotPools() {
     canonical: "/slot-pools",
   });
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setPools(JSON.parse(raw));
-    } catch {
-      /* ignore */
+  const fetchPools = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("slot_pools")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) {
+      toast.error("Failed to load pools");
+    } else {
+      setPools((data ?? []) as SlotPool[]);
     }
-  }, []);
-
-  const persist = (next: SlotPool[]) => {
-    setPools(next);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    setLoading(false);
   };
+
+  useEffect(() => {
+    fetchPools();
+    const channel = supabase
+      .channel("slot-pools-feed")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "slot_pools" },
+        () => fetchPools()
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const buyInNum = parseFloat(buyIn) || 0;
   const seatsNum = parseInt(seats) || 0;
@@ -93,25 +111,31 @@ export default function SlotPools() {
     }
 
     setSubmitting(true);
-    const newPool: SlotPool = {
-      id: crypto.randomUUID(),
+    const { error } = await supabase.from("slot_pools").insert({
+      owner_id: user.id,
       name,
       platform,
-      buyIn: buyInNum,
+      buy_in: buyInNum,
       seats: seatsNum,
-      seatPrice: seatPriceNum,
-      seatsSold: 0,
-      endTime,
-      createdAt: new Date().toISOString(),
-    };
-    persist([newPool, ...pools]);
+      seat_price: seatPriceNum,
+      end_time: new Date(endTime).toISOString(),
+    });
+    setSubmitting(false);
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Slot pool created");
     resetForm();
-    setSubmitting(false);
   };
 
-  const handleDelete = (id: string) => {
-    persist(pools.filter((p) => p.id !== id));
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from("slot_pools").delete().eq("id", id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Pool removed");
   };
 
@@ -234,16 +258,22 @@ export default function SlotPools() {
                   </div>
                 )}
 
-                <Button type="submit" disabled={submitting} className="w-full">
-                  {submitting ? "Creating…" : "Create Pool"}
+                <Button type="submit" disabled={submitting || !user} className="w-full">
+                  {submitting ? "Creating…" : user ? "Create Pool" : "Sign in to create"}
                 </Button>
               </form>
             </CardContent>
           </Card>
 
           <div className="lg:col-span-2 space-y-4">
-            <h2 className="font-display text-lg font-semibold text-foreground">Your Pools</h2>
-            {pools.length === 0 ? (
+            <h2 className="font-display text-lg font-semibold text-foreground">Live Pools</h2>
+            {loading ? (
+              <Card>
+                <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                  Loading pools…
+                </CardContent>
+              </Card>
+            ) : pools.length === 0 ? (
               <Card>
                 <CardContent className="py-8 text-center text-sm text-muted-foreground">
                   No slot pools yet. Create one to get started.
@@ -251,7 +281,8 @@ export default function SlotPools() {
               </Card>
             ) : (
               pools.map((p) => {
-                const filled = Math.min(100, (p.seatsSold / p.seats) * 100);
+                const filled = Math.min(100, (p.seats_sold / p.seats) * 100);
+                const isOwner = user?.id === p.owner_id;
                 return (
                   <Card key={p.id}>
                     <CardHeader className="pb-2">
@@ -262,13 +293,15 @@ export default function SlotPools() {
                             {p.platform}
                           </Badge>
                         </div>
-                        <button
-                          onClick={() => handleDelete(p.id)}
-                          className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                          aria-label="Delete pool"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        {isOwner && (
+                          <button
+                            onClick={() => handleDelete(p.id)}
+                            className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                            aria-label="Delete pool"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-2 text-sm">
@@ -276,21 +309,21 @@ export default function SlotPools() {
                         <span className="flex items-center gap-1.5">
                           <DollarSign className="h-3.5 w-3.5" /> Buy-in
                         </span>
-                        <span className="text-foreground font-medium">${p.buyIn}</span>
+                        <span className="text-foreground font-medium">${Number(p.buy_in).toFixed(2)}</span>
                       </div>
                       <div className="flex items-center justify-between text-muted-foreground">
                         <span className="flex items-center gap-1.5">
                           <Users className="h-3.5 w-3.5" /> Seats
                         </span>
                         <span className="text-foreground font-medium">
-                          {p.seatsSold} / {p.seats} @ ${p.seatPrice}
+                          {p.seats_sold} / {p.seats} @ ${Number(p.seat_price).toFixed(2)}
                         </span>
                       </div>
                       <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
                         <div className="h-full bg-primary" style={{ width: `${filled}%` }} />
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        Ends {new Date(p.endTime).toLocaleString()}
+                        Ends {new Date(p.end_time).toLocaleString()}
                       </div>
                     </CardContent>
                   </Card>
