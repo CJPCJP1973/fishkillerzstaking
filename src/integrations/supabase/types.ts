@@ -560,6 +560,51 @@ export type Database = {
         }
         Relationships: []
       }
+      slot_pools: {
+        Row: {
+          buy_in: number
+          created_at: string
+          end_time: string
+          id: string
+          name: string
+          owner_id: string
+          platform: string
+          seat_price: number
+          seats: number
+          seats_sold: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          buy_in: number
+          created_at?: string
+          end_time: string
+          id?: string
+          name: string
+          owner_id: string
+          platform: string
+          seat_price: number
+          seats: number
+          seats_sold?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          buy_in?: number
+          created_at?: string
+          end_time?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          platform?: string
+          seat_price?: number
+          seats?: number
+          seats_sold?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       stakes: {
         Row: {
           amount: number
