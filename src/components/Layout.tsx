@@ -140,6 +140,9 @@ export default function Layout({ children }: { children: ReactNode }) {
           <Link to="/privacy" className="hover:text-primary transition-colors">
             Privacy
           </Link>
+          <Link to="/connect" className="hover:text-primary transition-colors">
+            Connect AI
+          </Link>
         </div>
       </footer>
 
