@@ -31,6 +31,7 @@ import OurStakingServices from "./pages/OurStakingServices";
 import LegacyRedirect from "./components/LegacyRedirect";
 import CompareStakeKings from "./pages/CompareStakeKings";
 import SlotPools from "./pages/SlotPools";
+import Connect from "./pages/Connect";
 
 const queryClient = new QueryClient();
 
