@@ -36,6 +36,32 @@
         "outputSchema": null
       },
       {
+        "name": "get_session_details",
+        "title": "Get session details",
+        "description": "Return full public details for a specific active/funding staking session by id: shooter, platform, agent/room, buy-in, stake available, share price, status, end time, and stream URL.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "session_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "description": "The session id (uuid) to fetch."
+            }
+          },
+          "required": [
+            "session_id"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
         "name": "list_slot_pools",
         "title": "List slot pools",
         "description": "List available slot pools with platform, buy-in, seats sold vs total, seat price, and end time.",
