@@ -31,6 +31,7 @@ import OurStakingServices from "./pages/OurStakingServices";
 import LegacyRedirect from "./components/LegacyRedirect";
 import CompareStakeKings from "./pages/CompareStakeKings";
 import SlotPools from "./pages/SlotPools";
+import CreateSlotPool from "./pages/CreateSlotPool";
 import Connect from "./pages/Connect";
 
 const queryClient = new QueryClient();
@@ -93,6 +94,7 @@ const App = () => {
               <Route path="/our-staking-services" element={<OurStakingServices />} />
               <Route path="/compare/stakekings" element={<CompareStakeKings />} />
               <Route path="/slot-pools" element={<SlotPools />} />
+              <Route path="/slot-pools/new" element={<CreateSlotPool />} />
               <Route path="/connect" element={<Connect />} />
               {/* Legacy URL redirects (301-equivalent for SPA) */}
               <Route path="/create-session" element={<LegacyRedirect to="/create" />} />
