@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle, Plus, UserCog, Wallet, ShieldCheck, Image, TrendingUp, Scale, ScrollText } from "lucide-react";
+import { Shield, CheckCircle, DollarSign, UserCheck, XCircle, Trash2, Crosshair, Banknote, Send, Eye, Zap, Users, Ban, Settings, AlertTriangle, Plus, UserCog, Wallet, ShieldCheck, Image, TrendingUp, Scale, ScrollText, Dice5 } from "lucide-react";
+import SlotPoolsTab from "@/components/admin/SlotPoolsTab";
 import ScreenshotComparison from "@/components/admin/ScreenshotComparison";
 import ProofUpload from "@/components/ProofUpload";
 import DisputeReview from "@/components/admin/DisputeReview";
@@ -166,6 +167,7 @@ export default function Admin() {
     totalPaidOut: 0,
     totalListingFees: 0,
     totalRegFees: 0,
+    totalPoolEscrow: 0,
   });
   const [payoutRefs, setPayoutRefs] = useState<Record<string, string>>({});
 
@@ -366,11 +368,12 @@ export default function Admin() {
   };
 
   const fetchPlatformStats = async () => {
-    const [{ data: allProfiles }, { data: paidPayouts }, { data: listingFeeTxns }, { data: regFeeTxns }] = await Promise.all([
+    const [{ data: allProfiles }, { data: paidPayouts }, { data: listingFeeTxns }, { data: regFeeTxns }, { data: pools }] = await Promise.all([
       supabase.from("profiles").select("balance"),
       supabase.from("payouts").select("amount_owed").eq("status", "paid"),
       supabase.from("transactions").select("amount").eq("type", "listing_fee").eq("status", "completed"),
       supabase.from("transactions").select("amount").eq("type", "registration_fee").eq("status", "confirmed"),
+      supabase.from("slot_pools").select("seats_sold, seat_price"),
     ]);
 
     setPlatformStats({
@@ -378,6 +381,7 @@ export default function Admin() {
       totalPaidOut: paidPayouts?.reduce((sum, p) => sum + Number(p.amount_owed || 0), 0) || 0,
       totalListingFees: listingFeeTxns?.reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0,
       totalRegFees: regFeeTxns?.reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0,
+      totalPoolEscrow: (pools as any[])?.reduce((sum, p) => sum + Number(p.seats_sold || 0) * Number(p.seat_price || 0), 0) || 0,
     });
   };
 
@@ -956,9 +960,10 @@ export default function Admin() {
         </div>
 
         {/* Platform Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {[
             { label: "FishDollarz in Escrow", value: `$${platformStats.totalEscrow.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: Wallet, color: "text-primary" },
+            { label: "Pool Escrow", value: `$${platformStats.totalPoolEscrow.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: Dice5, color: "text-accent" },
             { label: "Total Paid Out", value: `$${platformStats.totalPaidOut.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: Send, color: "text-success" },
             { label: "Listing Fees", value: `$${platformStats.totalListingFees.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: TrendingUp, color: "text-accent" },
             { label: "Registration Fees", value: `$${platformStats.totalRegFees.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: Users, color: "text-primary" },
@@ -1014,7 +1019,7 @@ export default function Admin() {
                 <span>Users <span className="text-primary">({users.length})</span></span>
               </TabsTrigger>
             </TabsList>
-            <TabsList className="bg-secondary grid grid-cols-3 md:grid-cols-7 gap-1 h-auto p-2">
+            <TabsList className="bg-secondary grid grid-cols-3 md:grid-cols-8 gap-1 h-auto p-2">
               <TabsTrigger value="confirmed-sellers" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
                 <CheckCircle className="h-4 w-4" />
                 <span>Confirmed <span className="text-primary">({confirmedSellers.length})</span></span>
@@ -1042,6 +1047,10 @@ export default function Admin() {
               <TabsTrigger value="txn-logs" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
                 <ScrollText className="h-4 w-4" />
                 <span>Txn Logs</span>
+              </TabsTrigger>
+              <TabsTrigger value="slot-pools" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
+                <Dice5 className="h-4 w-4" />
+                <span>Slot Pools</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -1606,6 +1615,11 @@ export default function Admin() {
           </TabsContent>
 
           {/* God Mode Tab */}
+          {/* Slot Pools Tab */}
+          <TabsContent value="slot-pools" className="mt-0">
+            <SlotPoolsTab />
+          </TabsContent>
+
           <TabsContent value="godmode" className="space-y-6 mt-4">
             <div className="flex items-center gap-2 mb-2">
               <Zap className="h-5 w-5 text-accent" />
