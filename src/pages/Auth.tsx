@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Crosshair, Mail, Lock, User, ArrowRight, AtSign } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
+
+// Only allow same-origin relative paths as post-auth redirect targets.
+function safeNext(raw: string | null): string {
+  if (!raw) return "/";
+  if (!raw.startsWith("/") || raw.startsWith("//")) return "/";
+  return raw;
+}
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -18,6 +25,8 @@ export default function Auth() {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const nextPath = safeNext(searchParams.get("next"));
 
   useSEO({
     title: "Sign In or Register | FishKillerz",
@@ -34,7 +43,7 @@ export default function Auth() {
         toast.error(error.message);
       } else {
         toast.success("Welcome back!");
-        navigate("/");
+        navigate(nextPath);
       }
     } else {
       if (password.length < 12) {
@@ -79,7 +88,7 @@ export default function Auth() {
         password,
         options: {
           data: { display_name: displayName, username: trimmedUsername },
-          emailRedirectTo: window.location.origin,
+          emailRedirectTo: window.location.origin + nextPath,
         },
       });
       if (error) {
