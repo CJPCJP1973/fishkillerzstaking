@@ -167,6 +167,7 @@ export default function Admin() {
     totalPaidOut: 0,
     totalListingFees: 0,
     totalRegFees: 0,
+    totalPoolEscrow: 0,
   });
   const [payoutRefs, setPayoutRefs] = useState<Record<string, string>>({});
 
