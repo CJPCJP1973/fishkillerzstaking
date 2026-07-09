@@ -3,12 +3,22 @@
 // supabase function: mcp
 // Bundled from src/lib/mcp/index.ts by @lovable.dev/mcp-js.
 // src/lib/mcp/index.ts
-import { defineMcp } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.20.0";
 
 // src/lib/mcp/tools/list-active-sessions.ts
 import { createClient } from "npm:@supabase/supabase-js@^2.100.1";
 import { defineTool } from "npm:@lovable.dev/mcp-js@0.20.0";
 import { z } from "npm:zod@^4.4.3";
+function supabaseForUser(ctx) {
+  return createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY,
+    {
+      global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
+      auth: { persistSession: false, autoRefreshToken: false }
+    }
+  );
+}
 var list_active_sessions_default = defineTool({
   name: "list_active_sessions",
   title: "List active staking sessions",
@@ -17,12 +27,11 @@ var list_active_sessions_default = defineTool({
     limit: z.number().int().min(1).max(50).optional().describe("Maximum number of sessions to return (default 20).")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ limit }) => {
-    const supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY,
-      { auth: { persistSession: false, autoRefreshToken: false } }
-    );
+  handler: async ({ limit }, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const supabase = supabaseForUser(ctx);
     const { data, error } = await supabase.from("sessions").select(
       "id, shooter_name, platform, agent_room, total_buy_in, stake_available, share_price, status, end_time, stream_url"
     ).in("status", ["funding", "active"]).order("end_time", { ascending: true }).limit(limit ?? 20);
@@ -40,6 +49,16 @@ var list_active_sessions_default = defineTool({
 import { createClient as createClient2 } from "npm:@supabase/supabase-js@^2.100.1";
 import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.20.0";
 import { z as z2 } from "npm:zod@^4.4.3";
+function supabaseForUser2(ctx) {
+  return createClient2(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY,
+    {
+      global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
+      auth: { persistSession: false, autoRefreshToken: false }
+    }
+  );
+}
 var get_session_details_default = defineTool2({
   name: "get_session_details",
   title: "Get session details",
@@ -48,12 +67,11 @@ var get_session_details_default = defineTool2({
     session_id: z2.string().uuid().describe("The session id (uuid) to fetch.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ session_id }) => {
-    const supabase = createClient2(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY,
-      { auth: { persistSession: false, autoRefreshToken: false } }
-    );
+  handler: async ({ session_id }, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const supabase = supabaseForUser2(ctx);
     const { data, error } = await supabase.from("sessions").select(
       "id, shooter_name, platform, agent_room, total_buy_in, stake_available, share_price, status, end_time, stream_url, created_at"
     ).eq("id", session_id).maybeSingle();
@@ -74,6 +92,16 @@ var get_session_details_default = defineTool2({
 import { createClient as createClient3 } from "npm:@supabase/supabase-js@^2.100.1";
 import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.20.0";
 import { z as z3 } from "npm:zod@^4.4.3";
+function supabaseForUser3(ctx) {
+  return createClient3(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY,
+    {
+      global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
+      auth: { persistSession: false, autoRefreshToken: false }
+    }
+  );
+}
 var list_slot_pools_default = defineTool3({
   name: "list_slot_pools",
   title: "List slot pools",
@@ -82,12 +110,11 @@ var list_slot_pools_default = defineTool3({
     limit: z3.number().int().min(1).max(50).optional().describe("Max pools to return (default 20).")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ limit }) => {
-    const supabase = createClient3(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY,
-      { auth: { persistSession: false, autoRefreshToken: false } }
-    );
+  handler: async ({ limit }, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const supabase = supabaseForUser3(ctx);
     const { data, error } = await supabase.from("slot_pools").select("id, name, platform, buy_in, seats, seats_sold, seat_price, end_time, created_at").order("created_at", { ascending: false }).limit(limit ?? 20);
     if (error) {
       return { content: [{ type: "text", text: error.message }], isError: true };
@@ -103,6 +130,16 @@ var list_slot_pools_default = defineTool3({
 import { createClient as createClient4 } from "npm:@supabase/supabase-js@^2.100.1";
 import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.20.0";
 import { z as z4 } from "npm:zod@^4.4.3";
+function supabaseForUser4(ctx) {
+  return createClient4(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY,
+    {
+      global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
+      auth: { persistSession: false, autoRefreshToken: false }
+    }
+  );
+}
 var get_leaderboard_default = defineTool4({
   name: "get_leaderboard",
   title: "Get shooter leaderboard",
@@ -111,12 +148,11 @@ var get_leaderboard_default = defineTool4({
     limit: z4.number().int().min(1).max(50).optional().describe("Max entries (default 10).")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ limit }) => {
-    const supabase = createClient4(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY,
-      { auth: { persistSession: false, autoRefreshToken: false } }
-    );
+  handler: async ({ limit }, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const supabase = supabaseForUser4(ctx);
     const { data, error } = await supabase.rpc("get_leaderboard", {
       limit_count: limit ?? 10
     });
@@ -131,11 +167,16 @@ var get_leaderboard_default = defineTool4({
 });
 
 // src/lib/mcp/index.ts
+var projectRef = "qzlmyufkwbjqdwwadham";
 var mcp_default = defineMcp({
   name: "fishkillerz-mcp",
   title: "FishKillerz MCP",
-  version: "0.1.0",
-  instructions: "Read-only tools for the FishKillerz staking platform. Use `list_active_sessions` to see open shooter sessions, `get_session_details` for full info on one session, `list_slot_pools` for community slot pools, and `get_leaderboard` for top shooters.",
+  version: "0.2.0",
+  instructions: "Read-only tools for the FishKillerz staking platform. Callers must be signed in via OAuth. Use `list_active_sessions` to see open shooter sessions, `get_session_details` for full info on one session, `list_slot_pools` for community slot pools, and `get_leaderboard` for top shooters.",
+  auth: auth.oauth.issuer({
+    issuer: `https://${projectRef}.supabase.co/auth/v1`,
+    acceptedAudiences: "authenticated"
+  }),
   tools: [list_active_sessions_default, get_session_details_default, list_slot_pools_default, get_leaderboard_default]
 });
 
