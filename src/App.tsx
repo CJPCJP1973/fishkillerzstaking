@@ -33,6 +33,7 @@ import CompareStakeKings from "./pages/CompareStakeKings";
 import SlotPools from "./pages/SlotPools";
 import CreateSlotPool from "./pages/CreateSlotPool";
 import Connect from "./pages/Connect";
+import OAuthConsent from "./pages/OAuthConsent";
 
 const queryClient = new QueryClient();
 
@@ -96,6 +97,7 @@ const App = () => {
               <Route path="/slot-pools" element={<SlotPools />} />
               <Route path="/slot-pools/new" element={<CreateSlotPool />} />
               <Route path="/connect" element={<Connect />} />
+              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
               {/* Legacy URL redirects (301-equivalent for SPA) */}
               <Route path="/create-session" element={<LegacyRedirect to="/create" />} />
               <Route path="/rules" element={<LegacyRedirect to="/site-rules" />} />
