@@ -960,9 +960,10 @@ export default function Admin() {
         </div>
 
         {/* Platform Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {[
             { label: "FishDollarz in Escrow", value: `$${platformStats.totalEscrow.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: Wallet, color: "text-primary" },
+            { label: "Pool Escrow", value: `$${platformStats.totalPoolEscrow.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: Dice5, color: "text-accent" },
             { label: "Total Paid Out", value: `$${platformStats.totalPaidOut.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: Send, color: "text-success" },
             { label: "Listing Fees", value: `$${platformStats.totalListingFees.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: TrendingUp, color: "text-accent" },
             { label: "Registration Fees", value: `$${platformStats.totalRegFees.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: Users, color: "text-primary" },
