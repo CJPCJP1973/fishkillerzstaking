@@ -368,11 +368,12 @@ export default function Admin() {
   };
 
   const fetchPlatformStats = async () => {
-    const [{ data: allProfiles }, { data: paidPayouts }, { data: listingFeeTxns }, { data: regFeeTxns }] = await Promise.all([
+    const [{ data: allProfiles }, { data: paidPayouts }, { data: listingFeeTxns }, { data: regFeeTxns }, { data: pools }] = await Promise.all([
       supabase.from("profiles").select("balance"),
       supabase.from("payouts").select("amount_owed").eq("status", "paid"),
       supabase.from("transactions").select("amount").eq("type", "listing_fee").eq("status", "completed"),
       supabase.from("transactions").select("amount").eq("type", "registration_fee").eq("status", "confirmed"),
+      supabase.from("slot_pools").select("seats_sold, seat_price"),
     ]);
 
     setPlatformStats({
@@ -380,6 +381,7 @@ export default function Admin() {
       totalPaidOut: paidPayouts?.reduce((sum, p) => sum + Number(p.amount_owed || 0), 0) || 0,
       totalListingFees: listingFeeTxns?.reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0,
       totalRegFees: regFeeTxns?.reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0,
+      totalPoolEscrow: (pools as any[])?.reduce((sum, p) => sum + Number(p.seats_sold || 0) * Number(p.seat_price || 0), 0) || 0,
     });
   };
 
