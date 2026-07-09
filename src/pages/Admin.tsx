@@ -1048,6 +1048,10 @@ export default function Admin() {
                 <ScrollText className="h-4 w-4" />
                 <span>Txn Logs</span>
               </TabsTrigger>
+              <TabsTrigger value="slot-pools" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
+                <Dice5 className="h-4 w-4" />
+                <span>Slot Pools</span>
+              </TabsTrigger>
             </TabsList>
           </div>
 
