@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FishKillerz Staking — How It Works</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f8f6; color: #1a1a18; line-height: 1.6; }
+  
+  .container { max-width: 780px; margin: 0 auto; padding: 0 24px; }
+
+  /* HERO */
+  .hero { background: #fff; border-bottom: 1px solid #e5e4df; padding: 60px 0 48px; }
+  .hero .container { display: flex; flex-direction: column; gap: 12px; }
+  .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #1a56db; text-transform: uppercase; }
+  .hero h1 { font-size: 34px; font-weight: 600; line-height: 1.2; color: #0f0f0e; max-width: 600px; }
+  .hero p { font-size: 17px; color: #555550; max-width: 560px; line-height: 1.65; }
+  .hero-cta-row { display: flex; gap: 12px; margin-top: 8px; }
+  .btn { display: inline-block; padding: 11px 22px; border-radius: 8px; font-size: 15px; font-weight: 500; cursor: pointer; text-decoration: none; border: none; }
+  .btn-primary { background: #1a56db; color: #fff; }
+  .btn-primary:hover { background: #1347c2; }
+  .btn-outline { background: #fff; color: #1a1a18; border: 1px solid #c8c7c2; }
+  .btn-outline:hover { background: #f2f1ed; }
+
+  /* NAV TABS */
+  .tab-nav { background: #fff; border-bottom: 1px solid #e5e4df; position: sticky; top: 0; z-index: 10; }
+  .tab-nav .container { display: flex; gap: 0; overflow-x: auto; }
+  .tab-btn { padding: 14px 20px; font-size: 14px; font-weight: 500; color: #777772; border: none; background: transparent; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; }
+  .tab-btn:hover { color: #1a1a18; }
+  .tab-btn.active { color: #1a56db; border-bottom-color: #1a56db; }
+
+  /* PANELS */
+  .panel { display: none; padding: 48px 0; }
+  .panel.active { display: block; }
+
+  /* HOW IT WORKS */
+  .steps { display: flex; flex-direction: column; gap: 0; }
+  .step { display: grid; grid-template-columns: 52px 1fr; gap: 20px; padding: 28px 0; border-bottom: 1px solid #e5e4df; }
+  .step:last-child { border-bottom: none; }
+  .step-num { width: 40px; height: 40px; border-radius: 50%; background: #ebf0fd; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; color: #1a56db; flex-shrink: 0; margin-top: 2px; }
+  .step h3 { font-size: 17px; font-weight: 600; color: #0f0f0e; margin-bottom: 6px; }
+  .step p { font-size: 15px; color: #555550; line-height: 1.65; }
+
+  /* ROLES */
+  .role-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .role-card { background: #fff; border: 1px solid #e5e4df; border-radius: 12px; padding: 24px; }
+  .role-badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 20px; margin-bottom: 14px; }
+  .badge-shooter { background: #dcfce7; color: #166534; }
+  .badge-backer { background: #dbeafe; color: #1e40af; }
+  .role-card h3 { font-size: 16px; font-weight: 600; color: #0f0f0e; margin-bottom: 8px; }
+  .role-card p { font-size: 14px; color: #555550; line-height: 1.6; }
+  .role-card ul { list-style: none; margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+  .role-card ul li { font-size: 14px; color: #555550; display: flex; gap: 10px; align-items: flex-start; }
+  .role-card ul li::before { content: "✓"; color: #16a34a; font-weight: 700; flex-shrink: 0; }
+  .info-box { background: #ebf0fd; border: 1px solid #b8cef9; border-radius: 8px; padding: 14px 18px; font-size: 14px; color: #1e40af; line-height: 1.6; }
+
+  /* EXAMPLE */
+  .ex-section { margin-bottom: 20px; }
+  .ex-title { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #999994; margin-bottom: 14px; }
+  .ex-box { background: #fff; border: 1px solid #e5e4df; border-radius: 12px; overflow: hidden; }
+  .ex-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; border-bottom: 1px solid #f0efeb; font-size: 15px; }
+  .ex-row:last-child { border-bottom: none; }
+  .ex-label { color: #777772; }
+  .ex-val { font-weight: 600; color: #0f0f0e; }
+  .ex-val.green { color: #16a34a; }
+  .ex-val.blue { color: #1a56db; }
+  .ex-val.red { color: #b91c1c; }
+
+  /* FAQ */
+  .faq-list { display: flex; flex-direction: column; }
+  .faq-item { padding: 22px 0; border-bottom: 1px solid #e5e4df; }
+  .faq-item:last-child { border-bottom: none; }
+  .faq-q { font-size: 16px; font-weight: 600; color: #0f0f0e; margin-bottom: 8px; }
+  .faq-a { font-size: 15px; color: #555550; line-height: 1.65; }
+
+  /* ONBOARDING */
+  .onboard-wrap { max-width: 520px; }
+  .progress-bar { display: flex; gap: 6px; margin-bottom: 32px; }
+  .prog-seg { height: 4px; flex: 1; border-radius: 2px; background: #e5e4df; transition: background 0.3s; }
+  .prog-seg.done, .prog-seg.active { background: #1a56db; }
+  .onboard-step { display: none; }
+  .onboard-step.active { display: block; }
+  .onboard-step h2 { font-size: 22px; font-weight: 600; color: #0f0f0e; margin-bottom: 8px; }
+  .onboard-step .sub { font-size: 16px; color: #555550; margin-bottom: 28px; }
+  .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
+  .choice-card { background: #fff; border: 1.5px solid #e5e4df; border-radius: 12px; padding: 22px; cursor: pointer; transition: border-color 0.15s; }
+  .choice-card:hover { border-color: #93b4f7; }
+  .choice-card.selected { border-color: #1a56db; background: #f0f5ff; }
+  .choice-icon { font-size: 28px; margin-bottom: 10px; }
+  .choice-card h3 { font-size: 16px; font-weight: 600; color: #0f0f0e; margin-bottom: 4px; }
+  .choice-card p { font-size: 13px; color: #777772; line-height: 1.55; }
+  .info-row { display: flex; gap: 12px; background: #ebf0fd; border: 1px solid #b8cef9; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .info-row.green { background: #f0fdf4; border-color: #86efac; }
+  .info-row-icon { font-size: 18px; flex-shrink: 0; padding-top: 1px; }
+  .info-row p { font-size: 14px; color: #1e40af; line-height: 1.55; }
+  .info-row.green p { color: #166534; }
+  .btn-row { display: flex; gap: 10px; margin-top: 24px; }
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
+  .stat-box { background: #f2f1ed; border-radius: 8px; padding: 16px; }
+  .stat-val { font-size: 22px; font-weight: 600; color: #0f0f0e; }
+  .stat-lbl { font-size: 12px; color: #999994; margin-top: 3px; }
+
+  .section-label { font-size: 20px; font-weight: 600; color: #0f0f0e; margin-bottom: 6px; }
+  .section-sub { font-size: 15px; color: #777772; margin-bottom: 32px; }
+
+  @media (max-width: 560px) {
+    .role-cards, .choice-grid { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 26px; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="container">
+    <span class="eyebrow">FishKillerz Staking</span>
+    <h1>Get backed. Split the winnings.<br>No load-up? No problem.</h1>
+    <p>FishKillerz Staking connects skilled fish table players with investors who want in on the action — without touching a controller. Both sides win when the fish hit.</p>
+    <div class="hero-cta-row">
+      <a href="#" class="btn btn-primary" onclick="showTab('onboard'); return false;">Get started</a>
+      <a href="#" class="btn btn-outline" onclick="showTab('how'); return false;">See how it works</a>
+    </div>
+  </div>
+</div>
+
+<div class="tab-nav">
+  <div class="container">
+    <button class="tab-btn active" onclick="showTab('how')">How it works</button>
+    <button class="tab-btn" onclick="showTab('roles')">Shooters &amp; backers</button>
+    <button class="tab-btn" onclick="showTab('example')">Real example</button>
+    <button class="tab-btn" onclick="showTab('onboard')">Get started</button>
+    <button class="tab-btn" onclick="showTab('faq')">FAQ</button>
+  </div>
+</div>
+
+<div id="tab-how" class="panel active">
+  <div class="container">
+    <p class="section-label">How it works</p>
+    <p class="section-sub">Four simple steps — from session request to payout.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <h3>A shooter lists a session</h3>
+          <p>A verified player posts a session request — which fish table platform they use, how long they plan to shoot, the load-up amount they need, and the profit split they're offering to backers.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <h3>A backer funds the session</h3>
+          <p>An investor reviews the shooter's verified stats and session history, agrees to the terms, and funds the load-up. The money goes into escrow — neither side touches it until the session closes.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <h3>The shooter plays on their platform</h3>
+          <p>FishKillerz doesn't host the games. The shooter plays on whatever fish table site they already use — Ocean King, Golden Dragon, Fish Game Kings, wherever. They submit verified before-and-after screenshots when the session ends.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div>
+          <h3>Winnings split automatically</h3>
+          <p>When the session closes, the platform calculates the split. The backer gets their load-up back plus their agreed share of profit. The shooter keeps their share. Losses carry forward as a running tab — no out-of-pocket payment required.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="tab-roles" class="panel">
+  <div class="container">
+    <p class="section-label">Shooters &amp; backers</p>
+    <p class="section-sub">Two roles. One platform. Built to work together.</p>
+    <div class="role-cards">
+      <div class="role-card">
+        <span class="role-badge badge-shooter">Shooter</span>
+        <h3>You play. Someone else loads you up.</h3>
+        <p>Great if you're skilled but short on funds, or want to play bigger sessions than your bankroll allows.</p>
+        <ul>
+          <li>Set your own profit split offer</li>
+          <li>Keep your share of every winning session</li>
+          <li>Build a track record that attracts bigger backers</li>
+          <li>Running tab keeps things fair — no out-of-pocket losses</li>
+          <li>Play on any fish table platform you already use</li>
+        </ul>
+      </div>
+      <div class="role-card">
+        <span class="role-badge badge-backer">Backer</span>
+        <h3>You invest. A skilled shooter does the work.</h3>
+        <p>Earn a share of fish table winnings without playing a single session yourself.</p>
+        <ul>
+          <li>Browse verified shooter stats before committing</li>
+          <li>Funds held in escrow — protected until session closes</li>
+          <li>Earn your agreed % of every profitable session</li>
+          <li>Diversify across multiple shooters at once</li>
+          <li>Full dispute protection if results are questioned</li>
+        </ul>
+      </div>
+    </div>
+    <div class="info-box">
+      All shooters go through identity and activity verification before their first backed session. Backers can see a shooter's last 30 sessions — wins, losses, and running tab history — before agreeing to fund.
+    </div>
+  </div>
+</div>
+
+<div id="tab-example" class="panel">
+  <div class="container">
+    <p class="section-label">Real example</p>
+    <p class="section-sub">A 70/30 shooter-backer split, two outcomes.</p>
+
+    <div class="ex-section">
+      <p class="ex-title">Session setup</p>
+      <div class="ex-box">
+        <div class="ex-row"><span class="ex-label">Load-up funded by backer</span><span class="ex-val">$200</span></div>
+        <div class="ex-row"><span class="ex-label">Agreed split</span><span class="ex-val">70% shooter / 30% backer</span></div>
+        <div class="ex-row"><span class="ex-label">Platform</span><span class="ex-val">Ocean King (external)</span></div>
+        <div class="ex-row"><span class="ex-label">Session window</span><span class="ex-val">3 hours</span></div>
+      </div>
+    </div>
+
+    <div class="ex-section">
+      <p class="ex-title">Winning session — shooter finishes at $340</p>
+      <div class="ex-box">
+        <div class="ex-row"><span class="ex-label">Gross winnings</span><span class="ex-val">$340</span></div>
+        <div class="ex-row"><span class="ex-label">Backer gets back load-up</span><span class="ex-val">$200</span></div>
+        <div class="ex-row"><span class="ex-label">Profit to split</span><span class="ex-val">$140</span></div>
+        <div class="ex-row"><span class="ex-label">Shooter keeps (70%)</span><span class="ex-val green">+$98</span></div>
+        <div class="ex-row"><span class="ex-label">Backer earns (30%)</span><span class="ex-val blue">+$42</span></div>
+      </div>
+    </div>
+
+    <div class="ex-section">
+      <p class="ex-title">Losing session — shooter finishes at $120</p>
+      <div class="ex-box">
+        <div class="ex-row"><span class="ex-label">Balance at close</span><span class="ex-val">$120</span></div>
+        <div class="ex-row"><span class="ex-label">Loss on the session</span><span class="ex-val red">−$80</span></div>
+        <div class="ex-row"><span class="ex-label">Backer absorbs the loss</span><span class="ex-val red">−$80</span></div>
+        <div class="ex-row"><span class="ex-label">Shooter's running tab</span><span class="ex-val">$80 (carried forward)</span></div>
+        <div class="ex-row"><span class="ex-label">Next session</span><span class="ex-val" style="color:#999994; font-weight:400; font-size:14px;">Profit clears the tab before shooter earns</span></div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      The running tab means shooters never have to pay out of pocket after a losing session — it's settled automatically from future winnings. Backers know the tab balance at all times.
+    </div>
+  </div>
+</div>
+
+<div id="tab-onboard" class="panel">
+  <div class="container">
+    <div class="onboard-wrap">
+
+      <div id="step-1" class="onboard-step active">
+        <div class="progress-bar">
+          <div class="prog-seg active"></div>
+          <div class="prog-seg"></div>
+          <div class="prog-seg"></div>
+        </div>
+        <h2>Which describes you?</h2>
+        <p class="sub">This helps us show you the right setup steps.</p>
+        <div class="choice-grid">
+          <div class="choice-card" id="pick-shooter" onclick="selectRole('shooter')">
+            <div class="choice-icon">🎮</div>
+            <h3>I'm a shooter</h3>
+            <p>I play fish tables and want someone to back my sessions.</p>
+          </div>
+          <div class="choice-card" id="pick-backer" onclick="selectRole('backer')">
+            <div class="choice-icon">💰</div>
+            <h3>I'm a backer</h3>
+            <p>I want to invest in skilled players and earn from their sessions.</p>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="nextStep(2)">Continue →</button>
+        </div>
+      </div>
+
+      <div id="step-2" class="onboard-step">
+        <div class="progress-bar">
+          <div class="prog-seg done"></div>
+          <div class="prog-seg active"></div>
+          <div class="prog-seg"></div>
+        </div>
+        <h2 id="step2-title">Verify your identity</h2>
+        <p class="sub" id="step2-sub">Before your first session, we verify who you are. This protects both sides and builds the trust that makes backing work.</p>
+        <div class="info-row">
+          <span class="info-row-icon">🪪</span>
+          <p id="step2-info">You'll need a government-issued ID and a brief history of your fish table activity — screenshots of recent sessions work fine.</p>
+        </div>
+        <div class="info-row green">
+          <span class="info-row-icon">⏱</span>
+          <p>Verification typically completes within 24 hours. You'll get a notification as soon as you're approved.</p>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-outline" onclick="nextStep(1)">Back</button>
+          <button class="btn btn-primary" onclick="nextStep(3)">Looks good — continue →</button>
+        </div>
+      </div>
+
+      <div id="step-3" class="onboard-step">
+        <div class="progress-bar">
+          <div class="prog-seg done"></div>
+          <div class="prog-seg done"></div>
+          <div class="prog-seg active"></div>
+        </div>
+        <h2 id="step3-title">You're almost in</h2>
+        <p class="sub" id="step3-sub">Once verified, here's what your dashboard will show.</p>
+        <div class="stats-grid">
+          <div class="stat-box"><div class="stat-val" id="stat1">—</div><div class="stat-lbl" id="lbl1">Sessions backed</div></div>
+          <div class="stat-box"><div class="stat-val" id="stat2">—</div><div class="stat-lbl" id="lbl2">Avg session profit</div></div>
+          <div class="stat-box"><div class="stat-val" id="stat3">$0</div><div class="stat-lbl" id="lbl3">Running tab</div></div>
+        </div>
+        <div class="info-row">
+          <span class="info-row-icon">✅</span>
+          <p id="step3-cta">Post your first session once verified — set your load-up amount and your split offer, and backers will find you.</p>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-outline" onclick="nextStep(2)">Back</button>
+          <button class="btn btn-primary">Create my account →</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="tab-faq" class="panel">
+  <div class="container">
+    <p class="section-label">Common questions</p>
+    <p class="section-sub">Everything new users ask before their first session.</p>
+    <div class="faq-list">
+      <div class="faq-item">
+        <p class="faq-q">Do I have to play on FishKillerz's platform?</p>
+        <p class="faq-a">No. You play on whatever fish table site you already use — Ocean King, Golden Dragon, Fish Game Kings, or anything else. FishKillerz is the agreement and payout layer between you and your backer. The games themselves happen on your site.</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">What is a "running tab"?</p>
+        <p class="faq-a">If your backer funds $200 and you finish the session down $60, that $60 carries forward as a tab. Your next session's profits clear the tab first before you start earning your split again. It keeps things fair without requiring shooters to pay out of pocket after a loss.</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">How do I prove what I won or lost?</p>
+        <p class="faq-a">Before and after screenshots of your balance on the fish table platform. The app walks you through exactly what to capture. Disputed sessions go through a review process with both parties involved.</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">Is my money safe while a session is running?</p>
+        <p class="faq-a">Yes. Backer funds go into escrow when a session starts and are only released once both sides confirm the session result is verified. You're never at risk during a live session.</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">Can I back more than one shooter at once?</p>
+        <p class="faq-a">Yes. Backers can fund multiple active sessions simultaneously, spreading their investment across different shooters and different fish table platforms.</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">What if a shooter disappears mid-session?</p>
+        <p class="faq-a">Sessions have a time window agreed upfront. If a session goes unresolved past that window, the escrow is reviewed and the backer's funds are protected. Shooters who don't close out their sessions properly are flagged and removed from the platform.</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">How do I know if a shooter is any good before I back them?</p>
+        <p class="faq-a">Every shooter's profile shows their last 30 sessions — wins, losses, platforms used, average session length, and running tab balance. You have full visibility before committing a single dollar.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var currentRole = null;
+
+  function showTab(name) {
+    var names = ['how','roles','example','onboard','faq'];
+    document.querySelectorAll('.tab-btn').forEach(function(btn, i) {
+      btn.classList.toggle('active', names[i] === name);
+    });
+    document.querySelectorAll('.panel').forEach(function(p) {
+      p.classList.remove('active');
+    });
+    var panel = document.getElementById('tab-' + name);
+    if (panel) panel.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function selectRole(role) {
+    currentRole = role;
+    document.getElementById('pick-shooter').classList.toggle('selected', role === 'shooter');
+    document.getElementById('pick-backer').classList.toggle('selected', role === 'backer');
+  }
+
+  function nextStep(n) {
+    document.querySelectorAll('.onboard-step').forEach(function(s) {
+      s.classList.remove('active');
+    });
+    var step = document.getElementById('step-' + n);
+    if (step) step.classList.add('active');
+
+    if (n === 2 && currentRole) {
+      if (currentRole === 'shooter') {
+        document.getElementById('step2-title').textContent = 'Verify your shooter profile';
+        document.getElementById('step2-sub').textContent = 'Backers can see your history before funding you. Verification builds trust and gets you better offers.';
+        document.getElementById('step2-info').textContent = "You'll need a government-issued ID and screenshots showing your recent fish table activity — win or loss, show the real numbers.";
+        document.getElementById('step3-title').textContent = 'Ready to find your first backer';
+        document.getElementById('step3-sub').textContent = 'Once approved, this is what backers will see when they review your profile.';
+        document.getElementById('stat1').textContent = '0'; document.getElementById('lbl1').textContent = 'Sessions backed';
+        document.getElementById('stat2').textContent = '—'; document.getElementById('lbl2').textContent = 'Avg session profit';
+        document.getElementById('stat3').textContent = '$0'; document.getElementById('lbl3').textContent = 'Running tab';
+        document.getElementById('step3-cta').textContent = 'Post your first session request once verified — set your load-up amount and your split offer, and backers will come to you.';
+      } else {
+        document.getElementById('step2-title').textContent = 'Verify your backer account';
+        document.getElementById('step2-sub').textContent = "We verify backers to protect both sides. Shooters can see your profile before agreeing to a session.";
+        document.getElementById('step2-info').textContent = "You'll need a government-issued ID and to connect a funding source. Your funds stay in escrow during sessions — you're always protected.";
+        document.getElementById('step3-title').textContent = 'Ready to back your first shooter';
+        document.getElementById('step3-sub').textContent = "Once approved, this is what your investor dashboard will look like.";
+        document.getElementById('stat1').textContent = '0'; document.getElementById('lbl1').textContent = 'Sessions funded';
+        document.getElementById('stat2').textContent = '—'; document.getElementById('lbl2').textContent = 'Avg ROI per session';
+        document.getElementById('stat3').textContent = '$0'; document.getElementById('lbl3').textContent = 'In escrow now';
+        document.getElementById('step3-cta').textContent = 'Browse verified shooters once approved — filter by platform, split offer, and win history to find the right match.';
+      }
+    }
+  }
+</script>
+</body>
+</html>
