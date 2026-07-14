@@ -1,3 +1,4 @@
+import crypto from 'node:crypto'
 import { sendLovableEmail } from '@lovable.dev/email-js'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
@@ -105,7 +106,9 @@ Deno.serve(async (req) => {
   // bearer token to match SUPABASE_SERVICE_ROLE_KEY exactly (this is the value
   // pg_cron / internal schedulers provide).
   const token = authHeader.slice('Bearer '.length).trim()
-  if (token !== supabaseServiceKey) {
+  const actual = crypto.createHash('sha256').update(token).digest()
+  const expected = crypto.createHash('sha256').update(supabaseServiceKey).digest()
+  if (!crypto.timingSafeEqual(actual, expected)) {
     return new Response(
       JSON.stringify({ error: 'Forbidden' }),
       { status: 403, headers: { 'Content-Type': 'application/json' } }
