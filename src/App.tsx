@@ -34,6 +34,7 @@ import SlotPools from "./pages/SlotPools";
 import CreateSlotPool from "./pages/CreateSlotPool";
 import Connect from "./pages/Connect";
 import OAuthConsent from "./pages/OAuthConsent";
+import GoldenDragonStrategy from "./pages/GoldenDragonStrategy";
 
 const queryClient = new QueryClient();
 
