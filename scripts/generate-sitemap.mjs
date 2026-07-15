@@ -69,6 +69,7 @@ const pageFiles = [
   "src/pages/SiteRules.tsx",
   "src/pages/PrivacyPolicy.tsx",
   "src/pages/ForgotPassword.tsx",
+  "src/pages/GoldenDragonStrategy.tsx",
 ];
 const canonicalsFound = new Set();
 for (const f of pageFiles) {
