@@ -34,6 +34,7 @@ const PUBLIC_ROUTES = [
   { path: "/site-rules",           priority: "0.3", changefreq: "monthly" },
   { path: "/privacy",              priority: "0.3", changefreq: "monthly" },
   { path: "/forgot-password",      priority: "0.2", changefreq: "yearly"  },
+  { path: "/guides/golden-dragon-strategy", priority: "0.7", changefreq: "monthly" },
 ];
 
 const appSrc = readFileSync(resolve(ROOT, "src/App.tsx"), "utf8");
@@ -68,6 +69,7 @@ const pageFiles = [
   "src/pages/SiteRules.tsx",
   "src/pages/PrivacyPolicy.tsx",
   "src/pages/ForgotPassword.tsx",
+  "src/pages/GoldenDragonStrategy.tsx",
 ];
 const canonicalsFound = new Set();
 for (const f of pageFiles) {
