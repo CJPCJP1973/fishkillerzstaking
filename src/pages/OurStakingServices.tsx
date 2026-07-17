@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 export default function OurStakingServices() {
   useSEO({
-    title: "Our Staking Services: Buy & Sell Poker Stakes | FishKillerz",
+    title: "Our Staking Services: Buy & Sell Fish table Stakes | FishKillerz",
     description:
       "Instant stake purchases, VIP sessions with reduced rake, and seller activation — all backed by escrowed FishDollarz.",
     canonical: "/our-staking-services",
@@ -68,7 +68,7 @@ export default function OurStakingServices() {
             <span className="text-xs uppercase tracking-wider font-semibold">Our Services</span>
           </div>
           <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground">
-            Crypto-Backed Poker Staking, Built for Speed
+            Crypto-Backed Fish Table Staking, Built for Speed
           </h1>
           <p className="text-muted-foreground">
             FishKillerz offers three tiers of staking service — all powered by escrowed FishDollarz,
