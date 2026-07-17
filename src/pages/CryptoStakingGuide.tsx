@@ -6,9 +6,9 @@ import { Link } from "react-router-dom";
 
 export default function CryptoStakingGuide() {
   useSEO({
-    title: "Crypto Staking Guide: How Poker Staking Works | FishKillerz",
+    title: "Crypto Staking Guide: How  Online Fish Table Staking Works | FishKillerz",
     description:
-      "Crypto-backed poker staking explained: how stakes work, skin-in-the-game rules, rake, payouts, and instant FishDollarz settlement.",
+      "Crypto-backed online fish table staking explained: how stakes work, skin-in-the-game rules, rake, payouts, and instant FishDollarz settlement.",
     canonical: "/crypto-staking-guide",
     jsonLd: [
       {
@@ -85,7 +85,7 @@ export default function CryptoStakingGuide() {
             <h2 className="font-display text-xl font-bold text-foreground">What is Crypto Staking?</h2>
           </div>
           <p className="text-sm text-foreground/90 leading-relaxed">
-            Crypto staking in poker is a model where backers fund a player&apos;s buy-in in exchange
+            Crypto staking in fish table play is a model where backers fund a player&apos;s buy-in in exchange
             for a proportional share of their winnings. Unlike traditional staking — which relies on
             wire transfers, paper agreements, and trust — crypto staking uses on-chain settlement
             and platform escrow to make stakes instant, transparent, and enforceable.
