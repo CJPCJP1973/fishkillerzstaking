@@ -16,8 +16,8 @@ export default function CryptoStakingGuide() {
         "@type": "Article",
         headline: "The Complete Crypto Staking Guide",
         description:
-          "How modern crypto-backed poker staking works on FishKillerz — from buying your first stake to collecting payouts.",
-        mainEntityOfPage: "https://fishkillerz.lovable.app/crypto-staking-guide",
+          "How modern crypto-backed fish table staking works on FishKillerz — from buying your first stake to collecting payouts.",
+        mainEntityOfPage: "https://fishkillerz.com/crypto-staking-guide",
         author: { "@type": "Organization", name: "FishKillerz" },
         publisher: { "@type": "Organization", name: "FishKillerz" },
       },
