@@ -1078,7 +1078,12 @@ export default function Admin() {
                 <Dice5 className="h-4 w-4" />
                 <span>Slot Pools</span>
               </TabsTrigger>
+              <TabsTrigger value="audit-log" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
+                <ScrollText className="h-4 w-4" />
+                <span>Audit Log</span>
+              </TabsTrigger>
             </TabsList>
+
           </div>
 
           {/* Pending Stakes */}
