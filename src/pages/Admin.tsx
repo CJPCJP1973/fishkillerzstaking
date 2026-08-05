@@ -1651,6 +1651,12 @@ export default function Admin() {
             <SlotPoolsTab />
           </TabsContent>
 
+          <TabsContent value="audit-log" className="mt-0">
+            <AuditLogTab />
+          </TabsContent>
+
+
+
           <TabsContent value="godmode" className="space-y-6 mt-4">
             <div className="flex items-center gap-2 mb-2">
               <Zap className="h-5 w-5 text-accent" />
