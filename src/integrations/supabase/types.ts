@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action_type: string
+          admin_id: string
+          admin_name: string | null
+          created_at: string
+          description: string
+          details: Json
+          id: string
+          target_session_id: string | null
+          target_user_id: string | null
+        }
+        Insert: {
+          action_type: string
+          admin_id: string
+          admin_name?: string | null
+          created_at?: string
+          description: string
+          details?: Json
+          id?: string
+          target_session_id?: string | null
+          target_user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          admin_id?: string
+          admin_name?: string | null
+          created_at?: string
+          description?: string
+          details?: Json
+          id?: string
+          target_session_id?: string | null
+          target_user_id?: string | null
+        }
+        Relationships: []
+      }
       confirmed_agents: {
         Row: {
           agent_name: string
@@ -905,6 +941,16 @@ export type Database = {
       is_session_shooter: {
         Args: { _session_id: string; _user_id: string }
         Returns: boolean
+      }
+      log_admin_action: {
+        Args: {
+          _action_type: string
+          _description: string
+          _details?: Json
+          _target_session_id?: string
+          _target_user_id?: string
+        }
+        Returns: string
       }
       move_to_dlq: {
         Args: {

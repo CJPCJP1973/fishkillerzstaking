@@ -7,6 +7,8 @@ import ProofUpload from "@/components/ProofUpload";
 import DisputeReview from "@/components/admin/DisputeReview";
 import TransactionLogs from "@/components/admin/TransactionLogs";
 import CommittedSessionsTab from "@/components/admin/CommittedSessionsTab";
+import AuditLogTab from "@/components/admin/AuditLogTab";
+import { logAdminAction } from "@/lib/adminAudit";
 import OcrDashboardWidget from "@/components/OcrDashboardWidget";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -428,9 +430,19 @@ export default function Admin() {
         const { data: sessionData } = await supabase.from("sessions").select("stake_sold").eq("id", stake.session_id).single();
         const newSold = (Number(sessionData?.stake_sold) || 0) + Number(stake.amount);
         await supabase.from("sessions").update({ stake_sold: newSold } as any).eq("id", stake.session_id);
+        await logAdminAction("deposit_confirmed", `Confirmed backer deposit of $${Number(stake.amount).toLocaleString()}`, {
+          sessionId: stake.session_id,
+          userId: (stake as any).backer_id ?? null,
+          details: { stake_id: stake.id, amount: Number(stake.amount) },
+        });
         toast.success(`Stake of $${stake.amount} confirmed!`);
       } else {
         await supabase.from("stakes").delete().eq("id", stake.id);
+        await logAdminAction("deposit_rejected", `Rejected backer deposit of $${Number(stake.amount).toLocaleString()}`, {
+          sessionId: stake.session_id,
+          userId: (stake as any).backer_id ?? null,
+          details: { stake_id: stake.id, amount: Number(stake.amount) },
+        });
         toast.success("Stake rejected and removed");
       }
       fetchPendingStakes();
@@ -565,6 +577,11 @@ export default function Admin() {
         platform_fee: 0,
       } as any).eq("id", session.id);
 
+      await logAdminAction(
+        "winnings_released",
+        `Settled session "${session.shooter_name}" — released $${Number(cashOut).toLocaleString()} across ${payoutInserts.length} backer(s)`,
+        { sessionId: session.id, userId: (session as any).shooter_id ?? null, details: { cash_out: Number(cashOut), payouts: payoutInserts.length } }
+      );
       toast.success(`Settled! ${payoutInserts.length} payouts created — no rake, $1 listing fee was pre-paid`);
       setSettleSessionId(null);
       setCashOutAmount("");
@@ -655,6 +672,11 @@ export default function Admin() {
         winnings_amount: payout.amount_owed,
         winnings_released: true,
       } as any).eq("id", payout.stake_id);
+      await logAdminAction("payout_marked_paid", `Marked payout of $${Number(payout.amount_owed).toLocaleString()} as paid to ${payout.backer_name ?? "backer"}`, {
+        sessionId: (payout as any).session_id ?? null,
+        userId: (payout as any).backer_id ?? null,
+        details: { payout_id: payout.id, amount: Number(payout.amount_owed), transaction_reference: ref },
+      });
       toast.success(`Payout of $${payout.amount_owed} marked as paid`);
       fetchPayouts();
     } catch (err: any) {
@@ -890,6 +912,10 @@ export default function Admin() {
     try {
       const { error } = await supabase.from("sessions").update({ status: overrideStatus } as any).eq("id", overrideSessionId);
       if (error) throw error;
+      await logAdminAction("status_override", `Overrode session status to ${overrideStatus.toUpperCase()}`, {
+        sessionId: overrideSessionId,
+        details: { new_status: overrideStatus },
+      });
       toast.success(`Session status overridden to "${overrideStatus}"`);
       setOverrideSessionId("");
       setOverrideStatus("");
@@ -1052,7 +1078,12 @@ export default function Admin() {
                 <Dice5 className="h-4 w-4" />
                 <span>Slot Pools</span>
               </TabsTrigger>
+              <TabsTrigger value="audit-log" className="font-display text-xs sm:text-sm py-3 flex flex-col items-center gap-1">
+                <ScrollText className="h-4 w-4" />
+                <span>Audit Log</span>
+              </TabsTrigger>
             </TabsList>
+
           </div>
 
           {/* Pending Stakes */}
@@ -1619,6 +1650,12 @@ export default function Admin() {
           <TabsContent value="slot-pools" className="mt-0">
             <SlotPoolsTab />
           </TabsContent>
+
+          <TabsContent value="audit-log" className="mt-0">
+            <AuditLogTab />
+          </TabsContent>
+
+
 
           <TabsContent value="godmode" className="space-y-6 mt-4">
             <div className="flex items-center gap-2 mb-2">

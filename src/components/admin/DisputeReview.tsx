@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
+import { logAdminAction } from "@/lib/adminAudit";
 
 interface DisputedSession {
   id: string;
@@ -55,6 +56,7 @@ export default function DisputeReview() {
   }, []);
 
   const handleResolve = async (sessionId: string, newStatus: string) => {
+    const target = sessions.find((x) => x.id === sessionId);
     const { error } = await supabase
       .from("sessions")
       .update({ status: newStatus } as any)
@@ -62,6 +64,18 @@ export default function DisputeReview() {
     if (error) {
       toast.error(error.message);
     } else {
+      await logAdminAction(
+        "dispute_resolved",
+        `Resolved dispute for "${target?.shooter_name ?? sessionId}" → ${newStatus.toUpperCase()}`,
+        {
+          sessionId,
+          details: {
+            new_status: newStatus,
+            deposit_proof_url: target?.deposit_proof_url ?? null,
+            payout_proof_url: target?.payout_proof_url ?? null,
+          },
+        }
+      );
       toast.success(`Session resolved → ${newStatus}`);
       fetchDisputed();
     }
