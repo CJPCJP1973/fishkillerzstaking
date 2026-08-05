@@ -20,6 +20,7 @@ import {
 import ProofUpload from "@/components/ProofUpload";
 import ScreenshotComparison from "@/components/admin/ScreenshotComparison";
 import SessionJournal from "@/components/SessionJournal";
+import { logAdminAction } from "@/lib/adminAudit";
 
 interface SessionRow {
   id: string;
@@ -141,6 +142,11 @@ export default function CommittedSessionsTab() {
         message: `Admin confirmed your deposit for "${s.shooter_name} — ${s.platform}". Session is now LIVE.`,
         type: "success",
       } as any);
+      await logAdminAction(
+        "deposit_confirmed",
+        `Confirmed deposit for "${s.shooter_name} — ${s.platform}" and set session LIVE`,
+        { sessionId: s.id, userId: s.shooter_id, details: { total_buy_in: s.total_buy_in, deposit_proof_url: s.deposit_proof_url } }
+      );
       toast.success("Deposit confirmed — session is LIVE");
       fetchData();
     } catch (err: any) {
@@ -223,6 +229,11 @@ export default function CommittedSessionsTab() {
         admin_released_winnings: true,
       } as any).eq("id", s.id);
 
+      await logAdminAction(
+        "winnings_released",
+        `Released winnings of $${amount.toLocaleString()} for "${s.shooter_name} — ${s.platform}" across ${inserts.length} backer(s)`,
+        { sessionId: s.id, userId: s.shooter_id, details: { cash_out: amount, payouts: inserts.length, total_staked: totalStaked, payout_proof_url: s.payout_proof_url } }
+      );
       toast.success(`Released — ${inserts.length} payouts created`);
       setOpenSettle(null);
       setCashOut("");
