@@ -596,48 +596,116 @@ export type Database = {
         }
         Relationships: []
       }
+      slot_pool_seats: {
+        Row: {
+          amount: number
+          backer_id: string
+          created_at: string
+          deposit_confirmed: boolean
+          id: string
+          payment_method: string | null
+          payment_mode: string
+          pool_id: string
+          seats: number
+          updated_at: string
+          winnings_amount: number | null
+          winnings_released: boolean
+        }
+        Insert: {
+          amount: number
+          backer_id: string
+          created_at?: string
+          deposit_confirmed?: boolean
+          id?: string
+          payment_method?: string | null
+          payment_mode?: string
+          pool_id: string
+          seats?: number
+          updated_at?: string
+          winnings_amount?: number | null
+          winnings_released?: boolean
+        }
+        Update: {
+          amount?: number
+          backer_id?: string
+          created_at?: string
+          deposit_confirmed?: boolean
+          id?: string
+          payment_method?: string | null
+          payment_mode?: string
+          pool_id?: string
+          seats?: number
+          updated_at?: string
+          winnings_amount?: number | null
+          winnings_released?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slot_pool_seats_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "slot_pools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       slot_pools: {
         Row: {
+          admin_confirmed_deposit: boolean
+          admin_released_winnings: boolean
           buy_in: number
           created_at: string
+          deposit_proof_url: string | null
           end_time: string
           id: string
           name: string
           owner_id: string
+          payout_proof_url: string | null
           platform: string
           seat_price: number
           seats: number
           seats_sold: number
           status: string
           updated_at: string
+          winnings: number | null
         }
         Insert: {
+          admin_confirmed_deposit?: boolean
+          admin_released_winnings?: boolean
           buy_in: number
           created_at?: string
+          deposit_proof_url?: string | null
           end_time: string
           id?: string
           name: string
           owner_id: string
+          payout_proof_url?: string | null
           platform: string
           seat_price: number
           seats: number
           seats_sold?: number
           status?: string
           updated_at?: string
+          winnings?: number | null
         }
         Update: {
+          admin_confirmed_deposit?: boolean
+          admin_released_winnings?: boolean
           buy_in?: number
           created_at?: string
+          deposit_proof_url?: string | null
           end_time?: string
           id?: string
           name?: string
           owner_id?: string
+          payout_proof_url?: string | null
           platform?: string
           seat_price?: number
           seats?: number
           seats_sold?: number
           status?: string
           updated_at?: string
+          winnings?: number | null
         }
         Relationships: []
       }
