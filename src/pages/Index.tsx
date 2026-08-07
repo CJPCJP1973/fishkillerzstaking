@@ -124,6 +124,11 @@ export default function Index() {
                   Browse Sessions <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
+              <Link to="/slot-pools">
+                <Button variant="outline" className="border-accent/30 text-accent hover:bg-accent/10 font-display font-bold px-6 py-5 text-base">
+                  <Dice5 className="mr-2 h-4 w-4" /> Slot Pools
+                </Button>
+              </Link>
               <Link to="/profile">
                 <Button variant="outline" className="border-accent/30 text-accent hover:bg-accent/10 font-display font-bold px-6 py-5 text-base">
                   💰 Buy FishDollarz
