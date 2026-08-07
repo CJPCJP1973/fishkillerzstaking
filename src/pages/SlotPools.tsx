@@ -1,38 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Dice5, Plus, Users, DollarSign, Trash2 } from "lucide-react";
+import SlotPoolCard, { SlotPoolData } from "@/components/SlotPoolCard";
+import { Dice5, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
-type SlotPool = {
-  id: string;
-  owner_id: string;
-  name: string;
-  platform: string;
-  buy_in: number;
-  seats: number;
-  seat_price: number;
-  seats_sold: number;
-  end_time: string;
-  status: string;
-  created_at: string;
-};
+const FILTERS = ["all", "open", "live", "full", "completed"] as const;
+type Filter = (typeof FILTERS)[number];
 
 export default function SlotPools() {
   const { user } = useAuth();
-  const [pools, setPools] = useState<SlotPool[]>([]);
+  const [pools, setPools] = useState<SlotPoolData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<Filter>("all");
 
   useSEO({
     title: "Slot Pools | FishKillerz",
     description:
-      "Browse and join slot pools. Split buy-ins across multiple backers and share the action on your favorite fish/slot platforms.",
+      "Browse open slot pools and grab a seat. Split buy-ins across multiple backers and share the action on your favorite slot platforms.",
     canonical: "/slot-pools",
   });
 
@@ -45,7 +34,7 @@ export default function SlotPools() {
     if (error) {
       toast.error("Failed to load pools");
     } else {
-      setPools((data ?? []) as SlotPool[]);
+      setPools((data ?? []) as SlotPoolData[]);
     }
     setLoading(false);
   };
@@ -66,6 +55,7 @@ export default function SlotPools() {
   }, []);
 
   const handleDelete = async (id: string) => {
+    if (!window.confirm("Delete this pool? This cannot be undone.")) return;
     const { error } = await supabase.from("slot_pools").delete().eq("id", id);
     if (error) {
       toast.error(error.message);
@@ -74,91 +64,93 @@ export default function SlotPools() {
     toast.success("Pool removed");
   };
 
+  const visible = useMemo(
+    () => (filter === "all" ? pools : pools.filter((p) => p.status === filter)),
+    [pools, filter]
+  );
+
+  const totals = useMemo(() => {
+    const active = pools.filter((p) => ["open", "funding", "live", "full"].includes(p.status)).length;
+    const escrow = pools.reduce((s, p) => s + Number(p.seats_sold || 0) * Number(p.seat_price || 0), 0);
+    const seatsLeft = pools
+      .filter((p) => ["open", "funding"].includes(p.status))
+      .reduce((s, p) => s + Math.max(0, p.seats - p.seats_sold), 0);
+    return { active, escrow, seatsLeft };
+  }, [pools]);
+
   return (
     <Layout>
-      <div className="container py-8 pb-24 md:pb-8 max-w-5xl">
+      <div className="container py-8 pb-24 md:pb-8">
         <div className="flex items-center justify-between gap-3 mb-6">
           <div className="flex items-center gap-3">
             <Dice5 className="h-6 w-6 text-primary" />
-            <h1 className="font-display text-2xl font-bold text-foreground">Slot Pools</h1>
+            <h1 className="font-display text-2xl font-bold text-foreground">All Slot Pools</h1>
           </div>
-          <Button asChild>
+          <Button asChild size="sm">
             <Link to="/slot-pools/new">
               <Plus className="h-4 w-4 mr-1.5" /> Create Pool
             </Link>
           </Button>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          {loading ? (
-            <Card className="sm:col-span-2">
-              <CardContent className="py-8 text-center text-sm text-muted-foreground">
-                Loading pools…
-              </CardContent>
-            </Card>
-          ) : pools.length === 0 ? (
-            <Card className="sm:col-span-2">
-              <CardContent className="py-10 text-center text-sm text-muted-foreground space-y-3">
-                <p>No slot pools yet. Be the first to launch one.</p>
-                <Button asChild size="sm">
-                  <Link to="/slot-pools/new">
-                    <Plus className="h-4 w-4 mr-1.5" /> Create Pool
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            pools.map((p) => {
-              const filled = Math.min(100, (p.seats_sold / p.seats) * 100);
-              const isOwner = user?.id === p.owner_id;
-              return (
-                <Card key={p.id}>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <CardTitle className="text-base">{p.name}</CardTitle>
-                        <Badge variant="secondary" className="mt-1">
-                          {p.platform}
-                        </Badge>
-                      </div>
-                      {isOwner && (
-                        <button
-                          onClick={() => handleDelete(p.id)}
-                          className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                          aria-label="Delete pool"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between text-muted-foreground">
-                      <span className="flex items-center gap-1.5">
-                        <DollarSign className="h-3.5 w-3.5" /> Buy-in
-                      </span>
-                      <span className="text-foreground font-medium">${Number(p.buy_in).toFixed(2)}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-muted-foreground">
-                      <span className="flex items-center gap-1.5">
-                        <Users className="h-3.5 w-3.5" /> Seats
-                      </span>
-                      <span className="text-foreground font-medium">
-                        {p.seats_sold} / {p.seats} @ ${Number(p.seat_price).toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
-                      <div className="h-full bg-primary" style={{ width: `${filled}%` }} />
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Ends {new Date(p.end_time).toLocaleString()}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })
-          )}
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-2 mb-5">
+          <div className="gradient-card rounded-lg p-3 text-center">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Active Pools</p>
+            <p className="font-display text-lg font-bold text-primary">{totals.active}</p>
+          </div>
+          <div className="gradient-card rounded-lg p-3 text-center">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Seats Open</p>
+            <p className="font-display text-lg font-bold text-foreground">{totals.seatsLeft}</p>
+          </div>
+          <div className="gradient-card rounded-lg p-3 text-center">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">In Pools</p>
+            <p className="font-display text-lg font-bold text-accent">
+              ${totals.escrow.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            </p>
+          </div>
         </div>
+
+        {/* Filters */}
+        <div className="flex flex-wrap gap-2 mb-5">
+          {FILTERS.map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                filter === f
+                  ? "bg-primary/20 text-primary border-primary/40"
+                  : "bg-secondary text-muted-foreground border-border hover:text-foreground"
+              }`}
+            >
+              {f.toUpperCase()}
+            </button>
+          ))}
+        </div>
+
+        {loading ? (
+          <p className="text-muted-foreground">Loading pools…</p>
+        ) : visible.length === 0 ? (
+          <div className="gradient-card rounded-lg p-8 text-center space-y-3">
+            <p className="text-muted-foreground text-sm">No slot pools here yet.</p>
+            <Button asChild size="sm">
+              <Link to="/slot-pools/new">
+                <Plus className="h-4 w-4 mr-1.5" /> Create Pool
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {visible.map((p) => (
+              <SlotPoolCard
+                key={p.id}
+                pool={p}
+                isOwner={user?.id === p.owner_id}
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </Layout>
   );
