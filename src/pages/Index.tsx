@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Crosshair, ArrowRight, Download } from "lucide-react";
+import { Crosshair, ArrowRight, Download, Dice5 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
