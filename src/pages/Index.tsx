@@ -99,18 +99,24 @@ export default function Index() {
         <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/80 to-background" />
         <div className="relative container py-12 md:py-20">
           <div className="max-w-2xl">
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex flex-wrap items-center gap-2 mb-4">
               <Crosshair className="h-5 w-5 text-primary" />
               <span className="text-xs font-bold text-primary uppercase tracking-widest">Staking Marketplace</span>
+              <Link
+                to="/slot-pools"
+                className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-accent hover:bg-accent/20 transition-colors"
+              >
+                <Dice5 className="h-3 w-3" /> New · Slot Pools
+              </Link>
             </div>
             <h1 className="font-display text-4xl md:text-6xl font-bold text-foreground leading-tight mb-4">
               FISH<span className="text-primary glow-text-cyan">KILLERZ</span>
               <span className="block text-lg md:text-2xl font-semibold text-muted-foreground mt-2">
-                Fish Table Staking Marketplace
+                Fish Table Staking &amp; Slot Pools Marketplace
               </span>
             </h1>
             <p className="text-muted-foreground text-base md:text-lg mb-6 max-w-md">
-              Back elite players on fish table sessions. Buy stakes, track live wins, and collect your cut.
+              Back elite players on fish table sessions or split a slot buy-in with a pool. Buy stakes, track live wins, and collect your cut.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link to="/sessions">
