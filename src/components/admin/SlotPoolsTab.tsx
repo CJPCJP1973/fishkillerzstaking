@@ -603,26 +603,36 @@ export default function SlotPoolsTab() {
                           </Button>
                         ) : !p.admin_released_winnings ? (
                           openSettle === p.id ? (
-                            <div className="flex items-center gap-2">
-                              <Input
-                                value={cashOut}
-                                onChange={(e) => setCashOut(e.target.value)}
-                                placeholder="Cash-out $"
-                                className="h-8 w-28 text-xs"
-                              />
-                              <Button
-                                size="sm"
-                                className="text-xs"
-                                disabled={busyId === p.id}
-                                onClick={() => handleRelease(p)}
-                              >
-                                Release
-                              </Button>
-                              <Button size="sm" variant="ghost" className="text-xs" onClick={() => setOpenSettle(null)}>
-                                Cancel
-                              </Button>
+                            <div className="flex flex-col items-end gap-2">
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  value={cashOut}
+                                  onChange={(e) => setCashOut(e.target.value)}
+                                  placeholder="Cash-out $"
+                                  className="h-8 w-28 text-xs"
+                                />
+                                <Button
+                                  size="sm"
+                                  className="text-xs"
+                                  disabled={busyId === p.id || !(parseFloat(cashOut) >= 0)}
+                                  onClick={() => handleRelease(p)}
+                                >
+                                  Release
+                                </Button>
+                                <Button size="sm" variant="ghost" className="text-xs" onClick={() => setOpenSettle(null)}>
+                                  Cancel
+                                </Button>
+                              </div>
+                              {Number.isFinite(parseFloat(cashOut)) && parseFloat(cashOut) >= 0 && (
+                                <PoolPayoutSummary
+                                  poolName={p.name}
+                                  cashOut={parseFloat(cashOut)}
+                                  breakdown={buildBreakdown(p.id, parseFloat(cashOut))}
+                                />
+                              )}
                             </div>
                           ) : (
+
                             <Button
                               size="sm"
                               variant="outline"
