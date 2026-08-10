@@ -26,6 +26,9 @@ export default function CreateSession() {
   return (
     <Layout>
       <div className="container py-8 pb-24 md:pb-8">
+        <h1 className="font-display text-3xl font-bold text-foreground mb-6">
+          Create a Staking Session
+        </h1>
         <CreateSessionForm />
       </div>
     </Layout>
