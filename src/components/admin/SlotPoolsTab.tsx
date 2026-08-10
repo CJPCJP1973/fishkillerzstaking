@@ -25,6 +25,8 @@ import {
 } from "lucide-react";
 import PlatformBadge from "@/components/PlatformBadge";
 import { logAdminAction } from "@/lib/adminAudit";
+import PoolPayoutSummary from "@/components/admin/PoolPayoutSummary";
+import { computePoolPayout } from "@/lib/poolPayout";
 
 interface PoolRow {
   id: string;
