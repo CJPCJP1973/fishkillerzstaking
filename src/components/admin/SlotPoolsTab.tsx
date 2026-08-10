@@ -77,6 +77,10 @@ export default function SlotPoolsTab() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [openSettle, setOpenSettle] = useState<string | null>(null);
   const [cashOut, setCashOut] = useState("");
+  const [backerProfiles, setBackerProfiles] = useState<
+    Record<string, { name: string | null; username: string | null; is_vip: boolean }>
+  >({});
+
 
   const fetchPools = async () => {
     setLoading(true);
