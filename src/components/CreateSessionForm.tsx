@@ -137,9 +137,10 @@ export default function CreateSessionForm() {
 
       <div className="space-y-4">
         <div>
-          <Label className="text-sm text-muted-foreground">Shooter Name</Label>
+          <Label htmlFor="shooter-name" className="text-sm text-muted-foreground">Shooter Name</Label>
           <Input
-            value={shooterName}
+            id="shooter-name"
+              value={shooterName}
             onChange={(e) => setShooterName(e.target.value)}
             placeholder="Your gamer tag"
             className="bg-secondary border-border text-foreground"
@@ -147,7 +148,7 @@ export default function CreateSessionForm() {
         </div>
 
         <div>
-          <Label className="text-sm text-muted-foreground">Game Platform</Label>
+          <Label htmlFor="game-platform" className="text-sm text-muted-foreground">Game Platform</Label>
           <Select value={platform} onValueChange={(val) => {
             if (val === "__request_new_platform__") {
               setShowPlatformRequest(true);
@@ -155,7 +156,7 @@ export default function CreateSessionForm() {
             }
             setPlatform(val);
           }}>
-            <SelectTrigger className="bg-secondary border-border text-foreground">
+            <SelectTrigger id="game-platform" aria-label="Game Platform" className="bg-secondary border-border text-foreground">
               <SelectValue placeholder="Select a platform" />
             </SelectTrigger>
             <SelectContent className="bg-background border-border">
@@ -229,7 +230,7 @@ export default function CreateSessionForm() {
         </div>
 
         <div>
-          <Label className="text-sm text-muted-foreground">Agent</Label>
+          <Label htmlFor="agent-room" className="text-sm text-muted-foreground">Agent</Label>
           <Select value={agentRoom} onValueChange={(val) => {
             if (val === "__request_new__") {
               setShowAgentRequest(true);
@@ -237,7 +238,7 @@ export default function CreateSessionForm() {
             }
             setAgentRoom(val);
           }}>
-            <SelectTrigger className="bg-secondary border-border text-foreground">
+            <SelectTrigger id="agent-room" aria-label="Agent" className="bg-secondary border-border text-foreground">
               <SelectValue placeholder="Select confirmed agent" />
             </SelectTrigger>
             <SelectContent className="bg-card border-border">
@@ -315,9 +316,10 @@ export default function CreateSessionForm() {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label className="text-sm text-muted-foreground">Total Buy-In ($)</Label>
+            <Label htmlFor="total-buy-in" className="text-sm text-muted-foreground">Total Buy-In ($)</Label>
             <Input
               type="number"
+              id="total-buy-in"
               value={totalBuyIn}
               onChange={(e) => setTotalBuyIn(e.target.value)}
               placeholder="500"
@@ -325,9 +327,10 @@ export default function CreateSessionForm() {
             />
           </div>
           <div>
-            <Label className="text-sm text-muted-foreground">Stake Available (%)</Label>
+            <Label htmlFor="stake-percent" className="text-sm text-muted-foreground">Stake Available (%)</Label>
             <Input
               type="number"
+              id="stake-percent"
               value={stakePercent}
               onChange={(e) => setStakePercent(e.target.value)}
               placeholder="50"
@@ -339,10 +342,11 @@ export default function CreateSessionForm() {
 
         {/* Share Price */}
         <div>
-          <Label className="text-sm text-muted-foreground">Share Price ($)</Label>
+          <Label htmlFor="share-price" className="text-sm text-muted-foreground">Share Price ($)</Label>
           <Input
             type="number"
-            value={sharePrice}
+            id="share-price"
+              value={sharePrice}
             onChange={(e) => setSharePrice(e.target.value)}
             placeholder="e.g. 25"
             className="bg-secondary border-border text-foreground"
@@ -378,19 +382,21 @@ export default function CreateSessionForm() {
         </div>
 
         <div>
-          <Label className="text-sm text-muted-foreground">Session End Time</Label>
+          <Label htmlFor="session-end-time" className="text-sm text-muted-foreground">Session End Time</Label>
           <Input
             type="datetime-local"
-            value={endTime}
+            id="session-end-time"
+              value={endTime}
             onChange={(e) => setEndTime(e.target.value)}
             className="bg-secondary border-border text-foreground"
           />
         </div>
 
         <div>
-          <Label className="text-sm text-muted-foreground">Stream URL (optional)</Label>
+          <Label htmlFor="stream-url" className="text-sm text-muted-foreground">Stream URL (optional)</Label>
           <Input
-            value={streamUrl}
+            id="stream-url"
+              value={streamUrl}
             onChange={(e) => setStreamUrl(e.target.value)}
             placeholder="https://kick.com/yourstream"
             className="bg-secondary border-border text-foreground"
@@ -405,8 +411,9 @@ export default function CreateSessionForm() {
           </div>
           <p className="text-[10px] text-muted-foreground">These terms will be shown to backers before they accept a stake. They form a binding agreement for dispute resolution.</p>
           <div>
-            <Label className="text-sm text-muted-foreground">Agent Cashout Window</Label>
+            <Label htmlFor="cashout-window" className="text-sm text-muted-foreground">Agent Cashout Window</Label>
             <Input
+              id="cashout-window"
               value={cashoutWindow}
               onChange={(e) => setCashoutWindow(e.target.value)}
               placeholder="e.g. 12pm - 10pm EST"
@@ -414,8 +421,9 @@ export default function CreateSessionForm() {
             />
           </div>
           <div>
-            <Label className="text-sm text-muted-foreground">Daily Cashout Limit</Label>
+            <Label htmlFor="daily-limit" className="text-sm text-muted-foreground">Daily Cashout Limit</Label>
             <Input
+              id="daily-limit"
               value={dailyLimit}
               onChange={(e) => setDailyLimit(e.target.value)}
               placeholder="e.g. $1,000 or Unlimited"
