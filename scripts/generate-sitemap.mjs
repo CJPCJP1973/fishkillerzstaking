@@ -15,8 +15,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
-const BASE_URL = "https://fishkillerz.com";
-const TODAY = new Date().toISOString().slice(0, 10);
+const BASE_URL = "https://fishkillerz-com.lovable.app";
 
 // --- Public, indexable routes (single source of truth) ---
 // Private routes (/profile, /settings, /admin, /reset-password, /u/:username) are
@@ -34,6 +33,8 @@ const PUBLIC_ROUTES = [
   { path: "/site-rules",           priority: "0.3", changefreq: "monthly" },
   { path: "/privacy",              priority: "0.3", changefreq: "monthly" },
   { path: "/forgot-password",      priority: "0.2", changefreq: "yearly"  },
+  { path: "/slot-pools",           priority: "0.8", changefreq: "hourly"  },
+  { path: "/connect",              priority: "0.5", changefreq: "monthly" },
   { path: "/guides/golden-dragon-strategy", priority: "0.7", changefreq: "monthly" },
 ];
 
@@ -70,6 +71,8 @@ const pageFiles = [
   "src/pages/PrivacyPolicy.tsx",
   "src/pages/ForgotPassword.tsx",
   "src/pages/GoldenDragonStrategy.tsx",
+  "src/pages/SlotPools.tsx",
+  "src/pages/Connect.tsx",
 ];
 const canonicalsFound = new Set();
 for (const f of pageFiles) {
@@ -104,7 +107,6 @@ const xml =
     ({ path, priority, changefreq }) =>
       `  <url>\n` +
       `    <loc>${BASE_URL}${path === "/" ? "/" : path}</loc>\n` +
-      `    <lastmod>${TODAY}</lastmod>\n` +
       `    <changefreq>${changefreq}</changefreq>\n` +
       `    <priority>${priority}</priority>\n` +
       `  </url>`

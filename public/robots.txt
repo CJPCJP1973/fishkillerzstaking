@@ -7,4 +7,4 @@ Disallow: /create
 Disallow: /reset-password
 Disallow: /u/
 
-Sitemap: https://fishkillerz.lovable.app/sitemap.xml
+Sitemap: https://fishkillerz-com.lovable.app/sitemap.xml
