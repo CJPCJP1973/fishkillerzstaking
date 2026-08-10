@@ -109,10 +109,26 @@ export default function SlotPoolsTab() {
     const { data: seatData } = await supabase
       .from("slot_pool_seats" as any)
       .select("id, pool_id, backer_id, seats, amount, payment_mode, deposit_confirmed, winnings_released");
-    setSeats(((seatData as any) || []) as SeatRow[]);
+    const seatRows = ((seatData as any) || []) as SeatRow[];
+
+    const backerIds = [...new Set(seatRows.map((s) => s.backer_id))];
+    if (backerIds.length) {
+      const { data: bProfiles } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, username, is_vip")
+        .in("user_id", backerIds);
+      const map: Record<string, { name: string | null; username: string | null; is_vip: boolean }> = {};
+      for (const b of (bProfiles as any[]) || []) {
+        map[b.user_id] = { name: b.display_name, username: b.username, is_vip: !!b.is_vip };
+      }
+      setBackerProfiles(map);
+    }
+
+    setSeats(seatRows);
     setPools(rows);
     setLoading(false);
   };
+
 
   useEffect(() => {
     fetchPools();
