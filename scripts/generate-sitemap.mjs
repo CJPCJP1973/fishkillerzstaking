@@ -16,7 +16,6 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 const BASE_URL = "https://fishkillerz-com.lovable.app";
-const TODAY = new Date().toISOString().slice(0, 10);
 
 // --- Public, indexable routes (single source of truth) ---
 // Private routes (/profile, /settings, /admin, /reset-password, /u/:username) are
@@ -108,7 +107,6 @@ const xml =
     ({ path, priority, changefreq }) =>
       `  <url>\n` +
       `    <loc>${BASE_URL}${path === "/" ? "/" : path}</loc>\n` +
-      `    <lastmod>${TODAY}</lastmod>\n` +
       `    <changefreq>${changefreq}</changefreq>\n` +
       `    <priority>${priority}</priority>\n` +
       `  </url>`
