@@ -147,6 +147,24 @@ export default function SlotPoolsTab() {
 
   const seatsFor = (poolId: string) => seats.filter((s) => s.pool_id === poolId);
 
+  const buildBreakdown = (poolId: string, amount: number) =>
+    computePoolPayout(
+      seatsFor(poolId)
+        .filter((s) => s.deposit_confirmed)
+        .map((s) => ({
+          id: s.id,
+          backer_id: s.backer_id,
+          seats: s.seats,
+          amount: Number(s.amount),
+          payment_mode: s.payment_mode,
+          is_vip: backerProfiles[s.backer_id]?.is_vip,
+          name: backerProfiles[s.backer_id]?.name,
+          username: backerProfiles[s.backer_id]?.username,
+        })),
+      amount
+    );
+
+
   const totals = useMemo(() => {
     let escrow = 0;
     let active = 0;
