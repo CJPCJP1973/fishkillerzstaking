@@ -314,22 +314,21 @@ export default function SlotPoolsTab() {
     }
     setBusyId(p.id);
     try {
-      const totalStaked = confirmed.reduce((sum, s) => sum + Number(s.amount), 0);
-      for (const s of confirmed) {
-        const owed = Math.round(((Number(s.amount) / totalStaked) * amount) * 100) / 100;
-        if (s.payment_mode === "fishdollarz" && owed > 0) {
-          await supabase.rpc("adjust_balance", { target_uid: s.backer_id, delta: owed });
+      const breakdown = buildBreakdown(p.id, amount);
+      for (const l of breakdown.lines) {
+        if (l.payment_mode === "fishdollarz" && l.net > 0) {
+          await supabase.rpc("adjust_balance", { target_uid: l.backer_id, delta: l.net });
         }
         await supabase
           .from("slot_pool_seats" as any)
-          .update({ winnings_released: true, winnings_amount: owed } as any)
-          .eq("id", s.id);
+          .update({ winnings_released: true, winnings_amount: l.net } as any)
+          .eq("id", l.seat_id);
         await notify(
-          s.backer_id,
+          l.backer_id,
           "Pool Winnings Released 🏆",
-          `$${owed.toFixed(2)} from "${p.name}" has been released${
-            s.payment_mode === "fishdollarz" ? " to your FishDollarz balance." : " — payout is on its way."
-          }`,
+          `$${l.net.toFixed(2)} from "${p.name}" has been released (gross $${l.gross.toFixed(2)} − $${l.fee.toFixed(
+            2
+          )} rake)${l.payment_mode === "fishdollarz" ? " to your FishDollarz balance." : " — payout is on its way."}`,
           "success"
         );
       }
@@ -348,12 +347,33 @@ export default function SlotPoolsTab() {
       );
       await logAdminAction(
         "pool_winnings_released",
-        `Released $${amount.toLocaleString()} for pool "${p.name}" across ${confirmed.length} seat holder(s)`,
+        `Released $${amount.toLocaleString()} for pool "${p.name}" across ${breakdown.lines.length} seat holder(s) — $${breakdown.totalFees.toFixed(
+          2
+        )} rake, $${breakdown.totalNet.toFixed(2)} net credited`,
         {
           userId: p.owner_id,
-          details: { pool_id: p.id, cash_out: amount, seats: confirmed.length, payout_proof_url: p.payout_proof_url },
+          details: {
+            pool_id: p.id,
+            cash_out: amount,
+            seats: breakdown.lines.length,
+            payout_proof_url: p.payout_proof_url,
+            total_fees: breakdown.totalFees,
+            total_net: breakdown.totalNet,
+            ledger: breakdown.lines.map((l) => ({
+              backer_id: l.backer_id,
+              seat_id: l.seat_id,
+              staked: l.staked,
+              share_pct: Number((l.sharePct * 100).toFixed(4)),
+              gross: l.gross,
+              rake_rate: l.rakeRate,
+              fee: l.fee,
+              net: l.net,
+              payment_mode: l.payment_mode,
+            })),
+          },
         }
       );
+
       toast.success("Winnings released");
       setOpenSettle(null);
       setCashOut("");
