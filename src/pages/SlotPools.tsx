@@ -23,6 +23,14 @@ export default function SlotPools() {
     description:
       "Browse open slot pools and grab a seat. Split buy-ins across multiple backers and share the action on your favorite slot platforms.",
     canonical: "/slot-pools",
+    jsonLd: [
+      organizationSchema,
+      faqSchema(slotPoolFaqs),
+      breadcrumbSchema([
+        { name: "Home", path: "/" },
+        { name: "Slot Pools", path: "/slot-pools" },
+      ]),
+    ],
   });
 
   const fetchPools = async () => {

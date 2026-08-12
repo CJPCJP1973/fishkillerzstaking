@@ -9,6 +9,14 @@ export default function OurStakingServices() {
     description:
       "Instant stake purchases, VIP sessions with reduced rake, and seller activation — all backed by escrowed FishDollarz.",
     canonical: "/our-staking-services",
+    jsonLd: [
+      organizationSchema,
+      faqSchema(servicesFaqs),
+      breadcrumbSchema([
+        { name: "Home", path: "/" },
+        { name: "Our Staking Services", path: "/our-staking-services" },
+      ]),
+    ],
   });
 
   const tiers = [

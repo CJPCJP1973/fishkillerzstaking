@@ -51,6 +51,7 @@ export default function Index() {
     title: "FishKillerz — Fish Table Staking Marketplace",
     description: "Buy & sell stakes in live fish table sessions. Golden Dragon, Vblink, Riversweeps & more. Join the #1 fish game staking community.",
     canonical: "/",
+    jsonLd: [organizationSchema, faqSchema(homeFaqs)],
   });
 
   useEffect(() => {

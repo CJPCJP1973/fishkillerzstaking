@@ -14,6 +14,14 @@ export default function Sessions() {
     description:
       "Browse all active fish table staking sessions. Buy shares in live Golden Dragon, Diamond Dragon, Vblink & Riversweeps sessions and win big.",
     canonical: "/sessions",
+    jsonLd: [
+      organizationSchema,
+      faqSchema(sessionsFaqs),
+      breadcrumbSchema([
+        { name: "Home", path: "/" },
+        { name: "Active Sessions", path: "/sessions" },
+      ]),
+    ],
   });
 
   useEffect(() => {
