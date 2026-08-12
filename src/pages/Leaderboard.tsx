@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, TrendingUp, Crosshair, Crown } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
+import { organizationSchema, breadcrumbSchema } from "@/lib/seoSchemas";
 
 interface LeaderboardEntry {
   display_name: string;
@@ -25,6 +26,13 @@ export default function Leaderboard() {
     title: "Seller Leaderboard | FishKillerz",
     description: "See the top-ranked fish table sellers on FishKillerz. Ranked by completed sessions and total earnings.",
     canonical: "/leaderboard",
+    jsonLd: [
+      organizationSchema,
+      breadcrumbSchema([
+        { name: "Home", path: "/" },
+        { name: "Seller Leaderboard", path: "/leaderboard" },
+      ]),
+    ],
   });
 
   useEffect(() => {

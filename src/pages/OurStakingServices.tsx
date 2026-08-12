@@ -1,5 +1,6 @@
 import Layout from "@/components/Layout";
 import { useSEO } from "@/hooks/useSEO";
+import { organizationSchema, faqSchema, servicesFaqs, breadcrumbSchema } from "@/lib/seoSchemas";
 import { Crosshair, Crown, Zap, ShieldCheck, TrendingUp, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -9,6 +10,14 @@ export default function OurStakingServices() {
     description:
       "Instant stake purchases, VIP sessions with reduced rake, and seller activation — all backed by escrowed FishDollarz.",
     canonical: "/our-staking-services",
+    jsonLd: [
+      organizationSchema,
+      faqSchema(servicesFaqs),
+      breadcrumbSchema([
+        { name: "Home", path: "/" },
+        { name: "Our Staking Services", path: "/our-staking-services" },
+      ]),
+    ],
   });
 
   const tiers = [

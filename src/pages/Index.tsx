@@ -11,6 +11,7 @@ import PlatformBadge from "@/components/PlatformBadge";
 import heroBg from "@/assets/hero-bg.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useSEO } from "@/hooks/useSEO";
+import { organizationSchema, faqSchema, homeFaqs } from "@/lib/seoSchemas";
 
 const featuredPlatforms = ["Golden Dragon", "Diamond Dragon", "Fire Phoenix", "Vblink", "Riversweeps", "Magic City"];
 
@@ -51,6 +52,7 @@ export default function Index() {
     title: "FishKillerz — Fish Table Staking Marketplace",
     description: "Buy & sell stakes in live fish table sessions. Golden Dragon, Vblink, Riversweeps & more. Join the #1 fish game staking community.",
     canonical: "/",
+    jsonLd: [organizationSchema, faqSchema(homeFaqs)],
   });
 
   useEffect(() => {
