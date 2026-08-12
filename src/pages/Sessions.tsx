@@ -4,6 +4,7 @@ import SessionCard, { SessionData } from "@/components/SessionCard";
 import { Crosshair } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSEO } from "@/hooks/useSEO";
+import { organizationSchema, faqSchema, sessionsFaqs, breadcrumbSchema } from "@/lib/seoSchemas";
 
 export default function Sessions() {
   const [sessions, setSessions] = useState<SessionData[]>([]);

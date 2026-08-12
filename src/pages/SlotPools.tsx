@@ -6,6 +6,7 @@ import SlotPoolCard, { SlotPoolData } from "@/components/SlotPoolCard";
 import { Dice5, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useSEO } from "@/hooks/useSEO";
+import { organizationSchema, faqSchema, slotPoolFaqs, breadcrumbSchema } from "@/lib/seoSchemas";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 

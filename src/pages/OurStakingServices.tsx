@@ -1,5 +1,6 @@
 import Layout from "@/components/Layout";
 import { useSEO } from "@/hooks/useSEO";
+import { organizationSchema, faqSchema, servicesFaqs, breadcrumbSchema } from "@/lib/seoSchemas";
 import { Crosshair, Crown, Zap, ShieldCheck, TrendingUp, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 

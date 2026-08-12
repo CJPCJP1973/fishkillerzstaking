@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, TrendingUp, Crosshair, Crown } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
+import { organizationSchema, breadcrumbSchema } from "@/lib/seoSchemas";
 
 interface LeaderboardEntry {
   display_name: string;
